@@ -2,6 +2,7 @@
 name = "astrapi-mirror"
 dynamic = ["version"]
 description = "Mirror Control – Web-UI für Debian-Repository-Spiegel"
+license = {text = "GPL-3.0-or-later"}
 requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.115",
