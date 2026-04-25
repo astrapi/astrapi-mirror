@@ -1,0 +1,36 @@
+{% import 'partials/components/ui_macros.html' as ui %}
+{% call ui.modal_wrapper("debian-validate-modal", max_width="700px", padding="24px 28px") %}
+  {{ ui.modal_title(title="Validierung – " ~ label, icon="log") }}
+  <div style="margin-top:16px;">
+
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+      {% if result.status == 'ok' %}
+        <span class="badge-pill badge-status-ok" style="font-size:.95em;">OK</span>
+        <span style="color:var(--color-text-muted);font-size:.85em;">
+          {{ result.checked_suites }} Suite(s) geprüft – alle InRelease-Dateien vollständig.
+        </span>
+      {% else %}
+        <span class="badge-pill badge-status-err" style="font-size:.95em;">Fehler</span>
+        <span style="color:var(--color-text-muted);font-size:.85em;">
+          {{ result.issues | length }} Problem(e) gefunden in {{ result.checked_suites }} Suite(s).
+        </span>
+      {% endif %}
+    </div>
+
+    {% if result.issues %}
+    <div style="background:var(--color-surface-2);border-radius:6px;padding:14px 16px;max-height:360px;overflow-y:auto;">
+      {% for issue in result.issues %}
+      <div style="font-size:.82em;font-family:var(--mono);padding:3px 0;border-bottom:1px solid var(--color-border);color:{% if 'Fehlend' in issue or 'nicht gefunden' in issue %}var(--color-error){% else %}var(--color-warning){% endif %};">
+        {{ issue }}
+      </div>
+      {% endfor %}
+    </div>
+    {% elif result.status == 'ok' %}
+    <div style="color:var(--color-text-muted);font-size:.85em;padding:12px 0;">
+      apt update auf einem Client mit der zugehörigen sources.list sollte fehlerfrei laufen.
+    </div>
+    {% endif %}
+
+  </div>
+  {{ ui.modal_footer_simple() }}
+{% endcall %}

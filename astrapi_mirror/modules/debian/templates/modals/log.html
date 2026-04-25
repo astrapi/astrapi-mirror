@@ -1,0 +1,30 @@
+{% import 'partials/components/ui_macros.html' as ui %}
+{% call ui.modal_wrapper("debian-log-modal", max_width="700px", padding="24px 28px") %}
+  {{ ui.modal_title(title="Sync-Log – " ~ label, icon="log") }}
+  <div style="margin-top:16px;">
+
+    <div class="meta-grid" style="margin-bottom:16px;">
+      <span class="meta-label">Letzter Sync</span>
+      <span class="meta-value">{{ last_run or '—' }}</span>
+      <span class="meta-label">Status</span>
+      <span class="meta-value">{{ ui.status_inline(last_status) }}</span>
+    </div>
+
+    {% if issues %}
+    <p style="font-weight:600;margin-bottom:8px;color:var(--color-error);">Validierungsprobleme ({{ issues | length }})</p>
+    <div style="background:var(--color-surface-2);border-radius:6px;padding:14px 16px;max-height:320px;overflow-y:auto;">
+      {% for issue in issues %}
+      <div style="font-size:.82em;font-family:var(--mono);padding:3px 0;border-bottom:1px solid var(--color-border);">
+        {{ issue }}
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div style="color:var(--color-text-muted);font-size:.85em;padding:8px 0;">
+      Keine Validierungsprobleme.
+    </div>
+    {% endif %}
+
+  </div>
+  {{ ui.modal_footer_simple() }}
+{% endcall %}

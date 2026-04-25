@@ -1,0 +1,80 @@
+id_field:
+  name:        id
+  label:       Repository-ID
+  placeholder: "z.B. debian-bookworm"
+  max:         60
+
+fields:
+  - name:        label
+    label:       Bezeichnung
+    type:        text
+    placeholder: "Debian Bookworm Official"
+    max:         120
+    column:      1
+    row:         1
+
+  - name:        provider_group
+    label:       Anbieter / Gruppe
+    type:        text
+    placeholder: "Debian, Proxmox, PostgreSQL …"
+    max:         80
+    column:      2
+    row:         1
+
+  - name:        url
+    label:       Repository-URL
+    type:        text
+    placeholder: "http://deb.debian.org/debian"
+    max:         500
+    column:      1
+    row:         2
+
+  - name:        repo_type
+    label:       Typ
+    type:        select
+    column:      2
+    row:         2
+    options:
+      - value: deb
+        label: "deb (Binär)"
+      - value: deb-src
+        label: "deb-src (Quellcode)"
+
+  - name:        suites
+    label:       Suites / Distributionen
+    type:        list
+    placeholder: "bookworm, bookworm-updates, bookworm-backports …"
+    max:         500
+    column:      1
+    row:         3
+
+  - name:        components
+    label:       Komponenten
+    type:        list
+    placeholder: "main, contrib, non-free, non-free-firmware …"
+    max:         500
+    column:      2
+    row:         3
+
+  - name:        architectures
+    label:       Architekturen
+    type:        list
+    placeholder: "amd64, arm64, all …"
+    max:         200
+    column:      1
+    row:         4
+
+  - name:        is_flat
+    label:       Flat-Repository (kein Suite/Komponenten-Pfad)
+    type:        boolean
+    column:      2
+    row:         4
+
+  - name:        gpg_key_url
+    label:       GPG-Schlüssel URL
+    type:        text
+    placeholder: "https://example.com/linux/debian/gpg"
+    max:         500
+    column:      1
+    row:         5
+    colspan:     2

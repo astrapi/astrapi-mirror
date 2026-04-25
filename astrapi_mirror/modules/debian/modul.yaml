@@ -1,0 +1,32 @@
+label:       Debian Repos
+nav_group:   Debian
+nav_default: true
+
+card_actions:
+  - title:     "Sync"
+    icon:      refresh
+    style:     run
+    hx_post:   "/ui/debian/{item}/sync"
+    hx_target: "#{container_id}"
+    hx_swap:   outerHTML
+
+  - title:     "Validieren"
+    icon:      shield
+    style:     log
+    hx_get:    "/ui/debian/{item}/validate"
+    hx_target: body
+    hx_swap:   beforeend
+
+  - title:     ".sources"
+    icon:      info
+    style:     log
+    hx_get:    "/ui/debian/{item}/sources-list"
+    hx_target: body
+    hx_swap:   beforeend
+
+  - title:     "Log"
+    icon:      file-text
+    style:     log
+    hx_get:    "/ui/debian/{item}/log"
+    hx_target: body
+    hx_swap:   beforeend

@@ -1,0 +1,14 @@
+<td class="col-trunc">
+  {% if item_data.url %}
+    <a href="{{ item_data.url }}" target="_blank" rel="noopener">{{ item_data.url }}</a>
+  {% else %}—{% endif %}
+</td>
+<td class="col-type">{{ item_data.provider_group or '—' }}</td>
+<td class="col-version" style="font-family:var(--mono);font-size:.82em;">
+  {% set _suites = item_data.suites %}
+  {% if _suites is iterable and _suites is not string %}
+    {{ _suites | join(', ') }}
+  {% else %}
+    {{ _suites or '—' }}
+  {% endif %}
+</td>

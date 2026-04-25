@@ -1,0 +1,41 @@
+[project]
+name = "astrapi-mirror"
+dynamic = ["version"]
+description = "Mirror Control – Web-UI für Debian-Repository-Spiegel"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "jinja2>=3.1",
+    "APScheduler>=3.10",
+    "pyyaml>=6.0",
+    "python-multipart>=0.0.9",
+    "cryptography>=42.0",
+    "requests>=2.32",
+    "urllib3>=2.2",
+    "psutil>=6.0",
+    "astrapi-core>=26.4.3",
+    "refrapt>=0.4.10",
+]
+
+[project.scripts]
+astrapi-mirror = "astrapi_mirror._cli:main"
+
+[build-system]
+requires = ["setuptools>=61", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
+
+[tool.setuptools.packages.find]
+include = ["astrapi_mirror*"]
+
+[tool.setuptools.package-data]
+astrapi_mirror = [
+    "app.yaml",
+    "navigation.yaml",
+    "modules/*/templates/**/*.html",
+    "modules/*/schema.yaml",
+    "modules/*/modul.yaml",
+    "modules/*/settings.yaml",
+]

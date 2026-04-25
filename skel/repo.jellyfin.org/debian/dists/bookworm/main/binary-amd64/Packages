@@ -1,0 +1,1302 @@
+Package: jellyfin
+Version: 10.11.8+deb12
+Architecture: all
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 9
+Depends: jellyfin-server, jellyfin-web, jellyfin-ffmpeg7
+Homepage: https://jellyfin.org
+Priority: optional
+Section: misc
+Filename: pool/main/j/jellyfin/jellyfin_10.11.8+deb12_all.deb
+Size: 2438
+SHA512: a506667bb46c9e178a71db4f33d1a8a3b40491879841c95d26e5b9547a1e5ebe47d9680b6c01c305a8df3455df2db9e75517a5aca0a2fb3079d9ddaf5a87c94f
+SHA256: 78853dcea7f2b5ea71671238166237b980fb7f6ccfd13139fc20b29e71f2391d
+SHA1: 02f8e84b7ec91f385066b44903ff0680a98f9767
+MD5sum: 2c237027199d9970b9f27c7ff5503037
+Description: Jellyfin is the Free Software Media System.
+ This metapackage provides the core Jellyfin components from one name.
+
+Package: jellyfin
+Version: 10.11.7+deb12
+Architecture: all
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 9
+Depends: jellyfin-server, jellyfin-web, jellyfin-ffmpeg7
+Homepage: https://jellyfin.org
+Priority: optional
+Section: misc
+Filename: pool/main/j/jellyfin/jellyfin_10.11.7+deb12_all.deb
+Size: 2438
+SHA512: b042ec65f7f18a424c4ecf3f149e42ab0fbafc18b5c69c895baee02fe73d48036aa15c2f28cc1c5838907838ea6e242e2906f16f01febe392a79e53fa2ea9aa8
+SHA256: 89ce83e8bdb6b972c7f545efc4e9344194bb658c32b03beb64fdbe4563aba4a7
+SHA1: e8c33f8f66a9099a7abdf5d222bfba93ee7e66c1
+MD5sum: fd159a4901f5557793df689f90830d13
+Description: Jellyfin is the Free Software Media System.
+ This metapackage provides the core Jellyfin components from one name.
+
+Package: jellyfin
+Version: 10.11.6+deb12
+Architecture: all
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 9
+Depends: jellyfin-server, jellyfin-web, jellyfin-ffmpeg7
+Homepage: https://jellyfin.org
+Priority: optional
+Section: misc
+Filename: pool/main/j/jellyfin/jellyfin_10.11.6+deb12_all.deb
+Size: 2442
+SHA512: f9757db62b153ec7760ec67d7301e404b45661d88212f8f12e3582a8c5f2ac80a0d0f1805f0ad81a2f128a0bc56fd14ec8c9aaa62f8607266f5e093dfb46e60b
+SHA256: 7f24c730430e8249fd2103cecee637b7099f4831e15d5504a60099b06f70a337
+SHA1: a9381fde468b46bf1fd412ed633542b028b36723
+MD5sum: 20d98baf4b0c087837c84800c4526dce
+Description: Jellyfin is the Free Software Media System.
+ This metapackage provides the core Jellyfin components from one name.
+
+Package: jellyfin
+Version: 10.11.5+deb12
+Architecture: all
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 9
+Depends: jellyfin-server, jellyfin-web, jellyfin-ffmpeg7
+Homepage: https://jellyfin.org
+Priority: optional
+Section: misc
+Filename: pool/main/j/jellyfin/jellyfin_10.11.5+deb12_all.deb
+Size: 2434
+SHA512: 91ff4384b3a33e792ae500f0c8a6dc2326710be8d6744836f6ae224950d3e6faa9351d9929deacdb1fb27f03d9140caf07eb704b4d25374bc55085fb1995e47f
+SHA256: a5a323ec73647806d4f0b82ded7022a585a38fb17c448e776cae7ff261759e39
+SHA1: a90e337419e6aa3b8731040e0142cb4d6e226577
+MD5sum: 510dc9be155e313135ef6d09eaa70502
+Description: Jellyfin is the Free Software Media System.
+ This metapackage provides the core Jellyfin components from one name.
+
+Package: jellyfin
+Version: 10.11.4+deb12
+Architecture: all
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 9
+Depends: jellyfin-server, jellyfin-web, jellyfin-ffmpeg7
+Homepage: https://jellyfin.org
+Priority: optional
+Section: misc
+Filename: pool/main/j/jellyfin/jellyfin_10.11.4+deb12_all.deb
+Size: 2434
+SHA512: 5dc88b09a5393916f7d974db9c855d8c92cd20949ad5a48fe382a448ca2ec1e924b40cd32b98ea0dacc1860e24dda03139a401d56d466a5342fba75f4a18fd28
+SHA256: ea57a04054ce19855dbf1c075e7134ad01138fc7000d0877d61a5427d7cc0bd2
+SHA1: 669f0db281cfb7bd04521a7b4a489baa59e3164b
+MD5sum: 108493117fc8275f67bfd0f5ab95270a
+Description: Jellyfin is the Free Software Media System.
+ This metapackage provides the core Jellyfin components from one name.
+
+Package: jellyfin
+Version: 10.11.3+deb12
+Architecture: all
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 9
+Depends: jellyfin-server, jellyfin-web, jellyfin-ffmpeg7
+Homepage: https://jellyfin.org
+Priority: optional
+Section: misc
+Filename: pool/main/j/jellyfin/jellyfin_10.11.3+deb12_all.deb
+Size: 2442
+SHA512: b17444a2775bd1990e5ef1ec8d0f1c8e59974d933f7c8c5393f1226a66aae1a6fcdab08618cb6a493d096598e38201bafc791183a2d3852e57f746a98cf6438c
+SHA256: 2e03f433be97af24472c20a75a345e233631241e67789bcb958ae4e1e984b92a
+SHA1: 808baee96863ebd29d86ac83ea85399969cf4df0
+MD5sum: 4c3d3c1b2d3954514a0a417221c7de73
+Description: Jellyfin is the Free Software Media System.
+ This metapackage provides the core Jellyfin components from one name.
+
+Package: jellyfin
+Version: 10.11.2+deb12
+Architecture: all
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 9
+Depends: jellyfin-server, jellyfin-web, jellyfin-ffmpeg7
+Homepage: https://jellyfin.org
+Priority: optional
+Section: misc
+Filename: pool/main/j/jellyfin/jellyfin_10.11.2+deb12_all.deb
+Size: 2438
+SHA512: f620eb3dd5fc1816459a018541740e29f532cd44cb13c4a9460f5f3751bd4842edf4511ac5640f594538ac65b9062af8ed3f0039f03fcb23c247a4be07ebcbf1
+SHA256: 9bc0ed617d31b8bd819f34188a1fc233153fcee3aa752caa36fb190a7263595c
+SHA1: 7605c54dc665811eed54df32c2729ca33bead11d
+MD5sum: b6cb3619223babad45ee9fa88ddfe6af
+Description: Jellyfin is the Free Software Media System.
+ This metapackage provides the core Jellyfin components from one name.
+
+Package: jellyfin
+Version: 10.11.1+deb12
+Architecture: all
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 9
+Depends: jellyfin-server, jellyfin-web, jellyfin-ffmpeg7
+Homepage: https://jellyfin.org
+Priority: optional
+Section: misc
+Filename: pool/main/j/jellyfin/jellyfin_10.11.1+deb12_all.deb
+Size: 2442
+SHA512: 5f55135b91b9ce5dd86a685ddd80a172ca5fe68844a4269f520ccd88a8fa212b0f830a0d4c3f4282f0b576a57de6833625b6a3a368dcadaaf0b18a8221f9a8c9
+SHA256: a65fa68f8384f8950f04027c4501d3d9ff108ee29b79d602673f2ed6f6adee9a
+SHA1: b9c282bc381ee18353b4768830c530e095c88a9a
+MD5sum: 91ba77d92b0c1f9aa45c40f14cb079a8
+Description: Jellyfin is the Free Software Media System.
+ This metapackage provides the core Jellyfin components from one name.
+
+Package: jellyfin
+Version: 10.11.0+deb12
+Architecture: all
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 9
+Depends: jellyfin-server, jellyfin-web, jellyfin-ffmpeg7
+Homepage: https://jellyfin.org
+Priority: optional
+Section: misc
+Filename: pool/main/j/jellyfin/jellyfin_10.11.0+deb12_all.deb
+Size: 2442
+SHA512: 2da56c3f0b41d97c44801f869372b60ad8873ccd1443bc333e6c3f20d50502cded72a06d0cd8783ed6b74e90e34fd1698aec20cbcf988245a92a96e70e78287b
+SHA256: 68cffc62f5a0b2fd5eb7d7a5654a3d03d1d9fd6ccb4ddf8a408f3a25832f3b61
+SHA1: e17c7ba3b2add30240273a32f8e00fa26b234aa2
+MD5sum: e411e668817972e81a25a0721e784cf9
+Description: Jellyfin is the Free Software Media System.
+ This metapackage provides the core Jellyfin components from one name.
+
+Package: jellyfin
+Version: 10.10.7+deb12
+Architecture: all
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 9
+Depends: jellyfin-server, jellyfin-web, jellyfin-ffmpeg7
+Homepage: https://jellyfin.org
+Priority: optional
+Section: misc
+Filename: pool/main/j/jellyfin/jellyfin_10.10.7+deb12_all.deb
+Size: 2434
+SHA512: 96798a418709a968ea2f80ebdd289ef9240705b70489435e0124035fd360626889ec15ff8241af86001845d0b01b590488f6f3eacd1cc9ccb2b638366083246a
+SHA256: 01a250e6a0363c3c3b267eb738dc6a3541e8731bc99ee568e1d5fa61c2616269
+SHA1: 877831451e267fce282100db8d864b62b8249697
+MD5sum: 69e369ca92e2962308f333ff4dbc90aa
+Description: Jellyfin is the Free Software Media System.
+ This metapackage provides the core Jellyfin components from one name.
+
+Package: jellyfin
+Version: 10.10.6+deb12
+Architecture: all
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 9
+Depends: jellyfin-server, jellyfin-web, jellyfin-ffmpeg7
+Homepage: https://jellyfin.org
+Priority: optional
+Section: misc
+Filename: pool/main/j/jellyfin/jellyfin_10.10.6+deb12_all.deb
+Size: 2442
+SHA256: e71590a9972078ab6ada95dc93246aa79176002dad1d5d1a5a7240c58d8343a5
+SHA1: 78fd20ffaec8055dc8fd889e8d9b17b6e350a23f
+MD5sum: 12d8fb785c746238053e9bc2a67ffd44
+Description: Jellyfin is the Free Software Media System.
+ This metapackage provides the core Jellyfin components from one name.
+
+Package: jellyfin
+Version: 10.9.10+deb12
+Architecture: all
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 9
+Depends: jellyfin-server, jellyfin-web, jellyfin-ffmpeg6
+Homepage: https://jellyfin.org
+Priority: optional
+Section: misc
+Filename: pool/main/j/jellyfin/jellyfin_10.9.10+deb12_all.deb
+Size: 2442
+SHA512: d082ad1d27d87d0d68976651778f47749b14435af1871e9d653f9cf7c10e7279729c66d0602be95ae4806ab52485ba3cd113a0218c805f93feddb834c1d4d5c8
+SHA256: 43362159fb35e486675ba47fbd873e5b27a62872a81746b5f8db888d6a119f57
+SHA1: 7a14845ada22f2430d88774925fefad931d301c6
+MD5sum: 3229a8ab8327f7febcdb9880de05685c
+Description: Jellyfin is the Free Software Media System.
+ This metapackage provides the core Jellyfin components from one name.
+
+Package: jellyfin-ffmpeg5
+Source: jellyfin-ffmpeg (5.1.4-3)
+Version: 5.1.4-3-bookworm
+Architecture: amd64
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 189794
+Depends: libass9 (>= 1:0.13.6), libbluray2 (>= 1:0.2.2), libc6 (>= 2.35), libelf1 (>= 0.142), libexpat1 (>= 2.0.1), libfontconfig1 (>= 2.12.6), libfreetype6 (>= 2.2.1), libfribidi0 (>= 0.19.2), libgcc-s1 (>= 3.4), libgmp10 (>= 2:6.2.1+dfsg1), libgnutls30 (>= 3.7.5), libllvm15, libmp3lame0 (>= 3.100), libopenmpt0 (>= 0.3.0), libopus0 (>= 1.1), libpciaccess0, libstdc++6 (>= 12), libtheora0 (>= 1.0), libudev1 (>= 183), libvorbis0a (>= 1.1.2), libvorbisenc2 (>= 1.1.2), libvpx7 (>= 1.12.0), libwebp7 (>= 1.2.4), libwebpmux3 (>= 1.2.4), libx11-xcb1 (>= 2:1.8.4), libx264-164 (>= 2:0.164.3095+gitbaee400), libx265-199 (>= 3.5), libxcb-dri2-0 (>= 1.8), libxcb-dri3-0 (>= 1.13), libxcb-present0, libxcb-randr0 (>= 1.13), libxcb-shm0, libxcb-sync1, libxcb-xfixes0, libxcb1 (>= 1.9.2), libxshmfence1, libzstd1 (>= 1.5.2), libzvbi0 (>= 0.2.35), ocl-icd-libopencl1 | libopencl1, ocl-icd-libopencl1 (>= 1.0) | libopencl-1.2-1, zlib1g (>= 1:1.2.0.2)
+Conflicts: jellyfin-ffmpeg
+Replaces: jellyfin-ffmpeg
+Multi-Arch: foreign
+Homepage: https://ffmpeg.org/
+Priority: optional
+Section: video
+Filename: pool/main/j/jellyfin-ffmpeg/jellyfin-ffmpeg5_5.1.4-3-bookworm_amd64.deb
+Size: 39992264
+SHA256: 0e00e666b0d179344962bb6e237bc2882fe1902488260b826f4444d84a04451d
+SHA1: e6fbb6b363ab8f96a9ebadae8e7a00a1cce90e0e
+MD5sum: b18c000f1ce9e278c73286c9cf72d039
+Description: Tools for transcoding, streaming and playing of multimedia files
+ FFmpeg is the leading multimedia framework, able to decode, encode, transcode,
+ mux, demux, stream, filter and play pretty much anything that humans and
+ machines have created. It supports the most obscure ancient formats up to the
+ cutting edge.
+ .
+ This package contains a static build compatible with all Debian/Ubuntu
+ releases, designed to facilitate Jellyfin on systems with an unpatched version
+ of ffmpeg in their repository. Included files are:
+  * ffmpeg: a command line tool to convert multimedia files between formats
+  * ffprobe: a simple multimedia stream analyzer
+  * vainfo: a command line tool to get information about local VA-API devices
+
+Package: jellyfin-ffmpeg6
+Source: jellyfin-ffmpeg (6.0.1-8)
+Version: 6.0.1-8-bookworm
+Architecture: amd64
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 189755
+Depends: libbluray2 (>= 1:0.2.2), libc6 (>= 2.35), libelf1 (>= 0.142), libexpat1 (>= 2.0.1), libgcc-s1 (>= 3.4), libgmp10 (>= 2:6.2.1+dfsg1), libgnutls30 (>= 3.7.5), libllvm16, libmp3lame0 (>= 3.100), libopenmpt0 (>= 0.3.0), libopus0 (>= 1.1), libpciaccess0, libstdc++6 (>= 12), libtheora0 (>= 1.0), libudev1 (>= 183), libvorbis0a (>= 1.1.2), libvorbisenc2 (>= 1.1.2), libvpx7 (>= 1.12.0), libwebp7 (>= 1.2.4), libwebpmux3 (>= 1.2.4), libx11-xcb1 (>= 2:1.8.4), libx264-164 (>= 2:0.164.3095+gitbaee400), libx265-199 (>= 3.5), libxcb-dri2-0 (>= 1.8), libxcb-dri3-0 (>= 1.13), libxcb-present0, libxcb-randr0 (>= 1.13), libxcb-shm0, libxcb-sync1, libxcb-xfixes0, libxcb1 (>= 1.9.2), libxshmfence1, libzstd1 (>= 1.5.2), libzvbi0 (>= 0.2.35), ocl-icd-libopencl1 | libopencl1, ocl-icd-libopencl1 (>= 1.0) | libopencl-1.2-1
+Conflicts: jellyfin-ffmpeg, jellyfin-ffmpeg5
+Replaces: jellyfin-ffmpeg, jellyfin-ffmpeg5
+Multi-Arch: foreign
+Homepage: https://ffmpeg.org/
+Priority: optional
+Section: video
+Filename: pool/main/j/jellyfin-ffmpeg/jellyfin-ffmpeg6_6.0.1-8-bookworm_amd64.deb
+Size: 41589280
+SHA256: dab2d0b5247dc20f29ada768842c988633834bfecfe1601580f964649979b865
+SHA1: 005fcd4ed09db1649a376e85bc729a67cdfa770a
+MD5sum: 098948ab8ee64ff5c0808fde30d5d103
+Description: Tools for transcoding, streaming and playing of multimedia files
+ FFmpeg is the leading multimedia framework, able to decode, encode, transcode,
+ mux, demux, stream, filter and play pretty much anything that humans and
+ machines have created. It supports the most obscure ancient formats up to the
+ cutting edge.
+ .
+ This package contains a static build compatible with all Debian/Ubuntu
+ releases, designed to facilitate Jellyfin on systems with an unpatched version
+ of ffmpeg in their repository. Included files are:
+  * ffmpeg: a command line tool to convert multimedia files between formats
+  * ffprobe: a simple multimedia stream analyzer
+  * vainfo: a command line tool to get information about local VA-API devices
+
+Package: jellyfin-ffmpeg7
+Source: jellyfin-ffmpeg (7.1.3-5)
+Version: 7.1.3-5-bookworm
+Architecture: amd64
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 207603
+Depends: libbluray2 (>= 1:0.2.2), libc6 (>= 2.35), libelf1 (>= 0.142), libexpat1 (>= 2.0.1), libgcc-s1 (>= 3.4), libgmp10 (>= 2:6.2.1+dfsg1), libgnutls30 (>= 3.7.5), libmp3lame0 (>= 3.100), libopenmpt0 (>= 0.3.0), libopus0 (>= 1.1), libpciaccess0, libstdc++6 (>= 12), libtheora0 (>= 1.0), libudev1 (>= 183), libvorbis0a (>= 1.1.2), libvorbisenc2 (>= 1.1.2), libvpx7 (>= 1.12.0), libwebp7 (>= 1.2.4), libwebpmux3 (>= 1.2.4), libx11-xcb1 (>= 2:1.8.4), libx264-164 (>= 2:0.164.3095+gitbaee400), libx265-199 (>= 3.5), libxcb-dri3-0 (>= 1.13), libxcb-present0, libxcb-randr0 (>= 1.13), libxcb-shm0, libxcb-sync1, libxcb-xfixes0, libxcb1 (>= 1.9.2), libxshmfence1, libzstd1 (>= 1.5.2), libzvbi0 (>= 0.2.35), ocl-icd-libopencl1 | libopencl1, ocl-icd-libopencl1 (>= 1.0) | libopencl-1.2-1
+Suggests: intel-opencl-icd, intel-opencl-icd-legacy
+Conflicts: jellyfin-ffmpeg, jellyfin-ffmpeg5, jellyfin-ffmpeg6
+Replaces: jellyfin-ffmpeg, jellyfin-ffmpeg5, jellyfin-ffmpeg6
+Multi-Arch: foreign
+Homepage: https://ffmpeg.org/
+Priority: optional
+Section: video
+Filename: pool/main/j/jellyfin-ffmpeg/jellyfin-ffmpeg7_7.1.3-5-bookworm_amd64.deb
+Size: 45435768
+SHA512: 8c5647c3c4b1cd4d53bc8cada74c61d721d9d83909b1a4b7e1b9cb4a7ab27d2e9afa6ec30ac6ed2f14f8c7186d611b8dd512021dc37bd9bd7ea8865d78c0ce20
+SHA256: a94683ba2bda79454792aacec26d1ff17a1d42afc46586a298124aefbf5584cb
+SHA1: 8dd01a5ce917813f79083c447dbf96167824e90d
+MD5sum: 1aa8ed5183f721fbbb392c91ca547e3c
+Description: Tools for transcoding, streaming and playing of multimedia files
+ FFmpeg is the leading multimedia framework, able to decode, encode, transcode,
+ mux, demux, stream, filter and play pretty much anything that humans and
+ machines have created. It supports the most obscure ancient formats up to the
+ cutting edge.
+ .
+ This package contains a static build compatible with all Debian/Ubuntu
+ releases, designed to facilitate Jellyfin on systems with an unpatched version
+ of ffmpeg in their repository. Included files are:
+  * ffmpeg: a command line tool to convert multimedia files between formats
+  * ffprobe: a simple multimedia stream analyzer
+  * vainfo: a command line tool to get information about local VA-API devices
+
+Package: jellyfin-ffmpeg7
+Source: jellyfin-ffmpeg (7.1.3-4)
+Version: 7.1.3-4-bookworm
+Architecture: amd64
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 207603
+Depends: libbluray2 (>= 1:0.2.2), libc6 (>= 2.35), libelf1 (>= 0.142), libexpat1 (>= 2.0.1), libgcc-s1 (>= 3.4), libgmp10 (>= 2:6.2.1+dfsg1), libgnutls30 (>= 3.7.5), libmp3lame0 (>= 3.100), libopenmpt0 (>= 0.3.0), libopus0 (>= 1.1), libpciaccess0, libstdc++6 (>= 12), libtheora0 (>= 1.0), libudev1 (>= 183), libvorbis0a (>= 1.1.2), libvorbisenc2 (>= 1.1.2), libvpx7 (>= 1.12.0), libwebp7 (>= 1.2.4), libwebpmux3 (>= 1.2.4), libx11-xcb1 (>= 2:1.8.4), libx264-164 (>= 2:0.164.3095+gitbaee400), libx265-199 (>= 3.5), libxcb-dri3-0 (>= 1.13), libxcb-present0, libxcb-randr0 (>= 1.13), libxcb-shm0, libxcb-sync1, libxcb-xfixes0, libxcb1 (>= 1.9.2), libxshmfence1, libzstd1 (>= 1.5.2), libzvbi0 (>= 0.2.35), ocl-icd-libopencl1 | libopencl1, ocl-icd-libopencl1 (>= 1.0) | libopencl-1.2-1
+Suggests: intel-opencl-icd, intel-opencl-icd-legacy
+Conflicts: jellyfin-ffmpeg, jellyfin-ffmpeg5, jellyfin-ffmpeg6
+Replaces: jellyfin-ffmpeg, jellyfin-ffmpeg5, jellyfin-ffmpeg6
+Multi-Arch: foreign
+Homepage: https://ffmpeg.org/
+Priority: optional
+Section: video
+Filename: pool/main/j/jellyfin-ffmpeg/jellyfin-ffmpeg7_7.1.3-4-bookworm_amd64.deb
+Size: 45432540
+SHA512: 3ad61578f31d79ea60a1e5e03e476bc24c2211b3be8de6d483c8efaf26fb3c9d790f7e3839787d87ed3b751805a92325401ed7d8611066565021962c6ff7b078
+SHA256: 053ba722def54de986db55c8469df1506bdc9b6af18bc86d114b5b16ec412459
+SHA1: c2d366cef1e79ad6803f48b67065c908a49f1c8d
+MD5sum: 530a343a5de2fb9bf4f4b0a267fdb9d4
+Description: Tools for transcoding, streaming and playing of multimedia files
+ FFmpeg is the leading multimedia framework, able to decode, encode, transcode,
+ mux, demux, stream, filter and play pretty much anything that humans and
+ machines have created. It supports the most obscure ancient formats up to the
+ cutting edge.
+ .
+ This package contains a static build compatible with all Debian/Ubuntu
+ releases, designed to facilitate Jellyfin on systems with an unpatched version
+ of ffmpeg in their repository. Included files are:
+  * ffmpeg: a command line tool to convert multimedia files between formats
+  * ffprobe: a simple multimedia stream analyzer
+  * vainfo: a command line tool to get information about local VA-API devices
+
+Package: jellyfin-ffmpeg7
+Source: jellyfin-ffmpeg (7.1.3-3)
+Version: 7.1.3-3-bookworm
+Architecture: amd64
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 207602
+Depends: libbluray2 (>= 1:0.2.2), libc6 (>= 2.35), libelf1 (>= 0.142), libexpat1 (>= 2.0.1), libgcc-s1 (>= 3.4), libgmp10 (>= 2:6.2.1+dfsg1), libgnutls30 (>= 3.7.5), libmp3lame0 (>= 3.100), libopenmpt0 (>= 0.3.0), libopus0 (>= 1.1), libpciaccess0, libstdc++6 (>= 12), libtheora0 (>= 1.0), libudev1 (>= 183), libvorbis0a (>= 1.1.2), libvorbisenc2 (>= 1.1.2), libvpx7 (>= 1.12.0), libwebp7 (>= 1.2.4), libwebpmux3 (>= 1.2.4), libx11-xcb1 (>= 2:1.8.4), libx264-164 (>= 2:0.164.3095+gitbaee400), libx265-199 (>= 3.5), libxcb-dri3-0 (>= 1.13), libxcb-present0, libxcb-randr0 (>= 1.13), libxcb-shm0, libxcb-sync1, libxcb-xfixes0, libxcb1 (>= 1.9.2), libxshmfence1, libzstd1 (>= 1.5.2), libzvbi0 (>= 0.2.35), ocl-icd-libopencl1 | libopencl1, ocl-icd-libopencl1 (>= 1.0) | libopencl-1.2-1
+Suggests: intel-opencl-icd, intel-opencl-icd-legacy
+Conflicts: jellyfin-ffmpeg, jellyfin-ffmpeg5, jellyfin-ffmpeg6
+Replaces: jellyfin-ffmpeg, jellyfin-ffmpeg5, jellyfin-ffmpeg6
+Multi-Arch: foreign
+Homepage: https://ffmpeg.org/
+Priority: optional
+Section: video
+Filename: pool/main/j/jellyfin-ffmpeg/jellyfin-ffmpeg7_7.1.3-3-bookworm_amd64.deb
+Size: 45437980
+SHA512: 1197e06becc323fd6521a6faab68786a3f34747995e63005c8c36f4af7f3c9720e7befc2a426c5513e4f3ee59d440a643e0aa0e5c76ed75a9cc6a23d1bd0181a
+SHA256: b0abd6a4f9314cafad9d4fc93437ff27e5d420f8006228f42a4a58e6972fa979
+SHA1: 8952b0a6f5ab3163b784e1042ff6f709c2e8c037
+MD5sum: 800ad8be95872e9b29acdc93344f93ef
+Description: Tools for transcoding, streaming and playing of multimedia files
+ FFmpeg is the leading multimedia framework, able to decode, encode, transcode,
+ mux, demux, stream, filter and play pretty much anything that humans and
+ machines have created. It supports the most obscure ancient formats up to the
+ cutting edge.
+ .
+ This package contains a static build compatible with all Debian/Ubuntu
+ releases, designed to facilitate Jellyfin on systems with an unpatched version
+ of ffmpeg in their repository. Included files are:
+  * ffmpeg: a command line tool to convert multimedia files between formats
+  * ffprobe: a simple multimedia stream analyzer
+  * vainfo: a command line tool to get information about local VA-API devices
+
+Package: jellyfin-ffmpeg7
+Source: jellyfin-ffmpeg (7.1.3-1)
+Version: 7.1.3-1-bookworm
+Architecture: amd64
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 207193
+Depends: libbluray2 (>= 1:0.2.2), libc6 (>= 2.35), libelf1 (>= 0.142), libexpat1 (>= 2.0.1), libgcc-s1 (>= 3.4), libgmp10 (>= 2:6.2.1+dfsg1), libgnutls30 (>= 3.7.5), libmp3lame0 (>= 3.100), libopenmpt0 (>= 0.3.0), libopus0 (>= 1.1), libpciaccess0, libstdc++6 (>= 12), libtheora0 (>= 1.0), libudev1 (>= 183), libvorbis0a (>= 1.1.2), libvorbisenc2 (>= 1.1.2), libvpx7 (>= 1.12.0), libwebp7 (>= 1.2.4), libwebpmux3 (>= 1.2.4), libx11-xcb1 (>= 2:1.8.4), libx264-164 (>= 2:0.164.3095+gitbaee400), libx265-199 (>= 3.5), libxcb-dri3-0 (>= 1.13), libxcb-present0, libxcb-randr0 (>= 1.13), libxcb-shm0, libxcb-sync1, libxcb-xfixes0, libxcb1 (>= 1.9.2), libxshmfence1, libzstd1 (>= 1.5.2), libzvbi0 (>= 0.2.35), ocl-icd-libopencl1 | libopencl1, ocl-icd-libopencl1 (>= 1.0) | libopencl-1.2-1
+Suggests: intel-opencl-icd, intel-opencl-icd-legacy
+Conflicts: jellyfin-ffmpeg, jellyfin-ffmpeg5, jellyfin-ffmpeg6
+Replaces: jellyfin-ffmpeg, jellyfin-ffmpeg5, jellyfin-ffmpeg6
+Multi-Arch: foreign
+Homepage: https://ffmpeg.org/
+Priority: optional
+Section: video
+Filename: pool/main/j/jellyfin-ffmpeg/jellyfin-ffmpeg7_7.1.3-1-bookworm_amd64.deb
+Size: 45231228
+SHA512: ccae9cb302f3fd73d8447cfda7e66ce1c93aefcf8a4b86460a000b62006e42e3f668339dcd3969c4a8e5502d546159bd7672588a86e85e021d42afa67d2808be
+SHA256: ee2fd205c86c630ed15c91c534adc33df7ce09a35bef5f42fd1ee119d26728ee
+SHA1: 0764b3299dc74d94e810bc333d18319525541de5
+MD5sum: 3fae50d51c795eaeafd284b5cc27cd37
+Description: Tools for transcoding, streaming and playing of multimedia files
+ FFmpeg is the leading multimedia framework, able to decode, encode, transcode,
+ mux, demux, stream, filter and play pretty much anything that humans and
+ machines have created. It supports the most obscure ancient formats up to the
+ cutting edge.
+ .
+ This package contains a static build compatible with all Debian/Ubuntu
+ releases, designed to facilitate Jellyfin on systems with an unpatched version
+ of ffmpeg in their repository. Included files are:
+  * ffmpeg: a command line tool to convert multimedia files between formats
+  * ffprobe: a simple multimedia stream analyzer
+  * vainfo: a command line tool to get information about local VA-API devices
+
+Package: jellyfin-ffmpeg7
+Source: jellyfin-ffmpeg (7.1.2-4)
+Version: 7.1.2-4-bookworm
+Architecture: amd64
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 207184
+Depends: libbluray2 (>= 1:0.2.2), libc6 (>= 2.35), libelf1 (>= 0.142), libexpat1 (>= 2.0.1), libgcc-s1 (>= 3.4), libgmp10 (>= 2:6.2.1+dfsg1), libgnutls30 (>= 3.7.5), libmp3lame0 (>= 3.100), libopenmpt0 (>= 0.3.0), libopus0 (>= 1.1), libpciaccess0, libstdc++6 (>= 12), libtheora0 (>= 1.0), libudev1 (>= 183), libvorbis0a (>= 1.1.2), libvorbisenc2 (>= 1.1.2), libvpx7 (>= 1.12.0), libwebp7 (>= 1.2.4), libwebpmux3 (>= 1.2.4), libx11-xcb1 (>= 2:1.8.4), libx264-164 (>= 2:0.164.3095+gitbaee400), libx265-199 (>= 3.5), libxcb-dri3-0 (>= 1.13), libxcb-present0, libxcb-randr0 (>= 1.13), libxcb-shm0, libxcb-sync1, libxcb-xfixes0, libxcb1 (>= 1.9.2), libxshmfence1, libzstd1 (>= 1.5.2), libzvbi0 (>= 0.2.35), ocl-icd-libopencl1 | libopencl1, ocl-icd-libopencl1 (>= 1.0) | libopencl-1.2-1
+Suggests: intel-opencl-icd, intel-opencl-icd-legacy
+Conflicts: jellyfin-ffmpeg, jellyfin-ffmpeg5, jellyfin-ffmpeg6
+Replaces: jellyfin-ffmpeg, jellyfin-ffmpeg5, jellyfin-ffmpeg6
+Multi-Arch: foreign
+Homepage: https://ffmpeg.org/
+Priority: optional
+Section: video
+Filename: pool/main/j/jellyfin-ffmpeg/jellyfin-ffmpeg7_7.1.2-4-bookworm_amd64.deb
+Size: 45219924
+SHA512: f1028599042cd38648b80b0d8a5561e1428b8276aa73243e7b799b34e8bab8d55f1a21504e7106202456d13f3a73c59f1fbbd74b072a68acf39324d6221538ab
+SHA256: 881a4027c7bec32b83b609c79e490f72fbe55bef678b8e5b950f0b4333f045d4
+SHA1: 14a56b2cd08b6ceaab3df1d854fb9c175f3942e9
+MD5sum: c3397b8c192d45ce2155e0b3434b017a
+Description: Tools for transcoding, streaming and playing of multimedia files
+ FFmpeg is the leading multimedia framework, able to decode, encode, transcode,
+ mux, demux, stream, filter and play pretty much anything that humans and
+ machines have created. It supports the most obscure ancient formats up to the
+ cutting edge.
+ .
+ This package contains a static build compatible with all Debian/Ubuntu
+ releases, designed to facilitate Jellyfin on systems with an unpatched version
+ of ffmpeg in their repository. Included files are:
+  * ffmpeg: a command line tool to convert multimedia files between formats
+  * ffprobe: a simple multimedia stream analyzer
+  * vainfo: a command line tool to get information about local VA-API devices
+
+Package: jellyfin-ffmpeg7
+Source: jellyfin-ffmpeg (7.1.2-3)
+Version: 7.1.2-3-bookworm
+Architecture: amd64
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 207184
+Depends: libbluray2 (>= 1:0.2.2), libc6 (>= 2.35), libelf1 (>= 0.142), libexpat1 (>= 2.0.1), libgcc-s1 (>= 3.4), libgmp10 (>= 2:6.2.1+dfsg1), libgnutls30 (>= 3.7.5), libmp3lame0 (>= 3.100), libopenmpt0 (>= 0.3.0), libopus0 (>= 1.1), libpciaccess0, libstdc++6 (>= 12), libtheora0 (>= 1.0), libudev1 (>= 183), libvorbis0a (>= 1.1.2), libvorbisenc2 (>= 1.1.2), libvpx7 (>= 1.12.0), libwebp7 (>= 1.2.4), libwebpmux3 (>= 1.2.4), libx11-xcb1 (>= 2:1.8.4), libx264-164 (>= 2:0.164.3095+gitbaee400), libx265-199 (>= 3.5), libxcb-dri3-0 (>= 1.13), libxcb-present0, libxcb-randr0 (>= 1.13), libxcb-shm0, libxcb-sync1, libxcb-xfixes0, libxcb1 (>= 1.9.2), libxshmfence1, libzstd1 (>= 1.5.2), libzvbi0 (>= 0.2.35), ocl-icd-libopencl1 | libopencl1, ocl-icd-libopencl1 (>= 1.0) | libopencl-1.2-1
+Suggests: intel-opencl-icd, intel-opencl-icd-legacy
+Conflicts: jellyfin-ffmpeg, jellyfin-ffmpeg5, jellyfin-ffmpeg6
+Replaces: jellyfin-ffmpeg, jellyfin-ffmpeg5, jellyfin-ffmpeg6
+Multi-Arch: foreign
+Homepage: https://ffmpeg.org/
+Priority: optional
+Section: video
+Filename: pool/main/j/jellyfin-ffmpeg/jellyfin-ffmpeg7_7.1.2-3-bookworm_amd64.deb
+Size: 45212896
+SHA512: 7831fb37aadfc1954a13ee8878e70ba95393630be6816992eb4860f54bdc1ff025e14b6839eff5251dc65cd9a6763c4b797f278ef86688b8ab5ea16f98dc496e
+SHA256: 76b62985a0dede43ee30bbe69b02aaee209ff984a2fe9193529fda0c67ceafe9
+SHA1: 5a09284cdc21b11d7cbcc1b2ae19cf73960d3c59
+MD5sum: 8e8c849a28642a80a728d8da934f6bb8
+Description: Tools for transcoding, streaming and playing of multimedia files
+ FFmpeg is the leading multimedia framework, able to decode, encode, transcode,
+ mux, demux, stream, filter and play pretty much anything that humans and
+ machines have created. It supports the most obscure ancient formats up to the
+ cutting edge.
+ .
+ This package contains a static build compatible with all Debian/Ubuntu
+ releases, designed to facilitate Jellyfin on systems with an unpatched version
+ of ffmpeg in their repository. Included files are:
+  * ffmpeg: a command line tool to convert multimedia files between formats
+  * ffprobe: a simple multimedia stream analyzer
+  * vainfo: a command line tool to get information about local VA-API devices
+
+Package: jellyfin-ffmpeg7
+Source: jellyfin-ffmpeg (7.1.2-2)
+Version: 7.1.2-2-bookworm
+Architecture: amd64
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 207180
+Depends: libbluray2 (>= 1:0.2.2), libc6 (>= 2.35), libelf1 (>= 0.142), libexpat1 (>= 2.0.1), libgcc-s1 (>= 3.4), libgmp10 (>= 2:6.2.1+dfsg1), libgnutls30 (>= 3.7.5), libmp3lame0 (>= 3.100), libopenmpt0 (>= 0.3.0), libopus0 (>= 1.1), libpciaccess0, libstdc++6 (>= 12), libtheora0 (>= 1.0), libudev1 (>= 183), libvorbis0a (>= 1.1.2), libvorbisenc2 (>= 1.1.2), libvpx7 (>= 1.12.0), libwebp7 (>= 1.2.4), libwebpmux3 (>= 1.2.4), libx11-xcb1 (>= 2:1.8.4), libx264-164 (>= 2:0.164.3095+gitbaee400), libx265-199 (>= 3.5), libxcb-dri3-0 (>= 1.13), libxcb-present0, libxcb-randr0 (>= 1.13), libxcb-shm0, libxcb-sync1, libxcb-xfixes0, libxcb1 (>= 1.9.2), libxshmfence1, libzstd1 (>= 1.5.2), libzvbi0 (>= 0.2.35), ocl-icd-libopencl1 | libopencl1, ocl-icd-libopencl1 (>= 1.0) | libopencl-1.2-1
+Suggests: intel-opencl-icd, intel-opencl-icd-legacy
+Conflicts: jellyfin-ffmpeg, jellyfin-ffmpeg5, jellyfin-ffmpeg6
+Replaces: jellyfin-ffmpeg, jellyfin-ffmpeg5, jellyfin-ffmpeg6
+Multi-Arch: foreign
+Homepage: https://ffmpeg.org/
+Priority: optional
+Section: video
+Filename: pool/main/j/jellyfin-ffmpeg/jellyfin-ffmpeg7_7.1.2-2-bookworm_amd64.deb
+Size: 45217920
+SHA512: 5c9d2c60848ec30e4ceae2940c065da933475dd4c8937784a70f22e62f591c76a3c0d9556705cbb79c7e4cfee61cc1653dc0841dea5bbf5c0fcca8f66c4b3503
+SHA256: 1ec50f46a4db3019291c4c4cb0d56bde34b85cd19e79f901ae8765b2fd3ee640
+SHA1: 766a87a1687e97a4194ea2fd556a388449382dda
+MD5sum: 31c027d9899da9688d044f44e723fb54
+Description: Tools for transcoding, streaming and playing of multimedia files
+ FFmpeg is the leading multimedia framework, able to decode, encode, transcode,
+ mux, demux, stream, filter and play pretty much anything that humans and
+ machines have created. It supports the most obscure ancient formats up to the
+ cutting edge.
+ .
+ This package contains a static build compatible with all Debian/Ubuntu
+ releases, designed to facilitate Jellyfin on systems with an unpatched version
+ of ffmpeg in their repository. Included files are:
+  * ffmpeg: a command line tool to convert multimedia files between formats
+  * ffprobe: a simple multimedia stream analyzer
+  * vainfo: a command line tool to get information about local VA-API devices
+
+Package: jellyfin-ffmpeg7
+Source: jellyfin-ffmpeg (7.1.2-1)
+Version: 7.1.2-1-bookworm
+Architecture: amd64
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 207180
+Depends: libbluray2 (>= 1:0.2.2), libc6 (>= 2.35), libelf1 (>= 0.142), libexpat1 (>= 2.0.1), libgcc-s1 (>= 3.4), libgmp10 (>= 2:6.2.1+dfsg1), libgnutls30 (>= 3.7.5), libmp3lame0 (>= 3.100), libopenmpt0 (>= 0.3.0), libopus0 (>= 1.1), libpciaccess0, libstdc++6 (>= 12), libtheora0 (>= 1.0), libudev1 (>= 183), libvorbis0a (>= 1.1.2), libvorbisenc2 (>= 1.1.2), libvpx7 (>= 1.12.0), libwebp7 (>= 1.2.4), libwebpmux3 (>= 1.2.4), libx11-xcb1 (>= 2:1.8.4), libx264-164 (>= 2:0.164.3095+gitbaee400), libx265-199 (>= 3.5), libxcb-dri3-0 (>= 1.13), libxcb-present0, libxcb-randr0 (>= 1.13), libxcb-shm0, libxcb-sync1, libxcb-xfixes0, libxcb1 (>= 1.9.2), libxshmfence1, libzstd1 (>= 1.5.2), libzvbi0 (>= 0.2.35), ocl-icd-libopencl1 | libopencl1, ocl-icd-libopencl1 (>= 1.0) | libopencl-1.2-1
+Suggests: intel-opencl-icd, intel-opencl-icd-legacy
+Conflicts: jellyfin-ffmpeg, jellyfin-ffmpeg5, jellyfin-ffmpeg6
+Replaces: jellyfin-ffmpeg, jellyfin-ffmpeg5, jellyfin-ffmpeg6
+Multi-Arch: foreign
+Homepage: https://ffmpeg.org/
+Priority: optional
+Section: video
+Filename: pool/main/j/jellyfin-ffmpeg/jellyfin-ffmpeg7_7.1.2-1-bookworm_amd64.deb
+Size: 45212000
+SHA512: 7fcd0a54249f64e1acfb73aedd441bae4f9721546adc802af9519490b49f6f2e5f22feb25b4c8083da1b14d6a22b7d68ca3493c7913463ba5199323e10c8d735
+SHA256: 6eec95f553ca591a9c9cc4133d1063a75de2da559a51538bdeb834a8fd9d12ff
+SHA1: aa2a16907a13e4a280a881af1703abc0b7340a17
+MD5sum: a4cedd302f573a475d17c6de04860958
+Description: Tools for transcoding, streaming and playing of multimedia files
+ FFmpeg is the leading multimedia framework, able to decode, encode, transcode,
+ mux, demux, stream, filter and play pretty much anything that humans and
+ machines have created. It supports the most obscure ancient formats up to the
+ cutting edge.
+ .
+ This package contains a static build compatible with all Debian/Ubuntu
+ releases, designed to facilitate Jellyfin on systems with an unpatched version
+ of ffmpeg in their repository. Included files are:
+  * ffmpeg: a command line tool to convert multimedia files between formats
+  * ffprobe: a simple multimedia stream analyzer
+  * vainfo: a command line tool to get information about local VA-API devices
+
+Package: jellyfin-ffmpeg7
+Source: jellyfin-ffmpeg (7.1.1-7)
+Version: 7.1.1-7-bookworm
+Architecture: amd64
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 204886
+Depends: libbluray2 (>= 1:0.2.2), libc6 (>= 2.35), libelf1 (>= 0.142), libexpat1 (>= 2.0.1), libgcc-s1 (>= 3.4), libgmp10 (>= 2:6.2.1+dfsg1), libgnutls30 (>= 3.7.5), libmp3lame0 (>= 3.100), libopenmpt0 (>= 0.3.0), libopus0 (>= 1.1), libpciaccess0, libstdc++6 (>= 12), libtheora0 (>= 1.0), libudev1 (>= 183), libvorbis0a (>= 1.1.2), libvorbisenc2 (>= 1.1.2), libvpx7 (>= 1.12.0), libwebp7 (>= 1.2.4), libwebpmux3 (>= 1.2.4), libx11-xcb1 (>= 2:1.8.4), libx264-164 (>= 2:0.164.3095+gitbaee400), libx265-199 (>= 3.5), libxcb-dri3-0 (>= 1.13), libxcb-present0, libxcb-randr0 (>= 1.13), libxcb-shm0, libxcb-sync1, libxcb-xfixes0, libxcb1 (>= 1.9.2), libxshmfence1, libzstd1 (>= 1.5.2), libzvbi0 (>= 0.2.35), ocl-icd-libopencl1 | libopencl1, ocl-icd-libopencl1 (>= 1.0) | libopencl-1.2-1
+Suggests: intel-opencl-icd, intel-opencl-icd-legacy
+Conflicts: jellyfin-ffmpeg, jellyfin-ffmpeg5, jellyfin-ffmpeg6
+Replaces: jellyfin-ffmpeg, jellyfin-ffmpeg5, jellyfin-ffmpeg6
+Multi-Arch: foreign
+Homepage: https://ffmpeg.org/
+Priority: optional
+Section: video
+Filename: pool/main/j/jellyfin-ffmpeg/jellyfin-ffmpeg7_7.1.1-7-bookworm_amd64.deb
+Size: 44818908
+SHA512: 8e77137e0a33a0055eb26ddb41c7d8eb3b3eeddd8179f6cb9b23ff85545cb77c6bf672ca575a0136059798d9cc71e44e54d1e605ee067e09df4ca4c45eb94405
+SHA256: cbefe384bb7b0b30e3969806748cfa6b31dfb94426011ad032dc355247e75d21
+SHA1: ac9d4d3706ffc9a651c10f1dcc1eab67be7494ef
+MD5sum: e02dad3f5372d92ee02ee66494058832
+Description: Tools for transcoding, streaming and playing of multimedia files
+ FFmpeg is the leading multimedia framework, able to decode, encode, transcode,
+ mux, demux, stream, filter and play pretty much anything that humans and
+ machines have created. It supports the most obscure ancient formats up to the
+ cutting edge.
+ .
+ This package contains a static build compatible with all Debian/Ubuntu
+ releases, designed to facilitate Jellyfin on systems with an unpatched version
+ of ffmpeg in their repository. Included files are:
+  * ffmpeg: a command line tool to convert multimedia files between formats
+  * ffprobe: a simple multimedia stream analyzer
+  * vainfo: a command line tool to get information about local VA-API devices
+
+Package: jellyfin-ffmpeg7
+Source: jellyfin-ffmpeg (7.1.1-6)
+Version: 7.1.1-6-bookworm
+Architecture: amd64
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 205436
+Depends: libbluray2 (>= 1:0.2.2), libc6 (>= 2.35), libelf1 (>= 0.142), libexpat1 (>= 2.0.1), libgcc-s1 (>= 3.4), libgmp10 (>= 2:6.2.1+dfsg1), libgnutls30 (>= 3.7.5), libmp3lame0 (>= 3.100), libopenmpt0 (>= 0.3.0), libopus0 (>= 1.1), libpciaccess0, libstdc++6 (>= 12), libtheora0 (>= 1.0), libudev1 (>= 183), libvorbis0a (>= 1.1.2), libvorbisenc2 (>= 1.1.2), libvpx7 (>= 1.12.0), libwebp7 (>= 1.2.4), libwebpmux3 (>= 1.2.4), libx11-xcb1 (>= 2:1.8.4), libx264-164 (>= 2:0.164.3095+gitbaee400), libx265-199 (>= 3.5), libxcb-dri3-0 (>= 1.13), libxcb-present0, libxcb-randr0 (>= 1.13), libxcb-shm0, libxcb-sync1, libxcb-xfixes0, libxcb1 (>= 1.9.2), libxshmfence1, libzstd1 (>= 1.5.2), libzvbi0 (>= 0.2.35), ocl-icd-libopencl1 | libopencl1, ocl-icd-libopencl1 (>= 1.0) | libopencl-1.2-1
+Suggests: intel-opencl-icd, intel-opencl-icd-legacy
+Conflicts: jellyfin-ffmpeg, jellyfin-ffmpeg5, jellyfin-ffmpeg6
+Replaces: jellyfin-ffmpeg, jellyfin-ffmpeg5, jellyfin-ffmpeg6
+Multi-Arch: foreign
+Homepage: https://ffmpeg.org/
+Priority: optional
+Section: video
+Filename: pool/main/j/jellyfin-ffmpeg/jellyfin-ffmpeg7_7.1.1-6-bookworm_amd64.deb
+Size: 44750788
+SHA512: 2536bbe35733d9635d65badfe2048b083c0ad90f14d40d3ff0b66f3c2ca37751d515db10efc1dfd2257a4100f5857375e1d7cb2ddc8dda1ef45980fb0f175d6b
+SHA256: bad8fbbb06ba168c75e2d4c8771eb4b1123588c0b7cbded7efcd2d38983df49b
+SHA1: 1d4040c20d7efb9766fbb6dd71baa307bab1a7c0
+MD5sum: dfe614bb35b8653e8c670ad547df4ca0
+Description: Tools for transcoding, streaming and playing of multimedia files
+ FFmpeg is the leading multimedia framework, able to decode, encode, transcode,
+ mux, demux, stream, filter and play pretty much anything that humans and
+ machines have created. It supports the most obscure ancient formats up to the
+ cutting edge.
+ .
+ This package contains a static build compatible with all Debian/Ubuntu
+ releases, designed to facilitate Jellyfin on systems with an unpatched version
+ of ffmpeg in their repository. Included files are:
+  * ffmpeg: a command line tool to convert multimedia files between formats
+  * ffprobe: a simple multimedia stream analyzer
+  * vainfo: a command line tool to get information about local VA-API devices
+
+Package: jellyfin-ffmpeg7
+Source: jellyfin-ffmpeg (7.1.1-5)
+Version: 7.1.1-5-bookworm
+Architecture: amd64
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 205168
+Depends: libbluray2 (>= 1:0.2.2), libc6 (>= 2.35), libelf1 (>= 0.142), libexpat1 (>= 2.0.1), libgcc-s1 (>= 3.4), libgmp10 (>= 2:6.2.1+dfsg1), libgnutls30 (>= 3.7.5), libmp3lame0 (>= 3.100), libopenmpt0 (>= 0.3.0), libopus0 (>= 1.1), libpciaccess0, libstdc++6 (>= 12), libtheora0 (>= 1.0), libudev1 (>= 183), libvorbis0a (>= 1.1.2), libvorbisenc2 (>= 1.1.2), libvpx7 (>= 1.12.0), libwebp7 (>= 1.2.4), libwebpmux3 (>= 1.2.4), libx11-xcb1 (>= 2:1.8.4), libx264-164 (>= 2:0.164.3095+gitbaee400), libx265-199 (>= 3.5), libxcb-dri3-0 (>= 1.13), libxcb-present0, libxcb-randr0 (>= 1.13), libxcb-shm0, libxcb-sync1, libxcb-xfixes0, libxcb1 (>= 1.9.2), libxshmfence1, libzstd1 (>= 1.5.2), libzvbi0 (>= 0.2.35), ocl-icd-libopencl1 | libopencl1, ocl-icd-libopencl1 (>= 1.0) | libopencl-1.2-1
+Suggests: intel-opencl-icd, intel-opencl-icd-legacy
+Conflicts: jellyfin-ffmpeg, jellyfin-ffmpeg5, jellyfin-ffmpeg6
+Replaces: jellyfin-ffmpeg, jellyfin-ffmpeg5, jellyfin-ffmpeg6
+Multi-Arch: foreign
+Homepage: https://ffmpeg.org/
+Priority: optional
+Section: video
+Filename: pool/main/j/jellyfin-ffmpeg/jellyfin-ffmpeg7_7.1.1-5-bookworm_amd64.deb
+Size: 44706792
+SHA512: 2308d721d219b873b63d9a63e53ab7c4fbf9cfe0d4456ba7210d0cc13af4dfadcc699a5a49264b97ed4f5f2f053f710a74b716ac5ee1d6211b1822dfbbf15a98
+SHA256: 9aad00561eb962b79b821014b12f14912807b033987e0eee5492a0eebdb40db6
+SHA1: 0cce5a777a96bf9b96db40f33236e333fead1fc5
+MD5sum: 9fe8bb55bf416ed5078b9ce6712adf1e
+Description: Tools for transcoding, streaming and playing of multimedia files
+ FFmpeg is the leading multimedia framework, able to decode, encode, transcode,
+ mux, demux, stream, filter and play pretty much anything that humans and
+ machines have created. It supports the most obscure ancient formats up to the
+ cutting edge.
+ .
+ This package contains a static build compatible with all Debian/Ubuntu
+ releases, designed to facilitate Jellyfin on systems with an unpatched version
+ of ffmpeg in their repository. Included files are:
+  * ffmpeg: a command line tool to convert multimedia files between formats
+  * ffprobe: a simple multimedia stream analyzer
+  * vainfo: a command line tool to get information about local VA-API devices
+
+Package: jellyfin-ffmpeg7
+Source: jellyfin-ffmpeg (7.1.1-4)
+Version: 7.1.1-4-bookworm
+Architecture: amd64
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 205172
+Depends: libbluray2 (>= 1:0.2.2), libc6 (>= 2.35), libelf1 (>= 0.142), libexpat1 (>= 2.0.1), libgcc-s1 (>= 3.4), libgmp10 (>= 2:6.2.1+dfsg1), libgnutls30 (>= 3.7.5), libmp3lame0 (>= 3.100), libopenmpt0 (>= 0.3.0), libopus0 (>= 1.1), libpciaccess0, libstdc++6 (>= 12), libtheora0 (>= 1.0), libudev1 (>= 183), libvorbis0a (>= 1.1.2), libvorbisenc2 (>= 1.1.2), libvpx7 (>= 1.12.0), libwebp7 (>= 1.2.4), libwebpmux3 (>= 1.2.4), libx11-xcb1 (>= 2:1.8.4), libx264-164 (>= 2:0.164.3095+gitbaee400), libx265-199 (>= 3.5), libxcb-dri3-0 (>= 1.13), libxcb-present0, libxcb-randr0 (>= 1.13), libxcb-shm0, libxcb-sync1, libxcb-xfixes0, libxcb1 (>= 1.9.2), libxshmfence1, libzstd1 (>= 1.5.2), libzvbi0 (>= 0.2.35), ocl-icd-libopencl1 | libopencl1, ocl-icd-libopencl1 (>= 1.0) | libopencl-1.2-1
+Suggests: intel-opencl-icd, intel-opencl-icd-legacy
+Conflicts: jellyfin-ffmpeg, jellyfin-ffmpeg5, jellyfin-ffmpeg6
+Replaces: jellyfin-ffmpeg, jellyfin-ffmpeg5, jellyfin-ffmpeg6
+Multi-Arch: foreign
+Homepage: https://ffmpeg.org/
+Priority: optional
+Section: video
+Filename: pool/main/j/jellyfin-ffmpeg/jellyfin-ffmpeg7_7.1.1-4-bookworm_amd64.deb
+Size: 44713412
+SHA512: dba451c65d2ac3a3a73cf34aa898c82fe5ac8076ab96c2b4e1a1b1c86862f6f841d7d301ef052c50a34abdea27365daab8fad360b9c786c3f19ae40bfcafb126
+SHA256: fff44c85f5c57ebbd99770b750d7ec9cd6b48613c0905c48fe07b34e728f6d03
+SHA1: ec8df58701dfafe1263fbfa9b0f5af4249c73a4d
+MD5sum: 8cd3f04b99ccecca3fe919324b006d04
+Description: Tools for transcoding, streaming and playing of multimedia files
+ FFmpeg is the leading multimedia framework, able to decode, encode, transcode,
+ mux, demux, stream, filter and play pretty much anything that humans and
+ machines have created. It supports the most obscure ancient formats up to the
+ cutting edge.
+ .
+ This package contains a static build compatible with all Debian/Ubuntu
+ releases, designed to facilitate Jellyfin on systems with an unpatched version
+ of ffmpeg in their repository. Included files are:
+  * ffmpeg: a command line tool to convert multimedia files between formats
+  * ffprobe: a simple multimedia stream analyzer
+  * vainfo: a command line tool to get information about local VA-API devices
+
+Package: jellyfin-ffmpeg7
+Source: jellyfin-ffmpeg (7.1.1-3)
+Version: 7.1.1-3-bookworm
+Architecture: amd64
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 204814
+Depends: libbluray2 (>= 1:0.2.2), libc6 (>= 2.35), libelf1 (>= 0.142), libexpat1 (>= 2.0.1), libgcc-s1 (>= 3.4), libgmp10 (>= 2:6.2.1+dfsg1), libgnutls30 (>= 3.7.5), libmp3lame0 (>= 3.100), libopenmpt0 (>= 0.3.0), libopus0 (>= 1.1), libpciaccess0, libstdc++6 (>= 12), libtheora0 (>= 1.0), libudev1 (>= 183), libvorbis0a (>= 1.1.2), libvorbisenc2 (>= 1.1.2), libvpx7 (>= 1.12.0), libwebp7 (>= 1.2.4), libwebpmux3 (>= 1.2.4), libx11-xcb1 (>= 2:1.8.4), libx264-164 (>= 2:0.164.3095+gitbaee400), libx265-199 (>= 3.5), libxcb-dri3-0 (>= 1.13), libxcb-present0, libxcb-randr0 (>= 1.13), libxcb-shm0, libxcb-sync1, libxcb-xfixes0, libxcb1 (>= 1.9.2), libxshmfence1, libzstd1 (>= 1.5.2), libzvbi0 (>= 0.2.35), ocl-icd-libopencl1 | libopencl1, ocl-icd-libopencl1 (>= 1.0) | libopencl-1.2-1
+Suggests: intel-opencl-icd, intel-opencl-icd-legacy
+Conflicts: jellyfin-ffmpeg, jellyfin-ffmpeg5, jellyfin-ffmpeg6
+Replaces: jellyfin-ffmpeg, jellyfin-ffmpeg5, jellyfin-ffmpeg6
+Multi-Arch: foreign
+Homepage: https://ffmpeg.org/
+Priority: optional
+Section: video
+Filename: pool/main/j/jellyfin-ffmpeg/jellyfin-ffmpeg7_7.1.1-3-bookworm_amd64.deb
+Size: 44782256
+SHA512: 5f5cef45e3884fa889a0eb716498cca348510effb84c18b851a2eb083471d960bd8b554c1d6d988bf4551dea7756b50f8c9f792fbadf2ae3c492e0308b8052e5
+SHA256: e312be2249016151d706795afe377541390c79e8b3e652b7d696a93bec9de334
+SHA1: 1dbd850541259bdff7fee02d081f070c4daec4b8
+MD5sum: c129eb6232710a857fa7a6c808ad1da4
+Description: Tools for transcoding, streaming and playing of multimedia files
+ FFmpeg is the leading multimedia framework, able to decode, encode, transcode,
+ mux, demux, stream, filter and play pretty much anything that humans and
+ machines have created. It supports the most obscure ancient formats up to the
+ cutting edge.
+ .
+ This package contains a static build compatible with all Debian/Ubuntu
+ releases, designed to facilitate Jellyfin on systems with an unpatched version
+ of ffmpeg in their repository. Included files are:
+  * ffmpeg: a command line tool to convert multimedia files between formats
+  * ffprobe: a simple multimedia stream analyzer
+  * vainfo: a command line tool to get information about local VA-API devices
+
+Package: jellyfin-ffmpeg7
+Source: jellyfin-ffmpeg (7.1.1-2)
+Version: 7.1.1-2-bookworm
+Architecture: amd64
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 205365
+Depends: libbluray2 (>= 1:0.2.2), libc6 (>= 2.35), libelf1 (>= 0.142), libexpat1 (>= 2.0.1), libgcc-s1 (>= 3.4), libgmp10 (>= 2:6.2.1+dfsg1), libgnutls30 (>= 3.7.5), libmp3lame0 (>= 3.100), libopenmpt0 (>= 0.3.0), libopus0 (>= 1.1), libpciaccess0, libstdc++6 (>= 12), libtheora0 (>= 1.0), libudev1 (>= 183), libvorbis0a (>= 1.1.2), libvorbisenc2 (>= 1.1.2), libvpx7 (>= 1.12.0), libwebp7 (>= 1.2.4), libwebpmux3 (>= 1.2.4), libx11-xcb1 (>= 2:1.8.4), libx264-164 (>= 2:0.164.3095+gitbaee400), libx265-199 (>= 3.5), libxcb-dri3-0 (>= 1.13), libxcb-present0, libxcb-randr0 (>= 1.13), libxcb-shm0, libxcb-sync1, libxcb-xfixes0, libxcb1 (>= 1.9.2), libxshmfence1, libzstd1 (>= 1.5.2), libzvbi0 (>= 0.2.35), ocl-icd-libopencl1 | libopencl1, ocl-icd-libopencl1 (>= 1.0) | libopencl-1.2-1
+Conflicts: jellyfin-ffmpeg, jellyfin-ffmpeg5, jellyfin-ffmpeg6
+Replaces: jellyfin-ffmpeg, jellyfin-ffmpeg5, jellyfin-ffmpeg6
+Multi-Arch: foreign
+Homepage: https://ffmpeg.org/
+Priority: optional
+Section: video
+Filename: pool/main/j/jellyfin-ffmpeg/jellyfin-ffmpeg7_7.1.1-2-bookworm_amd64.deb
+Size: 44810380
+SHA512: 1af2908b987b6dc6ac9d910a0bb5f58c39f1b47295844c944ca1565cda805bd6fa96434027ff9db7df914bd08585e985a7b75c9e05bb82a4d1cf6ca5163c7f43
+SHA256: 077956841187eb041172a7893f8c70ebb516f9740ac7821d5d2c37610dfdfdd1
+SHA1: d610719aac3b16f9381531000e351d1771744364
+MD5sum: 32951c8af459bbc687283a3aac520526
+Description: Tools for transcoding, streaming and playing of multimedia files
+ FFmpeg is the leading multimedia framework, able to decode, encode, transcode,
+ mux, demux, stream, filter and play pretty much anything that humans and
+ machines have created. It supports the most obscure ancient formats up to the
+ cutting edge.
+ .
+ This package contains a static build compatible with all Debian/Ubuntu
+ releases, designed to facilitate Jellyfin on systems with an unpatched version
+ of ffmpeg in their repository. Included files are:
+  * ffmpeg: a command line tool to convert multimedia files between formats
+  * ffprobe: a simple multimedia stream analyzer
+  * vainfo: a command line tool to get information about local VA-API devices
+
+Package: jellyfin-ffmpeg7
+Source: jellyfin-ffmpeg (7.1.1-1)
+Version: 7.1.1-1-bookworm
+Architecture: amd64
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 205312
+Depends: libbluray2 (>= 1:0.2.2), libc6 (>= 2.35), libelf1 (>= 0.142), libexpat1 (>= 2.0.1), libgcc-s1 (>= 3.4), libgmp10 (>= 2:6.2.1+dfsg1), libgnutls30 (>= 3.7.5), libmp3lame0 (>= 3.100), libopenmpt0 (>= 0.3.0), libopus0 (>= 1.1), libpciaccess0, libstdc++6 (>= 12), libtheora0 (>= 1.0), libudev1 (>= 183), libvorbis0a (>= 1.1.2), libvorbisenc2 (>= 1.1.2), libvpx7 (>= 1.12.0), libwebp7 (>= 1.2.4), libwebpmux3 (>= 1.2.4), libx11-xcb1 (>= 2:1.8.4), libx264-164 (>= 2:0.164.3095+gitbaee400), libx265-199 (>= 3.5), libxcb-dri3-0 (>= 1.13), libxcb-present0, libxcb-randr0 (>= 1.13), libxcb-shm0, libxcb-sync1, libxcb-xfixes0, libxcb1 (>= 1.9.2), libxshmfence1, libzstd1 (>= 1.5.2), libzvbi0 (>= 0.2.35), ocl-icd-libopencl1 | libopencl1, ocl-icd-libopencl1 (>= 1.0) | libopencl-1.2-1
+Conflicts: jellyfin-ffmpeg, jellyfin-ffmpeg5, jellyfin-ffmpeg6
+Replaces: jellyfin-ffmpeg, jellyfin-ffmpeg5, jellyfin-ffmpeg6
+Multi-Arch: foreign
+Homepage: https://ffmpeg.org/
+Priority: optional
+Section: video
+Filename: pool/main/j/jellyfin-ffmpeg/jellyfin-ffmpeg7_7.1.1-1-bookworm_amd64.deb
+Size: 44796576
+SHA512: 942105a7b24ccee7c5c40190da72b170e31b40977644a270863fc266076b4c3fc87d6d2f7130ea9e836ded163074522ffd1126451c849ff52315970483d08a60
+SHA256: 7a3cdeae66f92d14ebba83d81e69805abc792c09bce53f3fcf2d4642c29938ad
+SHA1: c4c0650c2a0592ac983c4afe7592b7d02341564c
+MD5sum: 75f5eed0403c441abd5ba3452ce7054f
+Description: Tools for transcoding, streaming and playing of multimedia files
+ FFmpeg is the leading multimedia framework, able to decode, encode, transcode,
+ mux, demux, stream, filter and play pretty much anything that humans and
+ machines have created. It supports the most obscure ancient formats up to the
+ cutting edge.
+ .
+ This package contains a static build compatible with all Debian/Ubuntu
+ releases, designed to facilitate Jellyfin on systems with an unpatched version
+ of ffmpeg in their repository. Included files are:
+  * ffmpeg: a command line tool to convert multimedia files between formats
+  * ffprobe: a simple multimedia stream analyzer
+  * vainfo: a command line tool to get information about local VA-API devices
+
+Package: jellyfin-ffmpeg7
+Source: jellyfin-ffmpeg (7.0.2-9)
+Version: 7.0.2-9-bookworm
+Architecture: amd64
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 199862
+Depends: libbluray2 (>= 1:0.2.2), libc6 (>= 2.35), libelf1 (>= 0.142), libexpat1 (>= 2.0.1), libgcc-s1 (>= 3.4), libgmp10 (>= 2:6.2.1+dfsg1), libgnutls30 (>= 3.7.5), libllvm16, libmp3lame0 (>= 3.100), libopenmpt0 (>= 0.3.0), libopus0 (>= 1.1), libpciaccess0, libstdc++6 (>= 12), libtheora0 (>= 1.0), libudev1 (>= 183), libvorbis0a (>= 1.1.2), libvorbisenc2 (>= 1.1.2), libvpx7 (>= 1.12.0), libwebp7 (>= 1.2.4), libwebpmux3 (>= 1.2.4), libx11-xcb1 (>= 2:1.8.4), libx264-164 (>= 2:0.164.3095+gitbaee400), libx265-199 (>= 3.5), libxcb-dri2-0 (>= 1.8), libxcb-dri3-0 (>= 1.13), libxcb-present0, libxcb-randr0 (>= 1.13), libxcb-shm0, libxcb-sync1, libxcb-xfixes0, libxcb1 (>= 1.9.2), libxshmfence1, libzstd1 (>= 1.5.2), libzvbi0 (>= 0.2.35), ocl-icd-libopencl1 | libopencl1, ocl-icd-libopencl1 (>= 1.0) | libopencl-1.2-1
+Conflicts: jellyfin-ffmpeg, jellyfin-ffmpeg5, jellyfin-ffmpeg6
+Replaces: jellyfin-ffmpeg, jellyfin-ffmpeg5, jellyfin-ffmpeg6
+Multi-Arch: foreign
+Homepage: https://ffmpeg.org/
+Priority: optional
+Section: video
+Filename: pool/main/j/jellyfin-ffmpeg/jellyfin-ffmpeg7_7.0.2-9-bookworm_amd64.deb
+Size: 43197788
+SHA256: cd52577405c24f126284f1959288adefe30f8880a9ac6f3125c6eb4b5228ac59
+SHA1: 12ecc38feee38f51371a78564914db35e68362b9
+MD5sum: 96fed0d9cf51a66182ec268dc3bedab6
+Description: Tools for transcoding, streaming and playing of multimedia files
+ FFmpeg is the leading multimedia framework, able to decode, encode, transcode,
+ mux, demux, stream, filter and play pretty much anything that humans and
+ machines have created. It supports the most obscure ancient formats up to the
+ cutting edge.
+ .
+ This package contains a static build compatible with all Debian/Ubuntu
+ releases, designed to facilitate Jellyfin on systems with an unpatched version
+ of ffmpeg in their repository. Included files are:
+  * ffmpeg: a command line tool to convert multimedia files between formats
+  * ffprobe: a simple multimedia stream analyzer
+  * vainfo: a command line tool to get information about local VA-API devices
+
+Package: jellyfin-media-player
+Version: 1.13.0+deb12
+Architecture: amd64
+Maintainer: Izzie Walton <izzie@iwalton.com>, Joshua Boniface <joshua@boniface.me>
+Installed-Size: 1284
+Depends: libc6 (>= 2.34), libcec6 (>= 6.0.2), libgcc-s1 (>= 3.0), libmpv2 (>= 0.29), libqt6core6 (>= 6.4.0), libqt6dbus6 (>= 6.1.2), libqt6gui6 (>= 6.2.0), libqt6network6 (>= 6.3.0), libqt6opengl6 (>= 6.1.2), libqt6qml6 (>= 6.2.0), libqt6quick6 (>= 6.2.0), libqt6webchannel6 (>= 6.2.1), libqt6webenginecore6 (>= 6.2.2), libqt6webenginecore6-bin (>= 6.2.2), libqt6webenginequick6 (>= 6.2.2), libqt6widgets6 (>= 6.1.2), libqt6xml6 (>= 6.1.2), libsdl2-2.0-0 (>= 2.0.12), libstdc++6 (>= 5.2), libx11-6, libxrandr2 (>= 2:1.2.99.3), qml6-module-qtwebengine, qml6-module-qtwebchannel, qml6-module-qtquick-controls, qml6-module-qtquick-window, qml6-module-qtqml-workerscript, qml6-module-qtquick-templates
+Homepage: https://jellyfin.org/
+Priority: optional
+Section: video
+Filename: pool/main/j/jellyfin-media-player/jellyfin-media-player_1.13.0+deb12_amd64.deb
+Size: 525210
+SHA512: 65036ab28ef82c6285a628701dd0f90a458381205d1d256e2da09affdff538f3f1640e1f420c167bec4cbc5809b8883773b3eae4f3a62c30c9d76f5c9281a826
+SHA256: 5dad938ad589db05e54ac065fd6418165713149773b07673e9b739f667be487c
+SHA1: 2986f036c559bc7e73085bf634e317345a392c26
+MD5sum: 53e9598ec94a15035e43e69c398ab3fa
+Description: Jellyfin is the Free Software Media System.
+ This package provides the Jellyfin desktop media player.
+
+Package: jellyfin-media-player
+Version: 1.12.0+deb12
+Architecture: amd64
+Maintainer: Izzie Walton <izzie@iwalton.com>, Joshua Boniface <joshua@boniface.me>
+Installed-Size: 1247
+Depends: libc6 (>= 2.34), libcec6 (>= 6.0.2), libgcc-s1 (>= 3.0), libmpv2 (>= 0.29), libqt5core5a (>= 5.15.1), libqt5dbus5 (>= 5.14.1), libqt5gui5 (>= 5.8.0) | libqt5gui5-gles (>= 5.8.0), libqt5network5 (>= 5.6.0~beta), libqt5qml5 (>= 5.1.0), libqt5quick5 (>= 5.15.1) | libqt5quick5-gles (>= 5.15.1), libqt5webchannel5 (>= 5.6.1), libqt5webengine5 (>= 5.7.1), libqt5widgets5 (>= 5.0.2), libqt5x11extras5 (>= 5.6.0), libqt5xml5 (>= 5.0.2), libsdl2-2.0-0 (>= 2.0.12), libstdc++6 (>= 5.2), libx11-6, libxrandr2 (>= 2:1.2.99.3), qml-module-qtwebengine, qml-module-qtwebchannel, qml-module-qtquick-controls
+Homepage: https://jellyfin.org/
+Priority: optional
+Section: video
+Filename: pool/main/j/jellyfin-media-player/jellyfin-media-player_1.12.0+deb12_amd64.deb
+Size: 491542
+SHA256: 30642c4618ca498fc3c946a4865d2dd47545f8f82386aad5d7732551f8bac5b9
+SHA1: df811b24fdfbcb40e477a28aaa2e9d242094bb76
+MD5sum: 31d2558bddcfda8610b2c6b43aeab12b
+Description: Jellyfin is the Free Software Media System.
+ This package provides the Jellyfin desktop media player.
+
+Package: jellyfin-server
+Source: jellyfin
+Version: 10.11.8+deb12
+Architecture: amd64
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 172451
+Depends: libfontconfig1, libjemalloc2, adduser, libicu72
+Recommends: jellyfin-web, sudo, jellyfin-ffmpeg7 | ffmpeg
+Homepage: https://jellyfin.org
+Priority: optional
+Section: misc
+Filename: pool/main/j/jellyfin/jellyfin-server_10.11.8+deb12_amd64.deb
+Size: 52359546
+SHA512: a403d87ac173daf0d425b8a142b55d47f783b96059cec5d998a48ceaaf6bf01dc2bb30cfb3d463bb01026b8b0fb5d208d4f23ec0e3a13a85f9a63570c843d3d5
+SHA256: 9bf2ea980b8f81d150402ae393835167dcb740441af5935c6b422e2204853f9e
+SHA1: 5f0c805e77c0308be6cc66ee8102b46a29db49cc
+MD5sum: f1a7f5050dc4504ec278d0e12b5ad519
+Description: Jellyfin is the Free Software Media System.
+ This package provides the Jellyfin server backend and API.
+
+Package: jellyfin-server
+Source: jellyfin
+Version: 10.11.7+deb12
+Architecture: amd64
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 172450
+Depends: libfontconfig1, libjemalloc2, adduser, libicu72
+Recommends: jellyfin-web, sudo, jellyfin-ffmpeg7 | ffmpeg
+Homepage: https://jellyfin.org
+Priority: optional
+Section: misc
+Filename: pool/main/j/jellyfin/jellyfin-server_10.11.7+deb12_amd64.deb
+Size: 52363610
+SHA512: 947a98a8a9f883e54cd04fbb553a4762db6994493a5fe41a81de6151a3bf731ac6396269c675fc4e4e4d95f08068f3ece085ed8483ccd07e5e9757fb675d0eb6
+SHA256: 2d01decd4be43819b5484010a1bec7fc82f009a1961f359f288d5aa458538781
+SHA1: 3b5886718071cfba685e287a682d0f172003ba1a
+MD5sum: 3d0236aa447047c89777d74fb2e7a931
+Description: Jellyfin is the Free Software Media System.
+ This package provides the Jellyfin server backend and API.
+
+Package: jellyfin-server
+Source: jellyfin
+Version: 10.11.6+deb12
+Architecture: amd64
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 172430
+Depends: libfontconfig1, libjemalloc2, adduser, libicu72
+Recommends: jellyfin-web, sudo, jellyfin-ffmpeg7 | ffmpeg
+Homepage: https://jellyfin.org
+Priority: optional
+Section: misc
+Filename: pool/main/j/jellyfin/jellyfin-server_10.11.6+deb12_amd64.deb
+Size: 52353302
+SHA512: 688c58a8e5e787d48f24a4762d6883b5317271c16265dab24814c9ca5a2bfcb1ebe95e4845e9af01169d4fe5abf2fbd06c768c23169cc35f1efd5091bcca1cd7
+SHA256: bdf37bb8118ad37c0d7b2609c7697c1a10dd0c7267444c1fd81c3dc138a4d360
+SHA1: f533a512f28995b522efdac213e78d917beb0a50
+MD5sum: 7d548eca51236b9fedf3db521c7e0bcf
+Description: Jellyfin is the Free Software Media System.
+ This package provides the Jellyfin server backend and API.
+
+Package: jellyfin-server
+Source: jellyfin
+Version: 10.11.5+deb12
+Architecture: amd64
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 172421
+Depends: libfontconfig1, libjemalloc2, adduser, libicu72
+Recommends: jellyfin-web, sudo, jellyfin-ffmpeg7 | ffmpeg
+Homepage: https://jellyfin.org
+Priority: optional
+Section: misc
+Filename: pool/main/j/jellyfin/jellyfin-server_10.11.5+deb12_amd64.deb
+Size: 52354790
+SHA512: 5f1ae9abbd951109bcef221967947cb0b48bae2d87c52a99cc4e8cf3866d4c15f6af1ab3045b2aec019af196adc73fb1568ae63a0426a4ea76d8f3d92d593f86
+SHA256: 8192f41cb1c8d0702b2bdde07ccc550261478cbd75d45730930d89b4ca89fd53
+SHA1: 03ae766ee067e5d7c3ce9d4c2bd2d84496d8f62f
+MD5sum: 64f489664137672d865566d73c13b585
+Description: Jellyfin is the Free Software Media System.
+ This package provides the Jellyfin server backend and API.
+
+Package: jellyfin-server
+Source: jellyfin
+Version: 10.11.4+deb12
+Architecture: amd64
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 172413
+Depends: libfontconfig1, libjemalloc2, adduser, libicu72
+Recommends: jellyfin-web, sudo, jellyfin-ffmpeg7 | ffmpeg
+Homepage: https://jellyfin.org
+Priority: optional
+Section: misc
+Filename: pool/main/j/jellyfin/jellyfin-server_10.11.4+deb12_amd64.deb
+Size: 52361522
+SHA512: ce8179d64e93952b22d040552447023fa61241bba93e885efdfb4c4f9ed7d5d99c1d338fd913b106feadaf135ad97be877a730ca19eafb258bfe4d4465e896c7
+SHA256: e8438a28c596f5ce7dee6a825419241186da47c2bd51caa9a93cdf91a1267585
+SHA1: 672f3846130408cad6116f6eb97e84cc08091a18
+MD5sum: 98e0debc4332e3b75ed1ae689701bf1a
+Description: Jellyfin is the Free Software Media System.
+ This package provides the Jellyfin server backend and API.
+
+Package: jellyfin-server
+Source: jellyfin
+Version: 10.11.3+deb12
+Architecture: amd64
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 172408
+Depends: libfontconfig1, libjemalloc2, adduser, libicu72
+Recommends: jellyfin-web, sudo, jellyfin-ffmpeg7 | ffmpeg
+Homepage: https://jellyfin.org
+Priority: optional
+Section: misc
+Filename: pool/main/j/jellyfin/jellyfin-server_10.11.3+deb12_amd64.deb
+Size: 52345666
+SHA512: ad7674853de5ef92b8d4dc3fa0772f30756029d235d83a008481ff6aa795464ff698d3d8393543cbeaf06e9c804b86da4d3a0097778696026184b048cd1549d5
+SHA256: 2c9e2491dae71dc9ac6a61d799f317a6c4bf2cab060a55eda3d61647539b93e4
+SHA1: b1a003b2a2c5a5c572c5000a7d912d624b1dc451
+MD5sum: 1a208d07b6edce873e1b15ee1b2f8b39
+Description: Jellyfin is the Free Software Media System.
+ This package provides the Jellyfin server backend and API.
+
+Package: jellyfin-server
+Source: jellyfin
+Version: 10.11.2+deb12
+Architecture: amd64
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 172399
+Depends: libfontconfig1, libjemalloc2, adduser, libicu72
+Recommends: jellyfin-web, sudo, jellyfin-ffmpeg7 | ffmpeg
+Homepage: https://jellyfin.org
+Priority: optional
+Section: misc
+Filename: pool/main/j/jellyfin/jellyfin-server_10.11.2+deb12_amd64.deb
+Size: 52300066
+SHA512: 42c777d004a3ebc9144f7c4c29a94ea894034f8a4fb7cda947fe411aff57474284069b1a8f57a345fe58c24d669e1ef091edd82a88bc6850916351462dc17e1d
+SHA256: 4daaf308f6b59a92ca3863889ebbd236a10cbe0be5ed04ce8215312ac1c1f8d7
+SHA1: 8779f2cb1380c61374ea86120a1b0c344dbb3a33
+MD5sum: d7286f8d1233277bd011fe67c7be6304
+Description: Jellyfin is the Free Software Media System.
+ This package provides the Jellyfin server backend and API.
+
+Package: jellyfin-server
+Source: jellyfin
+Version: 10.11.1+deb12
+Architecture: amd64
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 172397
+Depends: libfontconfig1, libjemalloc2, adduser, libicu72
+Recommends: jellyfin-web, sudo, jellyfin-ffmpeg7 | ffmpeg
+Homepage: https://jellyfin.org
+Priority: optional
+Section: misc
+Filename: pool/main/j/jellyfin/jellyfin-server_10.11.1+deb12_amd64.deb
+Size: 52301830
+SHA512: aad2ecac9f8bc46dbe6b6ced8b8e3c3a6598e5176cb2951a7fb44ab8d50c9ee07eb91df737cada7c2458c03b9405f7ec34d17737137efb0cf76477700a2eace3
+SHA256: f658dd4be55cbe311da9763100a9f6238dd92b409f25b4f6f21a4e5b69950724
+SHA1: 7b0be5cb44b53901964ac0cc275af85805d6a939
+MD5sum: 3c52f89b79e0ac174db7b2af85f007db
+Description: Jellyfin is the Free Software Media System.
+ This package provides the Jellyfin server backend and API.
+
+Package: jellyfin-server
+Source: jellyfin
+Version: 10.11.0+deb12
+Architecture: amd64
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 172382
+Depends: libfontconfig1, libjemalloc2, adduser, libicu72
+Recommends: jellyfin-web, sudo, jellyfin-ffmpeg7 | ffmpeg
+Homepage: https://jellyfin.org
+Priority: optional
+Section: misc
+Filename: pool/main/j/jellyfin/jellyfin-server_10.11.0+deb12_amd64.deb
+Size: 52308626
+SHA512: 6e9ff623150083f19db443defdc836989049a4e1f7233d7736929403dea34cd735308602c850494fcfe493a46b271154aa28490809c9a9313a0d01307d73ae94
+SHA256: e98b8be5af2543996d8b904d0c2ed8ad2d94ba3b8fe9117401e99fa67a293e94
+SHA1: fe358fb89d116a5fbed6de322a43bb76a0f3c31c
+MD5sum: e490789e94eecccb7a4638833018142d
+Description: Jellyfin is the Free Software Media System.
+ This package provides the Jellyfin server backend and API.
+
+Package: jellyfin-server
+Source: jellyfin
+Version: 10.10.7+deb12
+Architecture: amd64
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 153166
+Depends: libfontconfig1, adduser
+Recommends: jellyfin-web, sudo, jellyfin-ffmpeg7 | ffmpeg
+Homepage: https://jellyfin.org
+Priority: optional
+Section: misc
+Filename: pool/main/j/jellyfin/jellyfin-server_10.10.7+deb12_amd64.deb
+Size: 46843506
+SHA512: fd2a28166e8317e67d0cb86cf178eef95ec15c6a61231853b3defe109c2bda7403ba441298df5901028dc556cf31b876f1f3b9388a8f6997cce19f826374d726
+SHA256: b72f60da5a763f30918def695dfcc74d3424e65c1dbfdd9822941d8764096854
+SHA1: 959c801b5e83d511f125d65cc20a662a6692f594
+MD5sum: 7846d21db991109e8eb27c1e0a33a437
+Description: Jellyfin is the Free Software Media System.
+ This package provides the Jellyfin server backend and API.
+
+Package: jellyfin-server
+Source: jellyfin
+Version: 10.10.6+deb12
+Architecture: amd64
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 153152
+Depends: libfontconfig1, adduser
+Recommends: jellyfin-web, sudo, jellyfin-ffmpeg7 | ffmpeg
+Homepage: https://jellyfin.org
+Priority: optional
+Section: misc
+Filename: pool/main/j/jellyfin/jellyfin-server_10.10.6+deb12_amd64.deb
+Size: 46884606
+SHA256: b6e48b793b320e3059fd0a33c3e01237466b3d7b84fcb9a6176006b85d384ec9
+SHA1: a0843e72f9352ac77e3205f793409d1318e02d1f
+MD5sum: 6eda552d78b568b3eb914f2266c46b54
+Description: Jellyfin is the Free Software Media System.
+ This package provides the Jellyfin server backend and API.
+
+Package: jellyfin-server
+Source: jellyfin
+Version: 10.9.10+deb12
+Architecture: amd64
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 151771
+Depends: libfontconfig1, adduser
+Recommends: jellyfin-web, sudo, ffmpeg | jellyfin-ffmpeg6
+Homepage: https://jellyfin.org
+Priority: optional
+Section: misc
+Filename: pool/main/j/jellyfin/jellyfin-server_10.9.10+deb12_amd64.deb
+Size: 46320314
+SHA512: 0cd1587821705d6c8a770e78578ad4b32c2a9c8ee2ecd8cc3498d22cf4a423ec77a846c0603a8fec77263a54d452ee61481d3eec621edd8adcd69612e5ad54d8
+SHA256: 210d0fd714ac859d661926a20795a9020f1c829e64b233180df65b64aa6398ef
+SHA1: 1925958a698a219103e08657ea13612c35c4f688
+MD5sum: fe005294c4010a472d05b86f2bdbc125
+Description: Jellyfin is the Free Software Media System.
+ This package provides the Jellyfin server backend and API.
+
+Package: jellyfin-web
+Source: jellyfin
+Version: 10.11.8+deb12
+Architecture: all
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 56942
+Recommends: jellyfin-server
+Homepage: https://jellyfin.org
+Priority: optional
+Section: misc
+Filename: pool/main/j/jellyfin/jellyfin-web_10.11.8+deb12_all.deb
+Size: 31900622
+SHA512: 58c6f3b663c5abb3b2b13e29080bb19b1ce0a5ba3a7f7459c4aa3c0114f1860f655839adaeb920554461ed94927197a105ab7a9a7e72a51c1dcb0281ea6b1ca8
+SHA256: d84c2a36718ee4978f15b900e089f91cb97102d9dad57f8f1aae12fe71f9a4b4
+SHA1: a70501ff37fd6b59b99a5a18047817325e51b642
+MD5sum: d38ab0516132fd86b44c6795aa71ebd1
+Description: Jellyfin is the Free Software Media System.
+ This package provides the Jellyfin web client.
+
+Package: jellyfin-web
+Source: jellyfin
+Version: 10.11.7+deb12
+Architecture: all
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 56941
+Recommends: jellyfin-server
+Homepage: https://jellyfin.org
+Priority: optional
+Section: misc
+Filename: pool/main/j/jellyfin/jellyfin-web_10.11.7+deb12_all.deb
+Size: 31900982
+SHA512: 0e56e229147992e3ac89ed0d655ad43394b814eabfea7d8e8a3205c5a26d8402521569bdd956eb59a75c7ccf10775eb17096fff7994924c415b086df06909a7f
+SHA256: 9644a9358219918f11aa2a1ab199901d07288d323c67da84bc310630de5a8358
+SHA1: 45b1688439a15f2af61e594190b5692aaa8bbc3e
+MD5sum: b7bc6b7870643c5ea3d56ece4a249928
+Description: Jellyfin is the Free Software Media System.
+ This package provides the Jellyfin web client.
+
+Package: jellyfin-web
+Source: jellyfin
+Version: 10.11.6+deb12
+Architecture: all
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 56936
+Recommends: jellyfin-server
+Homepage: https://jellyfin.org
+Priority: optional
+Section: misc
+Filename: pool/main/j/jellyfin/jellyfin-web_10.11.6+deb12_all.deb
+Size: 31902982
+SHA512: a67f74170401431cd66093a895c5a89ce269b725a955ba37de899f0262d88106af741d3c64e714d53cd3a88622672c1c69573d6eb496c6d65f5606555a8de8b6
+SHA256: d0d917002423209e529140200ef6eefffe1d22f749a17433c13cea01f248d212
+SHA1: 636b022fbfe0cace565ac4d6c4bfd393885390cf
+MD5sum: 17613185b69258700769e66af10318ee
+Description: Jellyfin is the Free Software Media System.
+ This package provides the Jellyfin web client.
+
+Package: jellyfin-web
+Source: jellyfin
+Version: 10.11.5+deb12
+Architecture: all
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 56932
+Recommends: jellyfin-server
+Homepage: https://jellyfin.org
+Priority: optional
+Section: misc
+Filename: pool/main/j/jellyfin/jellyfin-web_10.11.5+deb12_all.deb
+Size: 31899634
+SHA512: a43c3f619b2d4310f1a25ea7789c0991e11e0300ba433a8be1955c9228a3514965a4dea3a0530299f5b8b62245d18388a7f6ffcaaee177fa79d0a079003f63c9
+SHA256: 5c5468222e360810f92248371cc1acce76fe6d893d6cd66c2cf02aadcecb03eb
+SHA1: 3f90281acd17597da3750326979386f8312a220a
+MD5sum: d7a83a33b8d8be64284a242af7a6c277
+Description: Jellyfin is the Free Software Media System.
+ This package provides the Jellyfin web client.
+
+Package: jellyfin-web
+Source: jellyfin
+Version: 10.11.4+deb12
+Architecture: all
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 56932
+Recommends: jellyfin-server
+Homepage: https://jellyfin.org
+Priority: optional
+Section: misc
+Filename: pool/main/j/jellyfin/jellyfin-web_10.11.4+deb12_all.deb
+Size: 31902702
+SHA512: 77a42fc7b746f09311daf7002759d07ee9706b30b844f8af8ab592c3d22824e7c64777420ce680e05d0c22c833f8df5ef6feecc2aeb75f4d67317b69f0c1e674
+SHA256: b6c855ee0177d48e89d7ab1d29ee981e0f99f174f4a4745286a60609524d71a1
+SHA1: 73cfcc8b8084323e6c0ec14e202b24da3fb05155
+MD5sum: 3abffa45d0db6a5d5b2daa2771188082
+Description: Jellyfin is the Free Software Media System.
+ This package provides the Jellyfin web client.
+
+Package: jellyfin-web
+Source: jellyfin
+Version: 10.11.3+deb12
+Architecture: all
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 56932
+Recommends: jellyfin-server
+Homepage: https://jellyfin.org
+Priority: optional
+Section: misc
+Filename: pool/main/j/jellyfin/jellyfin-web_10.11.3+deb12_all.deb
+Size: 31898994
+SHA512: f1c0d6207ea6c819d1eaa35ac298f24c91bf280ca2116618bc34250da236c11c934f27c8db3b419af1b29f22f38cff8664f3ae460cf06e01095c77a1b54d71c4
+SHA256: 5fdcf7e631210a158f31d377def1f2a908c3bd9398b3c891a157af725ab9080b
+SHA1: 9992b70b887290acff48819af641d04df1840b42
+MD5sum: 65ba385276fd29d74bc8dedde6bf6f52
+Description: Jellyfin is the Free Software Media System.
+ This package provides the Jellyfin web client.
+
+Package: jellyfin-web
+Source: jellyfin
+Version: 10.11.2+deb12
+Architecture: all
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 56932
+Recommends: jellyfin-server
+Homepage: https://jellyfin.org
+Priority: optional
+Section: misc
+Filename: pool/main/j/jellyfin/jellyfin-web_10.11.2+deb12_all.deb
+Size: 31901986
+SHA512: a2ec6559d14af3f9cd23907559ac04604ef6720145cf234aa9d27abef2e06297903f57293310103675eac680e73987e45e436959a42ea4b8d01866898194cbe5
+SHA256: 1b65fe80c683e15c06394275cf8d43a7a13434fdf757f6f6a65de756e80f21ad
+SHA1: f04462d50fcbe4e25d19715807a9d713b34ef93e
+MD5sum: a449d2c368136a63d9a840b6436ca9c3
+Description: Jellyfin is the Free Software Media System.
+ This package provides the Jellyfin web client.
+
+Package: jellyfin-web
+Source: jellyfin
+Version: 10.11.1+deb12
+Architecture: all
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 56941
+Recommends: jellyfin-server
+Homepage: https://jellyfin.org
+Priority: optional
+Section: misc
+Filename: pool/main/j/jellyfin/jellyfin-web_10.11.1+deb12_all.deb
+Size: 31900358
+SHA512: a2dafd86fe60f65dddc10dd53bb8224c8f0fe1a36b4017eb03713f20bbf7a31b869119d9ce4bf7f0dbca36c3f3ffb89cd9efbe332d7db7fd9c4e29e53562b763
+SHA256: 079f9fa4443752cd8a8d0f337ca65a170e0b4576824905edceac86247e21df33
+SHA1: 8835564b89c6d50586e88a1e5bf5baaa3d5123df
+MD5sum: f0a37d5199374c44a2d41d8089d615c2
+Description: Jellyfin is the Free Software Media System.
+ This package provides the Jellyfin web client.
+
+Package: jellyfin-web
+Source: jellyfin
+Version: 10.11.0+deb12
+Architecture: all
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 56937
+Recommends: jellyfin-server
+Homepage: https://jellyfin.org
+Priority: optional
+Section: misc
+Filename: pool/main/j/jellyfin/jellyfin-web_10.11.0+deb12_all.deb
+Size: 31899498
+SHA512: 7099349e5b5aacd135857a5f25a58463735d912f913927debebc1b0d40a92f40666428b96df9443dfc3690e5ac85d461fb232df5709d5a178302db230e784d0b
+SHA256: 0425a839229b8753836047c39970cca3436adddd050a40626587839d903b3b0c
+SHA1: e083aeea289fc363efd78ced0d742a5e5755e15f
+MD5sum: c751f1292e4c2276ea60b9f74789a9a1
+Description: Jellyfin is the Free Software Media System.
+ This package provides the Jellyfin web client.
+
+Package: jellyfin-web
+Source: jellyfin
+Version: 10.10.7+deb12
+Architecture: all
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 56670
+Recommends: jellyfin-server
+Homepage: https://jellyfin.org
+Priority: optional
+Section: misc
+Filename: pool/main/j/jellyfin/jellyfin-web_10.10.7+deb12_all.deb
+Size: 32751562
+SHA512: b68d62f74a6e9101f3ab9135f6ce72287785f9804f9e9051feb99166f5a3e5d71b1210b2df37d2fcea7484c00b7757e4e69f0fdc9f0d43cd7c83475ac856bf06
+SHA256: 303bf4bf0892a422b75627c158f6177464ab216d0a431225277ce3fbffbbb08d
+SHA1: 27446a876a84377e617db76b4d7d220684c9f116
+MD5sum: 0f7a29ddb72baab4590775df70aeaacf
+Description: Jellyfin is the Free Software Media System.
+ This package provides the Jellyfin web client.
+
+Package: jellyfin-web
+Source: jellyfin
+Version: 10.10.6+deb12
+Architecture: all
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 56669
+Recommends: jellyfin-server
+Homepage: https://jellyfin.org
+Priority: optional
+Section: misc
+Filename: pool/main/j/jellyfin/jellyfin-web_10.10.6+deb12_all.deb
+Size: 32752358
+SHA256: d4b046ed2ab2f91277800cd4c737b301c4ea5835df486c569f9c89478f0ca255
+SHA1: 8cd3230911fe77ad967df5e1fea362125e5d27e8
+MD5sum: 4da11c0518c74e7708aa484e1dc64a13
+Description: Jellyfin is the Free Software Media System.
+ This package provides the Jellyfin web client.
+
+Package: jellyfin-web
+Source: jellyfin
+Version: 10.9.10+deb12
+Architecture: all
+Maintainer: Jellyfin Packaging Team <packaging@jellyfin.org>
+Installed-Size: 55557
+Recommends: jellyfin-server
+Homepage: https://jellyfin.org
+Priority: optional
+Section: misc
+Filename: pool/main/j/jellyfin/jellyfin-web_10.9.10+deb12_all.deb
+Size: 32499670
+SHA512: fcd6f664cd678237bf210de6b791463f481f5468789a4f3dbc1007946bb5a4b68df1254eec797877d44cd65a8fe79a86d116d08b766323cc9cb18d5a49ef64aa
+SHA256: fbf2e641cfc597737ff0dcd329b1e8d829de2dbb85f30ed076dea0cbbc95fbef
+SHA1: 4ba65310147590fba9655e32d9da664f32483563
+MD5sum: 06024f17236f82f576b7721bdfcca578
+Description: Jellyfin is the Free Software Media System.
+ This package provides the Jellyfin web client.
+

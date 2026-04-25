@@ -1,0 +1,3 @@
+# navigation.yaml – Modulreihenfolge im Menü
+- key:   debian
+  group: Debian

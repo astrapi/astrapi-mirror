@@ -1,0 +1,49 @@
+Format: 3.0 (quilt)
+Package: lldap-cli
+Binary: lldap-cli
+Architecture: all
+Version: 0.0.1737287904~e383494-0+1.2
+Maintainer: Julian Röder <obs@masgalor.de>
+Build-Depends: debhelper (>= 11), debhelper-compat (= 11)
+Package-List:
+ lldap-cli deb misc optional arch=all
+Directory: .
+Checksums-Sha1:
+ 6b181a6da82c013d08bff20e19a3f98da72879a7 918 lldap-cli_0.0.1737287904~e383494-0+1.2.dsc
+ 542fa11901608076858566126d00d3401c74c8c3 33983 lldap-cli_0.0.1737287904~e383494.orig.tar.gz
+ d3db1ad264420f55eb67742c074ffd0ffe710b15 1804 lldap-cli_0.0.1737287904~e383494-0+1.2.debian.tar.xz
+Checksums-Sha256:
+ e3ad643826568cbe004c7b50397945618ec1a3aa73b2595d69ea9ae167f73a84 918 lldap-cli_0.0.1737287904~e383494-0+1.2.dsc
+ 14ac70b2d7da3d3a7e9bce35c650469abad7d1f08a6f8d38425c30a85da51df4 33983 lldap-cli_0.0.1737287904~e383494.orig.tar.gz
+ 6057ac3c0247e36dbb5e83bb4025b04d9bbf989f473d1db0be5091e64d7de83e 1804 lldap-cli_0.0.1737287904~e383494-0+1.2.debian.tar.xz
+Files:
+ 51198f200a40ef8cbf362890f8999347 918 lldap-cli_0.0.1737287904~e383494-0+1.2.dsc
+ a3f3514cb9a1348a22a85c966a5ee729 33983 lldap-cli_0.0.1737287904~e383494.orig.tar.gz
+ 418c5b8580d4d0b221a7094561468dd2 1804 lldap-cli_0.0.1737287904~e383494-0+1.2.debian.tar.xz
+
+Format: 3.0 (quilt)
+Package: lldap
+Binary: lldap, lldap-extras, lldap-migration-tool, lldap-set-password
+Architecture: any all
+Version: 0.6.2-1+1.2
+Maintainer: Julian Röder <obs@masgalor.de>
+Build-Depends: debhelper (>= 11), debhelper-compat (= 11)
+Package-List:
+ lldap deb misc optional arch=any
+ lldap-extras deb misc optional arch=all
+ lldap-migration-tool deb misc optional arch=any
+ lldap-set-password deb misc optional arch=any
+Directory: .
+Checksums-Sha1:
+ 868e7bf3178c5f7b98033ffbf435c9ca20f30977 981 lldap_0.6.2-1+1.2.dsc
+ b358b43a60d05687fcac387e42d8ea1afa7af475 1459669 lldap_0.6.2.orig.tar.gz
+ bad65f934865f8a2cbb95bdb2d3323a53ee0d8d2 468111580 lldap_0.6.2-1+1.2.debian.tar.xz
+Checksums-Sha256:
+ b35fe8741e712a7edf18bff31505c307ec68c8a470ae0450f05a0de94c531178 981 lldap_0.6.2-1+1.2.dsc
+ 5b8588a78d1bf22693e41f25e6602f0acdcfe2fa91ef1f3a542eade9b64a4564 1459669 lldap_0.6.2.orig.tar.gz
+ 62a3487161085fb63323cd90484856b5c88b660b8716558b122c718c25c96bf7 468111580 lldap_0.6.2-1+1.2.debian.tar.xz
+Files:
+ 90ee219d50e54661435b73d819b4ff2f 981 lldap_0.6.2-1+1.2.dsc
+ 5f0b6e1e5e4e7573f0d22c776534e9c1 1459669 lldap_0.6.2.orig.tar.gz
+ 76c823596a235d9622aaf7d8c176484c 468111580 lldap_0.6.2-1+1.2.debian.tar.xz
+

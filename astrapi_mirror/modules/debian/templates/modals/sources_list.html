@@ -1,0 +1,35 @@
+{% import 'partials/components/ui_macros.html' as ui %}
+{% call ui.modal_wrapper("debian-sources-modal", max_width="720px", padding="24px 28px") %}
+  {{ ui.modal_title(title=label ~ " – " ~ filename, icon="log") }}
+  <div style="margin-top:16px;">
+    <p style="color:var(--color-text-muted);font-size:.85em;margin-bottom:6px;">
+      Speichere als <code>/etc/apt/sources.list.d/{{ filename }}</code>:
+    </p>
+    <pre style="background:var(--color-surface-2);padding:14px 16px;border-radius:6px;font-size:.82em;overflow-x:auto;white-space:pre-wrap;word-break:break-all;">{{ snippet }}</pre>
+    <div style="margin-top:10px;display:flex;gap:8px;align-items:center;">
+      <button type="button" class="btn btn-secondary btn-sm"
+        onclick="navigator.clipboard.writeText(this.closest('[id$=modal]').querySelector('pre').textContent)">
+        Kopieren
+      </button>
+      <span style="color:var(--color-text-muted);font-size:.8em;">
+        Danach: <code>sudo apt update</code>
+      </span>
+    </div>
+
+    {% if gpg_url %}
+    <div style="margin-top:18px;border-top:1px solid var(--color-border);padding-top:14px;">
+      <p style="color:var(--color-text-muted);font-size:.85em;margin-bottom:6px;">
+        GPG-Schlüssel installieren:
+      </p>
+      <pre style="background:var(--color-surface-2);padding:14px 16px;border-radius:6px;font-size:.82em;overflow-x:auto;white-space:pre-wrap;word-break:break-all;">curl -fsSL {{ gpg_url }} | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/{{ repo_id }}.gpg</pre>
+      <div style="margin-top:8px;">
+        <button type="button" class="btn btn-secondary btn-sm"
+          onclick="navigator.clipboard.writeText(this.closest('[id$=modal]').querySelectorAll('pre')[1].textContent)">
+          Kopieren
+        </button>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+  {{ ui.modal_footer_simple() }}
+{% endcall %}

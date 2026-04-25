@@ -1,0 +1,5 @@
+Component: main
+Origin: Jellyfin
+Label: Jellyfin
+Architecture: amd64
+Description: APT repository for Jellyfin

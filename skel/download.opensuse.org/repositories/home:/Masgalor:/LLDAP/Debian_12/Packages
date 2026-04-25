@@ -1,0 +1,138 @@
+Package: lldap
+Version: 0.6.2-1+1.2
+Architecture: amd64
+Maintainer: Julian Röder <obs@masgalor.de>
+Installed-Size: 30385
+Pre-Depends: coreutils, adduser
+Filename: amd64/lldap_0.6.2-1+1.2_amd64.deb
+Size: 9249104
+MD5sum: bfad940468667dc2b9729635aea87572
+SHA1: 74f1ee8265b5081d78622ca8bd030d257cee1db2
+SHA256: 4e4aaea981ce2d7d0a814c5cfa2aef96a0c6ce73706e4f953e4ecf6b1ee4ce45
+Section: misc
+Priority: optional
+Homepage: https://github.com/lldap/lldap
+Description: Light LDAP implementation for authentication
+
+Package: lldap-cli
+Version: 0.0.1737287904~e383494-0+1.2
+Architecture: all
+Maintainer: Julian Röder <obs@masgalor.de>
+Installed-Size: 51
+Pre-Depends: bash, coreutils, grep, sed, jq, curl, lldap-set-password
+Suggests: lldap
+Filename: all/lldap-cli_0.0.1737287904~e383494-0+1.2_all.deb
+Size: 10268
+MD5sum: 53605847fef533da5751263450e3506a
+SHA1: 310d17d7508ccdbc88606d33fc212f2fabb9090c
+SHA256: 429ec12badef57a41deb430afc8d3daeef6d4b89b15531b40ebf1350947c26aa
+Section: misc
+Priority: optional
+Homepage: https://github.com/Zepmann/lldap-cli
+Description: An unofficial command line interface for LLDAP.
+
+Package: lldap-dbgsym
+Source: lldap
+Version: 0.6.2-1+1.2
+Auto-Built-Package: debug-symbols
+Architecture: amd64
+Maintainer: Julian Röder <obs@masgalor.de>
+Installed-Size: 4067
+Depends: lldap (= 0.6.2-1+1.2)
+Filename: amd64/lldap-dbgsym_0.6.2-1+1.2_amd64.deb
+Size: 585076
+MD5sum: 14b17cb6a9d4405926979c112ef99145
+SHA1: 8a846fe3d0cee53faa23e7c96bfaa5d52aba14d4
+SHA256: 5e5e5ba6fd3f528e4198bb2c036cb893f2078c0bf3b6f19057cb4e077959fc7e
+Section: debug
+Priority: optional
+Description: debug symbols for lldap
+Build-Ids: 18bb10016792f9bae9ebe6f1c22b41a971306436
+
+Package: lldap-extras
+Source: lldap
+Version: 0.6.2-1+1.2
+Architecture: all
+Maintainer: Julian Röder <obs@masgalor.de>
+Installed-Size: 15
+Depends: lldap, lldap-migration-tool, lldap-set-password, lldap-cli
+Filename: all/lldap-extras_0.6.2-1+1.2_all.deb
+Size: 9252
+MD5sum: f6810d9da9ce133d8cdacc381bddca94
+SHA1: 997f83742b2b3d90c4ebf163274f4131a5f22bf6
+SHA256: 78a3937780b843b23c29c8a572254f93a61be5296034d5bc99d8113ba3ca1e2b
+Section: misc
+Priority: optional
+Homepage: https://github.com/lldap/lldap
+Description: Meta-Package for LLDAP and its tools and extensions.
+
+Package: lldap-migration-tool
+Source: lldap
+Version: 0.6.2-1+1.2
+Architecture: amd64
+Maintainer: Julian Röder <obs@masgalor.de>
+Installed-Size: 4919
+Suggests: lldap
+Filename: amd64/lldap-migration-tool_0.6.2-1+1.2_amd64.deb
+Size: 1867724
+MD5sum: b077c50f24af03d9365a75323ed95020
+SHA1: c5fb6f4d466d9aa607057d719b01d45e4f240d68
+SHA256: a23b5e637a0cc71c6bdc018c23ef8c4550aba22955fff1999e79b690942a7dec
+Section: misc
+Priority: optional
+Homepage: https://github.com/lldap/lldap
+Description: CLI migration tool to go from OpenLDAP to LLDAP.
+
+Package: lldap-migration-tool-dbgsym
+Source: lldap
+Version: 0.6.2-1+1.2
+Auto-Built-Package: debug-symbols
+Architecture: amd64
+Maintainer: Julian Röder <obs@masgalor.de>
+Installed-Size: 816
+Depends: lldap-migration-tool (= 0.6.2-1+1.2)
+Filename: amd64/lldap-migration-tool-dbgsym_0.6.2-1+1.2_amd64.deb
+Size: 139972
+MD5sum: 93d7c25bead2b7c6822e8390dfd913b4
+SHA1: 0c7539ae07c9879afe76178421e0a8ecc3046f95
+SHA256: dc5eeb1cac82b2e0926ab31bf2074878fb69977ea51b9945334f86d8e339551c
+Section: debug
+Priority: optional
+Description: debug symbols for lldap-migration-tool
+Build-Ids: 127eb410bfb625522fcd7ed2b10d48bdf50fd94c
+
+Package: lldap-set-password
+Source: lldap
+Version: 0.6.2-1+1.2
+Architecture: amd64
+Maintainer: Julian Röder <obs@masgalor.de>
+Installed-Size: 4011
+Suggests: lldap
+Filename: amd64/lldap-set-password_0.6.2-1+1.2_amd64.deb
+Size: 1585200
+MD5sum: 9560cbeeacd0451587e93b4ef8de8a14
+SHA1: 92887907f03703d5d3b48130395c326ce0af9fe2
+SHA256: 24707881145d2069d91c21f228daa441e52db88067ff74deff32675b8dcd7714
+Section: misc
+Priority: optional
+Homepage: https://github.com/lldap/lldap
+Description: CLI tool to set a user password in LLDAP.
+
+Package: lldap-set-password-dbgsym
+Source: lldap
+Version: 0.6.2-1+1.2
+Auto-Built-Package: debug-symbols
+Architecture: amd64
+Maintainer: Julian Röder <obs@masgalor.de>
+Installed-Size: 664
+Depends: lldap-set-password (= 0.6.2-1+1.2)
+Filename: amd64/lldap-set-password-dbgsym_0.6.2-1+1.2_amd64.deb
+Size: 116200
+MD5sum: 07dd9845bc85f4071e6563b08ac82184
+SHA1: 0748152fea5a696d156432f998d215c4e2586cbf
+SHA256: a9e47a25a4285b3d47d4c566bed36b81d520f312ddc6d985b77fea273135af42
+Section: debug
+Priority: optional
+Description: debug symbols for lldap-set-password
+Build-Ids: bdd6646e305d7809d729db6fde9f33bc81934b61
+

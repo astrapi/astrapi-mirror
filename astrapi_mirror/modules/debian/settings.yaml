@@ -1,0 +1,65 @@
+modal_width: 560
+
+fields:
+  - type:  section
+    label: Verzeichnisse
+    cols:  1
+
+  - key:         mirror_path
+    label:       Mirror-Verzeichnis
+    type:        text
+    placeholder: "/storage/mirror"
+    description: "Hauptverzeichnis für alle gespiegelten Pakete (groß, ggf. externes Laufwerk)"
+
+  - key:         skel_path
+    label:       Skel-Verzeichnis
+    type:        text
+    placeholder: "/storage/skel"
+    description: "Temporäres Verzeichnis für Index-Dateien (SSD empfohlen)"
+
+  - key:         var_path
+    label:       Var-Verzeichnis
+    type:        text
+    placeholder: "/storage/var"
+    description: "Log- und Lock-Dateien (SSD empfohlen)"
+
+  - type:  section
+    label: Download
+    cols:  2
+
+  - key:         threads
+    label:       Download-Threads
+    type:        text
+    placeholder: "4"
+    default:     "4"
+    description: "Anzahl paralleler wget-Prozesse"
+
+  - key:         limit_rate
+    label:       Bandbreitenlimit (pro Thread)
+    type:        text
+    placeholder: "200m"
+    default:     "200m"
+    description: "z.B. 200m = 200 MB/s pro Thread (wget-Syntax)"
+
+  - type:  section
+    label: Optionen
+    cols:  2
+
+  - key:         language
+    label:       Sprache(n) für Translation-Dateien
+    type:        text
+    placeholder: "de_DE, en"
+    default:     "de_DE, en"
+    description: "Kommagetrennt; steuert welche Translation-Dateien geladen werden"
+
+  - key:         contents
+    label:       Contents-Dateien laden
+    type:        boolean
+    default:     "true"
+    description: "Contents-[arch].* Dateien herunterladen"
+
+  - key:         no_check_cert
+    label:       SSL-Zertifikat nicht prüfen
+    type:        boolean
+    default:     "false"
+    description: "wget --no-check-certificate (nur für selbstsignierte Repos)"

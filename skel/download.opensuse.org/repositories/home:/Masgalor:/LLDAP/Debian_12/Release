@@ -1,0 +1,22 @@
+Archive: Debian_12
+Codename: Debian_12
+Origin: obs://build.opensuse.org/home:Masgalor:LLDAP/Debian_12
+Label: home:Masgalor:LLDAP
+Architectures: amd64
+Date: Tue Jan 20 22:08:56 2026
+Description: LLDAP - Light LDAP implementation for authentication (Debian_12)
+MD5Sum:
+ d20d172a882aa84d19de3db19b96e533 4513 Packages
+ d8815a607918d47d65d40efe50a0d227 1597 Packages.gz
+ 82b609f90aa0581e4eaafb46fdea7fe7 2432 Sources
+ 892308bead809603b347f0571873418f 961 Sources.gz
+SHA1:
+ 6de7851d7471c8a6e86bd7a0276244eb48903c64 4513 Packages
+ 7fbeb947df9e4d9c213fdaa32df8c2bf347d7f02 1597 Packages.gz
+ 72df41de341e48333cc42cfb0ffc3942136ecb32 2432 Sources
+ 5fe5f7e43d4f064429b90da5c7276a69c8da478a 961 Sources.gz
+SHA256:
+ a2c6fc3c0ff779f818ec010f2496a27e557c59dca7755d2ed5144171db6ce1b6 4513 Packages
+ fd3fc2e1f344c9c0912491f67a5f73b71bb357652e727d30c3d58f6831e4309a 1597 Packages.gz
+ 6deb0d172f40c4849ab03b2a1f8ec0630d809dd082d9ed7cc118cf7eb121c617 2432 Sources
+ 183aadb4163f2145c8d21bfc6c437e53d1b8ccbfb13972bda40020f109ca7cee 961 Sources.gz
