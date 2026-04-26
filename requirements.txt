@@ -40,3 +40,6 @@ httpx>=0.27
 
 # ── Astrapi-Core (lokale Entwicklungsversion) ─────────────────────
 -e ../astrapi-core
+
+# ── Entwicklungstools ─────────────────────────────────────────────
+ruff>=0.4                # Linter + Formatter (ersetzt flake8, isort, black)

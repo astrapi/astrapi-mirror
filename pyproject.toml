@@ -39,3 +39,18 @@ astrapi_mirror = [
     "modules/*/modul.yaml",
     "modules/*/settings.yaml",
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]   # pycodestyle, pyflakes, isort, warnings
+ignore = ["E501"]                # Zeilenlänge wird vom Formatter gesteuert
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
