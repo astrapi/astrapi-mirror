@@ -1,0 +1,14 @@
+label:          Debian Repos
+nav_group:      Debian
+nav_default:    true
+settings_button: false
+
+card_actions:
+  - type: run
+    url:  /ui/debian/{item}/sync
+  - type: preview
+    url:  /ui/debian/{item}/validate
+  - type: info
+    url:  /ui/debian/{item}/sources-list
+  - type: log
+    url:  /ui/debian/{item}/log

@@ -40,6 +40,7 @@ def _delete(client):
 
 def test_debian_erstellen(client):
     """Speichern-Button im Erstellen-Dialog legt neues Repo an (201)."""
+    _delete(client)  # pre-cleanup falls vorheriger Lauf abgebrochen wurde
     try:
         resp = _create(client)
         assert resp.status_code == 201

@@ -75,7 +75,7 @@ def _repo_real_path(repo_id: str) -> Path | None:
     Gibt None zurück wenn das Repo unbekannt oder die URL leer ist.
     """
     try:
-        from astrapi_mirror.modules.debian.storage import store
+        from astrapi_mirror.modules.debian import store
         from astrapi_mirror.modules.debian.engine import _host_path_from_url
     except ImportError:
         return None
@@ -119,7 +119,7 @@ def debian_redirect():
 @router.get("/repo/debian/", response_class=HTMLResponse, include_in_schema=False)
 def debian_index(request: Request):
     try:
-        from astrapi_mirror.modules.debian.storage import store
+        from astrapi_mirror.modules.debian import store
         repos = [{"id": k, **v} for k, v in store.list().items()]
     except Exception:
         repos = []
@@ -149,7 +149,7 @@ def debian_index(request: Request):
 @router.get("/repo/debian/{repo_id}.gpg", include_in_schema=False)
 def debian_repo_gpg(repo_id: str):
     try:
-        from astrapi_mirror.modules.debian.storage import store
+        from astrapi_mirror.modules.debian import store
         data = store.get(repo_id)
     except Exception:
         data = None
@@ -184,7 +184,7 @@ def debian_repo_serve(repo_id: str, path: str, request: Request):
 
     if path == f"{repo_id}.sources":
         try:
-            from astrapi_mirror.modules.debian.storage import store
+            from astrapi_mirror.modules.debian import store
             from astrapi_mirror.modules.debian.engine import client_sources_file
             data = store.get(repo_id) or {}
             base_url = str(request.base_url).rstrip("/")
@@ -224,7 +224,7 @@ def debian_repo_serve(repo_id: str, path: str, request: Request):
                 f'<td class="size">—</td></tr>'
             )
             try:
-                from astrapi_mirror.modules.debian.storage import store as _st
+                from astrapi_mirror.modules.debian import store as _st
                 _d = _st.get(repo_id)
                 if _d and _d.get("gpg_key"):
                     gpg_name = f"{repo_id}.gpg"
@@ -259,7 +259,7 @@ def debian_repo_serve(repo_id: str, path: str, request: Request):
         hint = ""
         if not path:
             try:
-                from astrapi_mirror.modules.debian.storage import store as _st2
+                from astrapi_mirror.modules.debian import store as _st2
                 from astrapi_mirror.modules.debian.engine import client_sources_file
                 _d2 = _st2.get(repo_id) or {}
                 base_url = str(request.base_url).rstrip("/")

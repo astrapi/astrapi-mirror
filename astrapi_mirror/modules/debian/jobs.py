@@ -101,7 +101,7 @@ def _notify(title: str, message: str, ok: bool) -> None:
 
 def sync_all() -> None:
     """Synchronisiert alle aktivierten Debian-Repos via refrapt (blockierend)."""
-    from .storage import store
+    from . import store
     from .engine import generate_refrapt_config, validate_all
 
     repos_raw = store.list()
@@ -180,7 +180,7 @@ def sync_all() -> None:
 
 def sync_repo(repo_id: str) -> None:
     """Synchronisiert ein einzelnes Repo (blockierend)."""
-    from .storage import store
+    from . import store
     from .engine import generate_refrapt_config, validate_repo
 
     repo_data = store.get(repo_id)
