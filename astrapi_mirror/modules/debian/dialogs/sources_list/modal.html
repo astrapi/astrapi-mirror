@@ -5,27 +5,48 @@
     <p style="color:var(--color-text-muted);font-size:.85em;margin-bottom:6px;">
       Speichere als <code>/etc/apt/sources.list.d/{{ filename }}</code>:
     </p>
-    <pre style="background:var(--color-surface-2);padding:14px 16px;border-radius:6px;font-size:.82em;overflow-x:auto;white-space:pre-wrap;word-break:break-all;">{{ snippet }}</pre>
-    <div style="margin-top:10px;display:flex;gap:8px;align-items:center;">
-      <button type="button" class="btn btn-secondary btn-sm"
-        onclick="navigator.clipboard.writeText(this.closest('[id$=modal]').querySelector('pre').textContent)">
-        Kopieren
+    <div style="position:relative;" x-data="{ snippet: {{ snippet|tojson }}, copied: false }">
+      <pre style="background:var(--color-surface-2);padding:14px 40px 14px 16px;border-radius:6px;font-size:.82em;overflow-x:auto;white-space:pre-wrap;word-break:break-all;">{{ display_snippet }}</pre>
+      <button type="button"
+        style="position:absolute;top:6px;right:8px;background:none;border:none;cursor:pointer;
+               padding:4px;border-radius:4px;opacity:.75;color:var(--color-text-muted);transition:opacity .15s;"
+        title="Kopieren"
+        x-on:mouseenter="$el.style.opacity=1"
+        x-on:mouseleave="$el.style.opacity=copied?1:.75"
+        x-on:click="navigator.clipboard.writeText(snippet); copied=true; setTimeout(()=>copied=false,1500)">
+        <template x-if="!copied">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="none"><use href="#icon-copy"></use></svg>
+        </template>
+        <template x-if="copied">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="none"><use href="#icon-check"></use></svg>
+        </template>
       </button>
-      <span style="color:var(--color-text-muted);font-size:.8em;">
-        Danach: <code>sudo apt update</code>
-      </span>
     </div>
+    <span style="color:var(--color-text-muted);font-size:.8em;margin-top:6px;display:block;">
+      Danach: <code>sudo apt update</code>
+    </span>
 
     {% if gpg_url %}
-    <div style="margin-top:18px;border-top:1px solid var(--color-border);padding-top:14px;">
+    <div style="margin-top:18px;border-top:1px solid var(--color-border);padding-top:14px;"
+         x-data="{ cmd: {{ ('curl -fsSL ' ~ gpg_url ~ ' | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/' ~ repo_id ~ '.gpg')|tojson }}, copied: false }">
       <p style="color:var(--color-text-muted);font-size:.85em;margin-bottom:6px;">
         GPG-Schlüssel installieren:
       </p>
-      <pre style="background:var(--color-surface-2);padding:14px 16px;border-radius:6px;font-size:.82em;overflow-x:auto;white-space:pre-wrap;word-break:break-all;">curl -fsSL {{ gpg_url }} | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/{{ repo_id }}.gpg</pre>
-      <div style="margin-top:8px;">
-        <button type="button" class="btn btn-secondary btn-sm"
-          onclick="navigator.clipboard.writeText(this.closest('[id$=modal]').querySelectorAll('pre')[1].textContent)">
-          Kopieren
+      <div style="position:relative;">
+        <pre style="background:var(--color-surface-2);padding:14px 40px 14px 16px;border-radius:6px;font-size:.82em;overflow-x:auto;white-space:pre-wrap;word-break:break-all;">curl -fsSL {{ gpg_url }} | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/{{ repo_id }}.gpg</pre>
+        <button type="button"
+          style="position:absolute;top:6px;right:8px;background:none;border:none;cursor:pointer;
+                 padding:4px;border-radius:4px;opacity:.75;color:var(--color-text-muted);transition:opacity .15s;"
+          title="Kopieren"
+          x-on:mouseenter="$el.style.opacity=1"
+          x-on:mouseleave="$el.style.opacity=copied?1:.75"
+          x-on:click="navigator.clipboard.writeText(cmd); copied=true; setTimeout(()=>copied=false,1500)">
+          <template x-if="!copied">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="none"><use href="#icon-copy"></use></svg>
+          </template>
+          <template x-if="copied">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="none"><use href="#icon-check"></use></svg>
+          </template>
         </button>
       </div>
     </div>
