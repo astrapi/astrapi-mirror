@@ -25,9 +25,13 @@ _CSS = """
     td { padding: 0.3rem 1rem; border-bottom: 1px solid #21262d; }
     td.size { text-align: right; color: #8b949e; white-space: nowrap; }
     div.hint { color: #8b949e; font-size: 0.85rem; margin-bottom: 1.5rem; }
-    div.hint pre { background: #161b22; border: 1px solid #30363d; border-radius: 6px; padding: 0.75rem 1rem; margin: 0.5rem 0 0; font-size: 0.82rem; white-space: pre; overflow-x: auto; color: #c9d1d9; }
+    div.hint pre { background: #161b22; border: 1px solid #30363d; border-radius: 6px; padding: 0.75rem 2.5rem 0.75rem 1rem; margin: 0.5rem 0 0; font-size: 0.82rem; white-space: pre; overflow-x: auto; color: #c9d1d9; }
     a { text-decoration: none; color: #58a6ff; }
     a:hover { text-decoration: underline; }
+    .pre-wrap { position: relative; }
+    .copy-btn { position: absolute; top: 6px; right: 8px; background: none; border: none; cursor: pointer;
+                padding: 4px; border-radius: 4px; opacity: .65; color: #8b949e; transition: opacity .15s; }
+    .copy-btn:hover { opacity: 1; }
 """
 
 
@@ -289,12 +293,43 @@ def debian_repo_serve(repo_id: str, path: str, request: Request):
 
                 _d2 = _st2.get(repo_id) or {}
                 base_url = str(request.base_url).rstrip("/")
-                _src = client_sources_file(_d2, base_url)
+                _src_full = client_sources_file(_d2, base_url)
                 # Inline-GPG-Block nicht anzeigen
-                if "Signed-By:\n" in _src:
-                    _idx = _src.find("Signed-By:\n")
-                    _src = _src[:_idx] + "Signed-By: …\n"
-                hint = f"{repo_id}.sources:<pre>{_src}</pre>"
+                if "Signed-By:\n" in _src_full:
+                    _idx = _src_full.find("Signed-By:\n")
+                    _src_display = _src_full[:_idx] + "Signed-By: \u2026\n"
+                else:
+                    _src_display = _src_full
+                _copy_icon = (
+                    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none"'
+                    ' stroke="currentColor" stroke-width="2">'
+                    '<rect x="9" y="9" width="13" height="13" rx="2"/>'
+                    '<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>'
+                    "</svg>"
+                )
+                _check_icon = (
+                    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none"'
+                    ' stroke="currentColor" stroke-width="2.5">'
+                    '<polyline points="20 6 9 17 4 12"/>'
+                    "</svg>"
+                )
+                _data = _html.escape(_src_full, quote=True)
+                hint = (
+                    f"{repo_id}.sources:"
+                    f'<div class="pre-wrap">'
+                    f"<pre>{_html.escape(_src_display)}</pre>"
+                    f'<button class="copy-btn" data-content="{_data}" title="Kopieren"'
+                    f' onclick="(function(b){{'
+                    f"navigator.clipboard.writeText(b.dataset.content);"
+                    f"var i=b.querySelector('.ci'),c=b.querySelector('.ck');"
+                    f"i.style.display='none';c.style.display='';"
+                    f"setTimeout(function(){{i.style.display='';c.style.display='none';}},1500);"
+                    f'}})(this)">'
+                    f'<span class="ci">{_copy_icon}</span>'
+                    f'<span class="ck" style="display:none">{_check_icon}</span>'
+                    f"</button>"
+                    f"</div>"
+                )
             except Exception:
                 pass
 
