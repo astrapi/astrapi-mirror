@@ -6,9 +6,9 @@ erfolgt über den Store; refrapts physisches Layout (hostname/url-pfad) bleibt
 auf Disk unverändert.
 """
 
+import html as _html
 from pathlib import Path
 
-import html as _html
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 
@@ -314,14 +314,17 @@ def debian_repo_serve(repo_id: str, path: str, request: Request):
                     '<polyline points="20 6 9 17 4 12"/>'
                     "</svg>"
                 )
-                _data = _html.escape(_src_full, quote=True)
+                _safe_id = f"src-{repo_id}"
                 hint = (
                     f"{repo_id}.sources:"
                     f'<div class="pre-wrap">'
                     f"<pre>{_html.escape(_src_display)}</pre>"
-                    f'<button class="copy-btn" data-content="{_data}" title="Kopieren"'
+                    f'<textarea id="{_safe_id}" style="display:none">'
+                    f"{_html.escape(_src_full)}"
+                    f"</textarea>"
+                    f'<button class="copy-btn" title="Kopieren"'
                     f' onclick="(function(b){{'
-                    f"navigator.clipboard.writeText(b.dataset.content);"
+                    f"navigator.clipboard.writeText(document.getElementById('{_safe_id}').value);"
                     f"var i=b.querySelector('.ci'),c=b.querySelector('.ck');"
                     f"i.style.display='none';c.style.display='';"
                     f"setTimeout(function(){{i.style.display='';c.style.display='none';}},1500);"
