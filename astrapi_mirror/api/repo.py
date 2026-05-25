@@ -288,10 +288,11 @@ def debian_repo_serve(repo_id: str, path: str, request: Request):
                 _d2 = _st2.get(repo_id) or {}
                 base_url = str(request.base_url).rstrip("/")
                 _src = client_sources_file(_d2, base_url)
+                # Inline-GPG-Block nicht anzeigen
+                if "Signed-By:\n" in _src:
+                    _idx = _src.find("Signed-By:\n")
+                    _src = _src[:_idx] + "Signed-By: …\n"
                 hint = f"{repo_id}.sources:<pre>{_src}</pre>"
-                _gpg = _d2.get("gpg_key", "").strip()
-                if _gpg:
-                    hint += f"{repo_id}.gpg:<pre>{_gpg}</pre>"
             except Exception:
                 pass
 
