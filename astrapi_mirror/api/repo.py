@@ -62,6 +62,25 @@ def _page(title: str, hint: str, rows_html: str, back: str | None = None) -> str
     <thead><tr><th>Name</th><th>Größe</th></tr></thead>
     <tbody>{rows_html}</tbody>
   </table>
+<script>
+function copySnippet(id, btn) {{
+  var txt = document.getElementById(id).value;
+  var done = function() {{
+    var i = btn.querySelector('.ci'), c = btn.querySelector('.ck');
+    i.style.display='none'; c.style.display='';
+    setTimeout(function(){{i.style.display='';c.style.display='none';}},1500);
+  }};
+  if (navigator.clipboard) {{
+    navigator.clipboard.writeText(txt).then(done).catch(done);
+  }} else {{
+    var ta = document.createElement('textarea');
+    ta.value = txt; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    try {{ document.execCommand('copy'); }} catch(e) {{}}
+    document.body.removeChild(ta); done();
+  }}
+}}
+</script>
 </body>
 </html>"""
 
@@ -323,12 +342,7 @@ def debian_repo_serve(repo_id: str, path: str, request: Request):
                     f"{_html.escape(_src_full)}"
                     f"</textarea>"
                     f'<button class="copy-btn" title="Kopieren"'
-                    f' onclick="(function(b){{'
-                    f"navigator.clipboard.writeText(document.getElementById('{_safe_id}').value);"
-                    f"var i=b.querySelector('.ci'),c=b.querySelector('.ck');"
-                    f"i.style.display='none';c.style.display='';"
-                    f"setTimeout(function(){{i.style.display='';c.style.display='none';}},1500);"
-                    f'}})(this)">'
+                    f" onclick=\"copySnippet('{_safe_id}', this)\">"
                     f'<span class="ci">{_copy_icon}</span>'
                     f'<span class="ck" style="display:none">{_check_icon}</span>'
                     f"</button>"
