@@ -40,14 +40,47 @@ def _act_done(act_id: int | None, status: str, duration: int, output: str) -> No
 
 
 def _fetch_gpg_key(repo_id: str, url: str) -> str | None:
-    """Lädt einen GPG-Schlüssel von url herunter; gibt den Inhalt zurück oder None."""
+    """Lädt einen GPG-Schlüssel herunter und gibt ihn als armored ASCII zurück.
+
+    Binäre Keyring-Dateien (.gpg) werden via ``gpg --armor`` konvertiert.
+    Schlägt die Konvertierung fehl, wird der Rohinhalt zurückgegeben (nicht
+    inline einbettbar, aber als Datei-Referenz noch verwendbar).
+    """
     try:
         req = urllib.request.Request(url, headers={"User-Agent": "astrapi-mirror/1.0"})
         with urllib.request.urlopen(req, timeout=30) as resp:
-            return resp.read().decode(errors="replace")
+            raw: bytes = resp.read()
     except Exception as e:
         log.warning("debian.gpg_key: %s – Download fehlgeschlagen: %s", repo_id, e)
         return None
+
+    # Bereits armored ASCII?
+    if raw.lstrip().startswith(b"-----BEGIN PGP PUBLIC KEY BLOCK-----"):
+        return raw.decode("ascii", errors="replace")
+
+    # Binär → via gpg --armor konvertieren
+    try:
+        import subprocess
+
+        result = subprocess.run(
+            ["gpg", "--armor"],
+            input=raw,
+            capture_output=True,
+            timeout=10,
+        )
+        if result.returncode == 0:
+            log.debug("debian.gpg_key: %s – binary key armoriert", repo_id)
+            return result.stdout.decode("ascii")
+        log.warning(
+            "debian.gpg_key: %s – gpg --armor fehlgeschlagen: %s",
+            repo_id,
+            result.stderr.decode(errors="replace"),
+        )
+    except Exception as e:
+        log.warning("debian.gpg_key: %s – gpg nicht verfügbar: %s", repo_id, e)
+
+    # Fallback: Rohinhalt (binär als String, nur Datei-Referenz möglich)
+    return raw.decode(errors="replace")
 
 
 def _notify(title: str, message: str, ok: bool) -> None:

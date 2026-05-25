@@ -17,6 +17,23 @@ log = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------------
+# GPG-Hilfsfunktion
+# ---------------------------------------------------------------------------
+
+
+def _armor_inline(armored_key: str) -> str:
+    """Formatiert einen armierten GPG-Schlüssel als DEB822-Multiline-Fortsetzung.
+
+    Jede Zeile wird mit einem führenden Leerzeichen versehen; Leerzeilen
+    werden zu ' .' (RFC 822-Konvention für leere Fortsetzungszeilen).
+    """
+    result = []
+    for line in armored_key.strip().splitlines():
+        result.append(f" {line}" if line.strip() else " .")
+    return "\n".join(result)
+
+
+# ---------------------------------------------------------------------------
 # Flat-Repo-Erkennung
 # ---------------------------------------------------------------------------
 
@@ -264,7 +281,11 @@ def client_sources_file(repo: dict, base_url: str) -> str:
     if archs:
         lines.append(f"Architectures: {' '.join(archs)}")
 
-    if repo.get("gpg_key"):
+    gpg_key = (repo.get("gpg_key") or "").strip()
+    if gpg_key.startswith("-----BEGIN PGP PUBLIC KEY BLOCK-----"):
+        lines.append(f"Signed-By:\n{_armor_inline(gpg_key)}")
+    elif gpg_key:
+        # Binär gespeicherter Key (Fallback bis zum nächsten Sync)
         lines.append(f"Signed-By: /etc/apt/trusted.gpg.d/{repo_id}.gpg")
 
     return "\n".join(lines) + "\n"
