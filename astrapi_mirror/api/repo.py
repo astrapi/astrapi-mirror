@@ -247,7 +247,9 @@ def debian_repo_serve(repo_id: str, path: str, request: Request):
                 from astrapi_mirror.modules.debian import store as _st
 
                 _d = _st.get(repo_id)
-                if _d and _d.get("gpg_key"):
+                gpg_key = (_d.get("gpg_key") or "").strip() if _d else ""
+                # .gpg-Datei nur anzeigen wenn Key NICHT inline armoriert ist (Fallback)
+                if gpg_key and not gpg_key.startswith("-----BEGIN PGP PUBLIC KEY BLOCK-----"):
                     gpg_name = f"{repo_id}.gpg"
                     rows.append(
                         f'<tr><td><a href="/repo/debian/{gpg_name}">{gpg_name}</a></td>'
