@@ -30,9 +30,8 @@ urllib3>=2.2
 # ── System-Monitoring ─────────────────────────────────────────────
 psutil>=6.0
 
-# ── Mirror-Tool ───────────────────────────────────────────────────
-refrapt>=0.4.10
-setuptools<71  # refrapt benötigt pkg_resources (ab setuptools 71 nicht mehr enthalten)
+# ── Mirror-Tool (intern) ─────────────────────────────────────────────
+# Keine externe Abhängigkeiten mehr – interne Sync-Engine nutzt nur requests
 
 # ── Tests ─────────────────────────────────────────────────────────
 pytest>=8.0

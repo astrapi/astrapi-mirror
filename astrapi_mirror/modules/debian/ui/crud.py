@@ -81,8 +81,9 @@ def ui_sources_list(repo_id: str, request: Request):
     from ..engine import client_sources_file
 
     base_url = str(request.base_url).rstrip("/")
-    snippet = client_sources_file({"id": repo_id, **data}, base_url)
-    gpg_url = f"{base_url}/repo/debian/{repo_id}.gpg" if data.get("gpg_key") else None
+    slug = data.get("slug", repo_id)
+    snippet = client_sources_file(data, base_url)
+    gpg_url = f"{base_url}/repo/debian/{slug}.gpg" if data.get("gpg_key") else None
     return render(
         request,
         f"{KEY}/dialogs/sources_list/modal.html",
@@ -90,7 +91,7 @@ def ui_sources_list(repo_id: str, request: Request):
             "repo_id": repo_id,
             "label": data.get("label") or repo_id,
             "snippet": snippet,
-            "filename": f"{repo_id}.sources",
+            "filename": f"{slug}.sources",
             "gpg_url": gpg_url,
         },
     )
@@ -106,7 +107,7 @@ def ui_validate(repo_id: str, request: Request):
     data = store.get(repo_id) or {}
     from ..engine import validate_repo
 
-    result = validate_repo({"id": repo_id, **data})
+    result = validate_repo(data)
     return render(
         request,
         f"{KEY}/dialogs/validate/modal.html",

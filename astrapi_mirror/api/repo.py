@@ -5,6 +5,7 @@ wird nicht in der URL abgebildet. Die Abbildung repo_id → Dateisystem-Pfad
 erfolgt über den Store; refrapts physisches Layout (hostname/url-pfad) bleibt
 auf Disk unverändert.
 """
+
 from pathlib import Path
 
 from fastapi import APIRouter, HTTPException, Request
@@ -32,6 +33,7 @@ _CSS = """
 
 def _mirror_root() -> Path:
     from astrapi_mirror._paths import mirror_path
+
     return mirror_path()
 
 
@@ -70,10 +72,15 @@ def _safe_child(base: Path, *parts: str) -> Path:
 def _repo_real_path(repo_id: str) -> Path | None:
     """Gibt den realen Dateisystem-Pfad für ein Repo anhand seiner ID zurück.
 
-    Schlägt den Eintrag im Store nach, leitet aus der URL den refrapt-Pfad
-    (hostname/url-pfad) ab und kombiniert ihn mit mirror_root.
-    Gibt None zurück wenn das Repo unbekannt oder die URL leer ist.
+    Bevorzugt das neue ID-basierte Layout (mirror_root/{repo_id}/current).
+    Fällt auf das alte URL-basierte Layout zurück wenn nötig.
     """
+    # Neues Layout: mirror_root/{repo_id}/current → vN/
+    current_path = _mirror_root() / repo_id / "current"
+    if current_path.exists():
+        return current_path
+
+    # Fallback: altes URL-basiertes Layout (hostname/url-pfad)
     try:
         from astrapi_mirror.modules.debian import store
         from astrapi_mirror.modules.debian.engine import _host_path_from_url
@@ -120,24 +127,31 @@ def debian_redirect():
 def debian_index(request: Request):
     try:
         from astrapi_mirror.modules.debian import store
-        repos = [{"id": k, **v} for k, v in store.list().items()]
+
+        repos = list(store.list().values())
     except Exception:
         repos = []
 
-    synced = [r for r in repos if (p := _repo_real_path(r["id"])) is not None and p.exists()]
+    synced = [
+        r
+        for r in repos
+        if (p := _repo_real_path(r.get("slug", str(r.get("id", ""))))) is not None and p.exists()
+    ]
 
     if not synced:
-        return HTMLResponse(_page(
-            "Debian Mirror",
-            "Noch keine synchronisierten Repositories vorhanden.",
-            "<tr><td colspan='2'>Bitte zuerst einen Sync starten.</td></tr>",
-        ))
+        return HTMLResponse(
+            _page(
+                "Debian Mirror",
+                "Noch keine synchronisierten Repositories vorhanden.",
+                "<tr><td colspan='2'>Bitte zuerst einen Sync starten.</td></tr>",
+            )
+        )
 
     rows = "\n".join(
-        f'<tr>'
-        f'<td><a href="/repo/debian/{r["id"]}/">{r.get("label") or r["id"]}</a></td>'
-        f'<td class="size">{r.get("provider_group", "")}</td>'
-        f'</tr>'
+        f"<tr>"
+        f'<td><a href="/repo/debian/{r.get("slug", str(r.get("id", "")))}/"> {r.get("label") or r.get("slug", "")}</a></td>'
+        f'<td class="size">—</td>'
+        f"</tr>"
         for r in synced
     )
     return HTMLResponse(_page("Debian Mirror", "", rows))
@@ -150,12 +164,14 @@ def debian_index(request: Request):
 def debian_repo_gpg(repo_id: str):
     try:
         from astrapi_mirror.modules.debian import store
+
         data = store.get(repo_id)
     except Exception:
         data = None
     if not data or not data.get("gpg_key"):
         raise HTTPException(404, "Kein GPG-Schlüssel hinterlegt")
     from fastapi.responses import Response
+
     return Response(
         content=data["gpg_key"].encode(),
         media_type="application/pgp-keys",
@@ -186,12 +202,14 @@ def debian_repo_serve(repo_id: str, path: str, request: Request):
         try:
             from astrapi_mirror.modules.debian import store
             from astrapi_mirror.modules.debian.engine import client_sources_file
+
             data = store.get(repo_id) or {}
             base_url = str(request.base_url).rstrip("/")
-            content = client_sources_file({"id": repo_id, **data}, base_url)
+            content = client_sources_file(data, base_url)
         except Exception:
             raise HTTPException(500, "Fehler beim Generieren der .sources-Datei")
         from fastapi.responses import PlainTextResponse
+
         return PlainTextResponse(
             content,
             headers={"Content-Disposition": f'inline; filename="{repo_id}.sources"'},
@@ -203,12 +221,14 @@ def debian_repo_serve(repo_id: str, path: str, request: Request):
     # --- Normales Filesystem-Serving ---------------------------------------
 
     if not real_root.exists():
-        return HTMLResponse(_page(
-            f"debian/{repo_id}",
-            "Noch nicht synchronisiert – bitte zuerst einen Sync starten.",
-            "",
-            back="/repo/debian/",
-        ))
+        return HTMLResponse(
+            _page(
+                f"debian/{repo_id}",
+                "Noch nicht synchronisiert – bitte zuerst einen Sync starten.",
+                "",
+                back="/repo/debian/",
+            )
+        )
 
     target = _safe_child(real_root, path) if path else real_root
 
@@ -225,6 +245,7 @@ def debian_repo_serve(repo_id: str, path: str, request: Request):
             )
             try:
                 from astrapi_mirror.modules.debian import store as _st
+
                 _d = _st.get(repo_id)
                 if _d and _d.get("gpg_key"):
                     gpg_name = f"{repo_id}.gpg"
@@ -243,7 +264,9 @@ def debian_repo_serve(repo_id: str, path: str, request: Request):
             else:
                 href = f"{base_href}/{e.name}" + ("/" if e.is_dir() else "")
             size = "—" if e.is_dir() else _fmt_size(e.stat().st_size)
-            rows.append(f'<tr><td><a href="{href}">{name}</a></td><td class="size">{size}</td></tr>')
+            rows.append(
+                f'<tr><td><a href="{href}">{name}</a></td><td class="size">{size}</td></tr>'
+            )
 
         if path:
             path_parts = path.rstrip("/").split("/")
@@ -261,22 +284,25 @@ def debian_repo_serve(repo_id: str, path: str, request: Request):
             try:
                 from astrapi_mirror.modules.debian import store as _st2
                 from astrapi_mirror.modules.debian.engine import client_sources_file
+
                 _d2 = _st2.get(repo_id) or {}
                 base_url = str(request.base_url).rstrip("/")
-                _src = client_sources_file({"id": repo_id, **_d2}, base_url)
-                hint = f'{repo_id}.sources:<pre>{_src}</pre>'
+                _src = client_sources_file(_d2, base_url)
+                hint = f"{repo_id}.sources:<pre>{_src}</pre>"
                 _gpg = _d2.get("gpg_key", "").strip()
                 if _gpg:
-                    hint += f'{repo_id}.gpg:<pre>{_gpg}</pre>'
+                    hint += f"{repo_id}.gpg:<pre>{_gpg}</pre>"
             except Exception:
                 pass
 
-        return HTMLResponse(_page(
-            display,
-            hint,
-            "\n".join(rows) or "<tr><td colspan='2'>Leer.</td></tr>",
-            back=parent,
-        ))
+        return HTMLResponse(
+            _page(
+                display,
+                hint,
+                "\n".join(rows) or "<tr><td colspan='2'>Leer.</td></tr>",
+                back=parent,
+            )
+        )
 
     if target.is_file():
         return FileResponse(str(target))

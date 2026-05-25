@@ -1,9 +1,3 @@
-id_field:
-  name:        id
-  label:       Repository-ID
-  placeholder: "z.B. debian-bookworm"
-  max:         60
-
 fields:
   - name:        label
     label:       Bezeichnung
@@ -12,14 +6,7 @@ fields:
     max:         120
     column:      1
     row:         1
-
-  - name:        provider_group
-    label:       Anbieter / Gruppe
-    type:        text
-    placeholder: "Debian, Proxmox, PostgreSQL …"
-    max:         80
-    column:      2
-    row:         1
+    colspan:     2
 
   - name:        url
     label:       Repository-URL
@@ -63,12 +50,7 @@ fields:
     max:         200
     column:      1
     row:         4
-
-  - name:        is_flat
-    label:       Flat-Repository (kein Suite/Komponenten-Pfad)
-    type:        boolean
-    column:      2
-    row:         4
+    colspan:     2
 
   - name:        gpg_key_url
     label:       GPG-Schlüssel URL

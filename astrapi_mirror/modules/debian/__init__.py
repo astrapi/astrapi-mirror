@@ -4,27 +4,26 @@ from typing import Optional
 from astrapi_core.ui.controls import Col, ContentTable
 from astrapi_core.ui.crud_router import make_crud_router as _make_crud
 from astrapi_core.ui.module_loader import load_modul
-from astrapi_core.ui.storage import YamlStorage
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import JSONResponse, PlainTextResponse
 from pydantic import BaseModel
 
+from .storage import DebianRepoStore
+
 _KEY = Path(__file__).parent.name
 KEY = _KEY
-store = YamlStorage(KEY)
+store = DebianRepoStore()
 
 # ── Pydantic-Modell ───────────────────────────────────────────────────────────
 
 
 class RepoIn(BaseModel):
     label: str = ""
-    provider_group: str = ""
     url: str = ""
     repo_type: str = "deb"
     suites: list[str] = []
     components: list[str] = []
     architectures: list[str] = []
-    is_flat: bool = False
     enabled: bool = True
     gpg_key_url: str = ""
 
@@ -60,7 +59,7 @@ def api_validate(repo_id: str):
         raise HTTPException(404, "Nicht gefunden")
     from .engine import validate_repo
 
-    return validate_repo({"id": repo_id, **data})
+    return validate_repo(data)
 
 
 @router.get(
@@ -73,7 +72,7 @@ def api_sources_list(repo_id: str, request: Request):
     from .engine import client_sources_file
 
     base_url = str(request.base_url).rstrip("/")
-    return client_sources_file({"id": repo_id, **data}, base_url)
+    return client_sources_file(data, base_url)
 
 
 @router.get(
@@ -98,7 +97,7 @@ module = load_modul(
     ui_content=ContentTable(
         columns=[
             Col.link("url", "URL"),
-            Col.text("provider_group", "Anbieter", css="col-type"),
+            Col.text("slug", "Slug", css="col-type"),
             Col.join("suites", "Suites", sep=", "),
         ],
     ),
