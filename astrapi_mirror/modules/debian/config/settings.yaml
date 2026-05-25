@@ -11,18 +11,6 @@ fields:
     placeholder: "/storage/mirror"
     description: "Hauptverzeichnis für alle gespiegelten Pakete (groß, ggf. externes Laufwerk)"
 
-  - key:         skel_path
-    label:       Skel-Verzeichnis
-    type:        text
-    placeholder: "/storage/skel"
-    description: "Temporäres Verzeichnis für Index-Dateien (SSD empfohlen)"
-
-  - key:         var_path
-    label:       Var-Verzeichnis
-    type:        text
-    placeholder: "/storage/var"
-    description: "Log- und Lock-Dateien (SSD empfohlen)"
-
   - type:  section
     label: Download
     cols:  2

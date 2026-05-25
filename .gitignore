@@ -5,4 +5,4 @@ __pycache__/
 data/
 mirror/
 var/
-skel/
+skel/app.db

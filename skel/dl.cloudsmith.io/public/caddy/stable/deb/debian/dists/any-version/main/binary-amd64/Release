@@ -1,6 +1,0 @@
-Archive: any-version
-Origin: cloudsmith/caddy/stable
-Acquire-By-Hash: yes
-Component: main
-Architecture: amd64
-
