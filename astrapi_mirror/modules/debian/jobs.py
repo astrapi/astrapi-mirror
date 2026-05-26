@@ -61,7 +61,9 @@ def _armor_binary_key(raw: bytes) -> str:
     return (
         "-----BEGIN PGP PUBLIC KEY BLOCK-----\n\n"
         + b64
-        + "=" + crc + "\n"
+        + "="
+        + crc
+        + "\n"
         + "-----END PGP PUBLIC KEY BLOCK-----\n"
     )
 
@@ -69,9 +71,8 @@ def _armor_binary_key(raw: bytes) -> str:
 def _fetch_gpg_key(repo_id: str, url: str) -> str | None:
     """Lädt einen GPG-Schlüssel herunter und gibt ihn als armored ASCII zurück.
 
-    Binäre Keyring-Dateien (.gpg) werden via ``gpg --armor`` konvertiert.
-    Schlägt die Konvertierung fehl, wird der Rohinhalt zurückgegeben (nicht
-    inline einbettbar, aber als Datei-Referenz noch verwendbar).
+    Binäre Keyring-Dateien werden via Pure-Python-Armor-Konvertierung (CRC-24)
+    in das ASCII-armored Format umgewandelt – kein gpg-Befehl erforderlich.
     """
     try:
         req = urllib.request.Request(url, headers={"User-Agent": "astrapi-mirror/1.0"})
@@ -85,29 +86,8 @@ def _fetch_gpg_key(repo_id: str, url: str) -> str | None:
     if raw.lstrip().startswith(b"-----BEGIN PGP PUBLIC KEY BLOCK-----"):
         return raw.decode("ascii", errors="replace")
 
-    # Binär → via gpg --armor konvertieren
-    try:
-        import subprocess
-
-        result = subprocess.run(
-            ["gpg", "--armor"],
-            input=raw,
-            capture_output=True,
-            timeout=10,
-        )
-        if result.returncode == 0:
-            log.debug("debian.gpg_key: %s – binary key armoriert", repo_id)
-            return result.stdout.decode("ascii")
-        log.warning(
-            "debian.gpg_key: %s – gpg --armor fehlgeschlagen: %s",
-            repo_id,
-            result.stderr.decode(errors="replace"),
-        )
-    except Exception as e:
-        log.warning("debian.gpg_key: %s – gpg nicht verfügbar: %s", repo_id, e)
-
-    # Pure-Python-Fallback: CRC-24-korrektes ASCII-Armor ohne gpg-Befehl
-    log.info("debian.gpg_key: %s – verwende Pure-Python-Armor-Konvertierung", repo_id)
+    # Binär → Pure-Python ASCII-Armor (gpg --armor ist unzuverlässig mit Keyrings)
+    log.debug("debian.gpg_key: %s – binary key, verwende Pure-Python-Armor", repo_id)
     return _armor_binary_key(raw)
 
 
