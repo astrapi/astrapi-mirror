@@ -39,6 +39,33 @@ def _act_done(act_id: int | None, status: str, duration: int, output: str) -> No
         pass
 
 
+def _armor_binary_key(raw: bytes) -> str:
+    """Konvertiert einen binären OpenPGP-Schlüssel in ASCII-armored Format (Pure Python).
+
+    Fallback wenn ``gpg --armor`` nicht verfügbar oder fehlgeschlagen ist.
+    """
+    import base64
+
+    def _crc24(data: bytes) -> int:
+        crc = 0xB704CE
+        for byte in data:
+            crc ^= byte << 16
+            for _ in range(8):
+                crc <<= 1
+                if crc & 0x1000000:
+                    crc ^= 0x1864CFB
+        return crc & 0xFFFFFF
+
+    b64 = base64.encodebytes(raw).decode("ascii")  # auto-wrapped at 76 Zeichen
+    crc = base64.b64encode(_crc24(raw).to_bytes(3, "big")).decode("ascii")
+    return (
+        "-----BEGIN PGP PUBLIC KEY BLOCK-----\n\n"
+        + b64
+        + "=" + crc + "\n"
+        + "-----END PGP PUBLIC KEY BLOCK-----\n"
+    )
+
+
 def _fetch_gpg_key(repo_id: str, url: str) -> str | None:
     """Lädt einen GPG-Schlüssel herunter und gibt ihn als armored ASCII zurück.
 
@@ -79,13 +106,9 @@ def _fetch_gpg_key(repo_id: str, url: str) -> str | None:
     except Exception as e:
         log.warning("debian.gpg_key: %s – gpg nicht verfügbar: %s", repo_id, e)
 
-    # Binäre Keyring-Datei kann ohne gpg nicht armoriert werden.
-    # Bestehenden Key in der DB beibehalten statt Binary-Schrott zu speichern.
-    log.warning(
-        "debian.gpg_key: %s – binary key, gpg --armor fehlgeschlagen – bestehenden Key beibehalten",
-        repo_id,
-    )
-    return None
+    # Pure-Python-Fallback: CRC-24-korrektes ASCII-Armor ohne gpg-Befehl
+    log.info("debian.gpg_key: %s – verwende Pure-Python-Armor-Konvertierung", repo_id)
+    return _armor_binary_key(raw)
 
 
 def _notify(title: str, message: str, ok: bool) -> None:
