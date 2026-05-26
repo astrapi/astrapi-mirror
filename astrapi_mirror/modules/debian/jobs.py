@@ -77,10 +77,17 @@ def _fetch_gpg_key(repo_id: str, url: str) -> str | None:
             result.stderr.decode(errors="replace"),
         )
     except Exception as e:
-        log.warning("debian.gpg_key: %s – gpg nicht verfügbar: %s", repo_id, e)
+        log.warning(
+            "debian.gpg_key: %s – gpg nicht verfügbar: %s", repo_id, e
+        )
 
-    # Fallback: Rohinhalt (binär als String, nur Datei-Referenz möglich)
-    return raw.decode(errors="replace")
+    # Binäre Keyring-Datei kann ohne gpg nicht armoriert werden.
+    # Bestehenden Key in der DB beibehalten statt Binary-Schrott zu speichern.
+    log.warning(
+        "debian.gpg_key: %s – binary key, gpg --armor fehlgeschlagen – bestehenden Key beibehalten",
+        repo_id,
+    )
+    return None
 
 
 def _notify(title: str, message: str, ok: bool) -> None:
