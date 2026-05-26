@@ -65,7 +65,7 @@ class FileDownloader:
         self.on_line = on_line
         self.max_concurrent = max_concurrent
         self.deadline = time.time() + timeout
-        self.stats = {"downloaded": 0, "skipped": 0, "failed": 0, "bytes": 0}
+        self.stats = {"downloaded": 0, "skipped": 0, "failed": 0, "bytes": 0, "failed_files": []}
 
     def _log(self, msg: str) -> None:
         if self.on_line:
@@ -195,6 +195,10 @@ class FileDownloader:
             f"{self.stats['failed']} Fehler, "
             f"{self._fmt_size(self.stats['bytes'])} gesamt"
         )
+        if self.stats["failed_files"]:
+            self._log("\n⚠️ Fehlgeschlagene Dateien:")
+            for _url, _err in self.stats["failed_files"]:
+                self._log(f"  ❌ {_url}  ({_err})")
 
         return 0 if self.stats["failed"] == 0 else 1
 
@@ -316,7 +320,10 @@ class FileDownloader:
             f"{self.stats['failed']} Fehler, "
             f"{self._fmt_size(self.stats['bytes'])} gesamt"
         )
-
+        if self.stats["failed_files"]:
+            self._log("\n⚠️ Fehlgeschlagene Dateien:")
+            for _url, _err in self.stats["failed_files"]:
+                self._log(f"  ❌ {_url}  ({_err})")
         return 0 if self.stats["failed"] == 0 else 1
 
     async def _bounded_download(
@@ -466,6 +473,7 @@ class FileDownloader:
                     msg = f"Checksumme stimmt nicht: {checksum} vs {file_hash}"
                     self._log(f"❌ {target_path.name}: {msg}")
                     self.stats["failed"] += 1
+                    self.stats["failed_files"].append((url, msg))
                     return 1, msg
 
             # Verschiebe zu Final-Pfad
@@ -480,6 +488,7 @@ class FileDownloader:
         except Exception as e:
             self._log(f"❌ {target_path.name}: {e}")
             self.stats["failed"] += 1
+            self.stats["failed_files"].append((url, str(e)))
             return 1, str(e)
 
     @staticmethod
