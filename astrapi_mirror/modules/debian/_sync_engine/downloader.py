@@ -115,9 +115,9 @@ class FileDownloader:
 
             self._log(f"\n📦 Suite: {suite}")
 
-            # 1. InRelease herunterladen
+            # 1. InRelease herunterladen (immer aktuell holen, auch beim Resume)
             inrelease_path = suite_path / "InRelease"
-            rc, _ = await self._download_file(f"{suite_url}/InRelease", inrelease_path)
+            rc, _ = await self._download_file(f"{suite_url}/InRelease", inrelease_path, force=True)
             if rc != 0:
                 self._log(f"❌ InRelease nicht abrufbar: {suite}")
                 return 1
@@ -219,12 +219,12 @@ class FileDownloader:
 
         self.staging_path.mkdir(parents=True, exist_ok=True)
 
-        # 1. InRelease herunterladen (Fallback: Release)
+        # 1. InRelease herunterladen (immer aktuell holen, auch beim Resume)
         inrelease_path = self.staging_path / "InRelease"
-        rc, _ = await self._download_file(f"{url}/InRelease", inrelease_path)
+        rc, _ = await self._download_file(f"{url}/InRelease", inrelease_path, force=True)
         if rc != 0:
             release_path = self.staging_path / "Release"
-            rc, _ = await self._download_file(f"{url}/Release", release_path)
+            rc, _ = await self._download_file(f"{url}/Release", release_path, force=True)
             if rc != 0:
                 self._log("❌ Weder InRelease noch Release abrufbar")
                 return 1
@@ -332,10 +332,11 @@ class FileDownloader:
         url: str,
         path: Path,
         checksum: str | None = None,
+        force: bool = False,
     ) -> None:
         """Download mit Semaphore-Begrenzung."""
         async with sem:
-            await self._download_file(url, path, checksum=checksum)
+            await self._download_file(url, path, checksum=checksum, force=force)
 
     @staticmethod
     def _parse_inrelease(content: str) -> list[dict]:
@@ -409,7 +410,7 @@ class FileDownloader:
         return entries
 
     async def _download_file(
-        self, url: str, target_path: Path, checksum: str | None = None
+        self, url: str, target_path: Path, checksum: str | None = None, force: bool = False
     ) -> tuple[int, str]:
         """Lädt eine einzelne Datei herunter mit Resume-Unterstützung.
 
@@ -417,6 +418,7 @@ class FileDownloader:
             url: URL der Datei
             target_path: Ziel-Pfad
             checksum: Optional SHA256-Checksumme
+            force: Immer herunterladen, auch wenn Datei bereits existiert
 
         Returns:
             (returncode, message)
@@ -427,10 +429,9 @@ class FileDownloader:
             self._log(f"⏱️ {target_path.name}: {msg}")
             return 1, msg
 
-        # Prüfe ob Datei schon vollständig existiert
-        if target_path.exists():
+        # Prüfe ob Datei schon vollständig existiert (außer bei force=True)
+        if not force and target_path.exists():
             try:
-                # Versuche, Größe mit HEAD-Request zu prüfen
                 size = target_path.stat().st_size
                 self._log(f"⏭️ {target_path.name}: bereits vorhanden ({self._fmt_size(size)})")
                 self.stats["skipped"] += 1

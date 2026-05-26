@@ -28,10 +28,12 @@ def prepare_staging(
     staging_path = Path(staging_path)
     production_path = Path(production_path)
 
-    # Falls Staging existiert, lösche es
+    # Falls Staging bereits existiert, wurde ein vorheriger Sync unterbrochen.
+    # Wir behalten es, damit der Downloader bereits heruntergeladene Dateien
+    # überspringen und abgebrochene Downloads fortsetzen kann (Resume-Modus).
     if staging_path.exists():
-        _log(f"Cleaning staging: {staging_path.name}")
-        shutil.rmtree(staging_path, ignore_errors=True)
+        _log(f"Resuming interrupted sync: {staging_path.name} already exists")
+        return
 
     staging_path.mkdir(parents=True, exist_ok=True)
 
