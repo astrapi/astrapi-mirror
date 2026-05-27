@@ -1,7 +1,6 @@
 from pathlib import Path
 from typing import Optional
 
-from astrapi_core.ui.controls import Col, ContentTable
 from astrapi_core.ui.crud_router import make_crud_router as _make_crud
 from astrapi_core.ui.module_loader import load_modul
 from fastapi import APIRouter, HTTPException, Request
@@ -94,13 +93,6 @@ module = load_modul(
     _KEY,
     router,
     ui_router,
-    ui_content=ContentTable(
-        columns=[
-            Col.link("url", "URL"),
-            Col.text("slug", "Slug", css="col-type"),
-            Col.join("suites", "Suites", sep=", "),
-        ],
-    ),
 )
 
 try:

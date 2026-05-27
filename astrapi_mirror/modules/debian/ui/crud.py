@@ -11,12 +11,28 @@ from .. import KEY, store
 
 _DIR = Path(__file__).parent.parent  # modules/debian/
 
+
+class _LabelDescStore:
+    """Thin wrapper: injects description=label so col-name renders the label."""
+
+    def __init__(self, inner):
+        self._inner = inner
+
+    def __getattr__(self, name):
+        return getattr(self._inner, name)
+
+    def list(self, **kwargs):
+        raw = self._inner.list(**kwargs)
+        return {k: {**v, "description": v.get("label", k)} for k, v in raw.items()}
+
+
 router = make_crud_router(
-    store,
+    _LabelDescStore(store),
     KEY,
     schema_path=str(_DIR / "config" / "schema.yaml"),
     label="Debian-Repository",
     description_field="label",
+    has_run_buttons=True,
     has_toggle=True,
     has_status=True,
 )
