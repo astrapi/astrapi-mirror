@@ -248,6 +248,7 @@ def _check_release_file(
             if line.startswith(" ") and len((parts := line.strip().split())) >= 3
         ]
     )
+    seen_files: set[str] = set()
 
     in_block = False
     checked = 0
@@ -266,6 +267,9 @@ def _check_release_file(
 
             if filename not in selected_filenames:
                 continue
+            if filename in seen_files:
+                continue
+            seen_files.add(filename)
 
             if _should_skip(
                 filename,

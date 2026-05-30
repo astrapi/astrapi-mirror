@@ -539,15 +539,50 @@ class FileDownloader:
         if not force and target_path.exists():
             try:
                 size = target_path.stat().st_size
-                self._log(f"⏭️ {target_path.name}: bereits vorhanden ({self._fmt_size(size)})")
-                self.stats["skipped"] += 1
-                return 0, "Already exists"
+                if checksum:
+                    file_hash = self._compute_sha256(target_path)
+                    if file_hash != checksum:
+                        self._log(
+                            f"♻️ {target_path.name}: lokale Datei veraltet, lade neu "
+                            f"({self._fmt_size(size)})"
+                        )
+                        try:
+                            target_path.unlink()
+                        except OSError:
+                            pass
+                    else:
+                        self._log(
+                            f"⏭️ {target_path.name}: bereits vorhanden ({self._fmt_size(size)})"
+                        )
+                        self.stats["skipped"] += 1
+                        return 0, "Already exists"
+                else:
+                    self._log(f"⏭️ {target_path.name}: bereits vorhanden ({self._fmt_size(size)})")
+                    self.stats["skipped"] += 1
+                    return 0, "Already exists"
             except Exception:
                 pass
 
         # Erstelle Partial-Datei
         partial_path = self.partial_root / f"{target_path.relative_to(self.staging_path)}"
         partial_path.parent.mkdir(parents=True, exist_ok=True)
+
+        if checksum and partial_path.exists():
+            try:
+                partial_hash = self._compute_sha256(partial_path)
+            except OSError:
+                partial_hash = None
+            if partial_hash and partial_hash == checksum:
+                target_path.parent.mkdir(parents=True, exist_ok=True)
+                partial_path.replace(target_path)
+                size = target_path.stat().st_size
+                self._log(f"✅ {target_path.name}: {self._fmt_size(size)}")
+                self.stats["downloaded"] += 1
+                return 0, "OK"
+            try:
+                partial_path.unlink()
+            except OSError:
+                pass
 
         try:
             # Download starten
