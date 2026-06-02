@@ -16,6 +16,7 @@ log = logging.getLogger(__name__)
 # Regex für Architektur- und Component-Filter (analog engine.py)
 _ARCH_IN_PATH = re.compile(r"(?:^|/)binary-([^/]+)/")
 _ARCH_IN_NAME = re.compile(r"(?:^|/)Contents-([a-zA-Z0-9_]+)")
+_DEP11_ARCH = re.compile(r"/dep11/Components-([^./]+)\.")
 _COMPONENT_PREFIX = re.compile(r"^([^/]+)/")
 _TRANSLATION_IN_PATH = re.compile(r"(?:^|/)i18n/Translation-([^./]+)")
 _OPTIONAL_INDEX_SUFFIXES = ("/Packages", "/Sources")
@@ -26,7 +27,7 @@ def _index_group_key(filename: str) -> str | None:
     if filename.endswith(".diff/Index"):
         return None
 
-    for suffix in (".xz", ".gz"):
+    for suffix in (".xz", ".gz", ".bz2"):
         if filename.endswith(suffix):
             stem = filename[: -len(suffix)]
             break
@@ -37,6 +38,7 @@ def _index_group_key(filename: str) -> str | None:
         stem.endswith(_OPTIONAL_INDEX_SUFFIXES)
         or "/i18n/Translation-" in stem
         or "/Contents-" in stem
+        or "/dep11/" in stem
     ):
         return f"idx:{stem}"
 
@@ -49,7 +51,9 @@ def _variant_rank(filename: str) -> int:
         return 0
     if filename.endswith(".gz"):
         return 1
-    return 2
+    if filename.endswith(".bz2"):
+        return 2
+    return 3
 
 
 def _select_preferred_index_entries(entries: list[dict]) -> list[dict]:
@@ -130,6 +134,9 @@ def _should_skip_file(
         if m and m.group(1) not in arch_set:
             return True
         m = _ARCH_IN_NAME.search(filename)
+        if m and m.group(1) not in arch_set:
+            return True
+        m = _DEP11_ARCH.search(filename)
         if m and m.group(1) not in arch_set:
             return True
     return False
