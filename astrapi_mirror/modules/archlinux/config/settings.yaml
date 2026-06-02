@@ -1,0 +1,34 @@
+modal_width: 500
+
+fields:
+  - type:  section
+    label: Verzeichnisse
+    cols:  1
+
+  - key:         mirror_path
+    label:       Mirror-Verzeichnis
+    type:        text
+    placeholder: "/storage/mirror"
+    default:     "{work_dir}/mirror"
+    description: "Hauptverzeichnis für alle gespiegelten Arch Linux Repos"
+
+  - type:  section
+    label: Download
+    cols:  1
+
+  - key:         max_parallel_downloads
+    label:       Parallele Downloads (pro Repo)
+    type:        text
+    placeholder: "4"
+    default:     "4"
+    description: "Anzahl gleichzeitig laufender Download-Tasks (asyncio Semaphore)"
+
+  - type:  section
+    label: Optionen
+    cols:  1
+
+  - key:         validate_signatures
+    label:       Signaturen prüfen
+    type:        boolean
+    default:     "true"
+    description: "Pacman-Signaturen validieren nach dem Sync (pacman-key workflow)"

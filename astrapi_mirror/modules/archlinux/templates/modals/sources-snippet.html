@@ -1,0 +1,43 @@
+<!-- Arch Linux Sources Snippet Modal -->
+<div class="modal-header">
+    <h2>pacman.conf Snippet</h2>
+    <p class="hint">Repository {{ item.label }}</p>
+</div>
+<div class="modal-body">
+    <div class="snippet-container">
+        <div class="code-block">
+            <textarea id="snippet" readonly rows="8"># {{ item.label }}
+# Mirror: {{ base_url | default('https://...') }}/repo/arch/{{ item.slug or item.id }}
+[{{ item.slug or item.id }}]
+Server = {{ base_url | default('https://...') }}/repo/arch/{{ item.slug or item.id }}/$arch
+</textarea>
+            <button type="button" 
+                    onclick="copyToClipboard('snippet')"
+                    class="btn btn-sm btn-secondary">
+                📋 In Zwischenablage kopieren
+            </button>
+        </div>
+
+        <div class="hint">
+            <p><strong>Anleitung:</strong></p>
+            <ol>
+                <li>Kopiere obigen Code in deine <code>/etc/pacman.conf</code></li>
+                <li>Führe <code>pacman -Sy</code> aus um die Paketlisten zu aktualisieren</li>
+                <li>Installiere Pakete wie gewohnt: <code>pacman -S paket-name</code></li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" onclick="closeModal()" class="btn btn-secondary">Schließen</button>
+    </div>
+</div>
+
+<script>
+function copyToClipboard(elementId) {
+    var text = document.getElementById(elementId);
+    text.select();
+    document.execCommand('copy');
+    alert('In Zwischenablage kopiert!');
+}
+</script>

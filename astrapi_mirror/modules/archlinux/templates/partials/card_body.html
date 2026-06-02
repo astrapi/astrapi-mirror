@@ -1,0 +1,29 @@
+{# Arch Linux Repo Card Body #}
+<div class="card-body meta-grid">
+    <div class="meta-row">
+        <span class="meta-label">URL:</span>
+        <span class="meta-value">{{ item.url }}</span>
+    </div>
+    <div class="meta-row">
+        <span class="meta-label">Architekturen:</span>
+        <span class="meta-value">{{ item.architectures | join(', ') }}</span>
+    </div>
+    <div class="meta-row">
+        <span class="meta-label">Status:</span>
+        <span class="meta-value status-badge status-{{ item.last_status or 'neu' }}">
+            {{ item.last_status or 'neu' }}
+        </span>
+    </div>
+    {% if item.last_run %}
+    <div class="meta-row">
+        <span class="meta-label">Letzter Sync:</span>
+        <span class="meta-value">{{ item.last_run }}</span>
+    </div>
+    {% endif %}
+    {% if item.last_sync_issues %}
+    <div class="meta-row alert-warning">
+        <span class="meta-label">Probleme:</span>
+        <span class="meta-value">{{ item.last_sync_issues | length }} Fehler</span>
+    </div>
+    {% endif %}
+</div>

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none" stroke="currentColor" stroke-width="2">
+  <!-- Arch Linux Logo - Outline version -->
+  <circle cx="64" cy="64" r="54"/>
+  <circle cx="64" cy="64" r="46"/>
+  <circle cx="64" cy="64" r="36"/>
+  
+  <!-- Mountain peaks (stylized for Arch) -->
+  <polyline points="50,70 64,45 78,70"/>
+  <polyline points="38,75 52,55 66,75"/>
+  <polyline points="62,75 76,55 90,75"/>
+</svg>

@@ -1,0 +1,14 @@
+label:          Arch Linux Repos
+nav_group:      Arch Linux
+nav_default:    true
+settings_button: false
+
+card_actions:
+  - type: run
+    url:  /ui/archlinux/{item}/sync
+  - type: preview
+    url:  /ui/archlinux/{item}/validate
+  - type: info
+    url:  /ui/archlinux/{item}/sources-snippet
+  - type: log
+    url:  /ui/archlinux/{item}/log

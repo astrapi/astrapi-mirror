@@ -1,0 +1,33 @@
+fields:
+  - name:        label
+    label:       Bezeichnung
+    type:        text
+    placeholder: "Arch Core (Official)"
+    max:         120
+    column:      1
+    row:         1
+    colspan:     2
+
+  - name:        url
+    label:       Repository-URL
+    type:        text
+    placeholder: "https://mirror.archlinux.org/iso/latest"
+    max:         500
+    column:      1
+    row:         2
+
+  - name:        architectures
+    label:       Architekturen
+    type:        list
+    placeholder: "x86_64"
+    max:         100
+    column:      2
+    row:         2
+    description: "Standard: x86_64; weitere: aarch64, armv7h"
+
+  - name:        enabled
+    label:       Aktiviert
+    type:        boolean
+    default:     true
+    column:      1
+    row:         3

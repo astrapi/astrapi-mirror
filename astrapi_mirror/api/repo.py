@@ -364,3 +364,112 @@ def debian_repo_serve(repo_id: str, path: str, request: Request):
         return FileResponse(str(target))
 
     raise HTTPException(404, "Nicht gefunden")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Arch Linux Repository Serving
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+@router.get("/repo/arch", include_in_schema=False)
+def arch_root_redirect():
+    return RedirectResponse("/repo/arch/", status_code=301)
+
+
+@router.get("/repo/arch/", response_class=HTMLResponse, include_in_schema=False)
+def arch_root_listing(request: Request):
+    """Listing aller Arch-Repositories."""
+    try:
+        from astrapi_mirror.modules.archlinux import store
+    except ImportError:
+        raise HTTPException(503, "Arch Linux Modul nicht verfügbar")
+
+    repos = store.list()
+    rows = []
+
+    for repo_id, repo_data in sorted(repos.items()):
+        href = f"/repo/arch/{repo_id}/"
+        label = repo_data.get("label", repo_id)
+        rows.append(f'<tr><td><a href="{href}">{_html.escape(label)}</a></td><td>–</td></tr>')
+
+    hint = "Arch Linux Repositories · Wähle ein Repository um die Dateien zu durchsuchen."
+
+    return HTMLResponse(
+        _page(
+            "Arch Linux Mirrors",
+            hint,
+            "\n".join(rows) or "<tr><td colspan='2'>Keine Repositories vorhanden.</td></tr>",
+        )
+    )
+
+
+@router.get("/repo/arch/{repo_id}", include_in_schema=False)
+def arch_repo_redirect(repo_id: str):
+    return RedirectResponse(f"/repo/arch/{repo_id}/", status_code=301)
+
+
+@router.get(
+    "/repo/arch/{repo_id}/{path:path}", response_class=HTMLResponse, include_in_schema=False
+)
+def arch_repo_listing(repo_id: str, path: str, request: Request):
+    """File-serving und Directory-Listing für Arch Linux Repositories."""
+    try:
+        from astrapi_mirror.modules.archlinux import store
+    except ImportError:
+        raise HTTPException(503, "Arch Linux Modul nicht verfügbar")
+
+    repo_data = store.get(repo_id)
+    if not repo_data:
+        raise HTTPException(404, f"Arch Repository nicht gefunden: {repo_id}")
+
+    # Resolve path
+    mirror_base = _mirror_root() / repo_id / "current"
+    if not mirror_base.exists():
+        raise HTTPException(503, f"Mirror für {repo_id} nicht vorhanden")
+
+    target = _safe_child(mirror_base, path.strip("/"))
+
+    # Directory listing
+    if target.is_dir():
+        rows = []
+        try:
+            for item in sorted(target.iterdir()):
+                name = item.name
+                href_name = f"{path.rstrip('/')}/{name}" if path.rstrip("/") else name
+                href = f"/repo/arch/{repo_id}/{href_name}" + ("/" if item.is_dir() else "")
+                size = "–" if item.is_dir() else _fmt_size(item.stat().st_size)
+                display = name + ("/" if item.is_dir() else "")
+                rows.append(
+                    f'<tr><td><a href="{href}">{_html.escape(display)}</a></td><td class="size">{size}</td></tr>'
+                )
+        except PermissionError:
+            raise HTTPException(403, "Zugriff verweigert")
+
+        # Breadcrumb
+        path_parts = path.rstrip("/").split("/") if path.rstrip("/") else []
+        parent = f"/repo/arch/{repo_id}/"
+        if path_parts and path_parts[-1]:
+            parent = (
+                f"/repo/arch/{repo_id}/"
+                + "/".join(path_parts[:-1])
+                + ("/" if len(path_parts) > 1 else "")
+            )
+        else:
+            parent = f"/repo/arch/{repo_id}/"
+
+        display = f"arch/{repo_id}" + (f"/{path.rstrip('/')}" if path else "")
+        hint = f"Repository: {repo_data.get('label', repo_id)} · Architekturen: {', '.join(repo_data.get('architectures', ['x86_64']))}"
+
+        return HTMLResponse(
+            _page(
+                display,
+                hint,
+                "\n".join(rows) or "<tr><td colspan='2'>Leer.</td></tr>",
+                back=parent,
+            )
+        )
+
+    if target.is_file():
+        return FileResponse(str(target))
+
+    raise HTTPException(404, "Nicht gefunden")
