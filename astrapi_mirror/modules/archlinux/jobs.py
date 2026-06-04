@@ -79,9 +79,9 @@ def sync_all() -> None:
         log_lines.append(line)
 
     # Engine initialisieren
-    from astrapi_mirror._paths import mirror_path
+    from astrapi_mirror._paths import archlinux_mirror_path
 
-    engine = SyncEngine(mirror_path())
+    engine = SyncEngine(archlinux_mirror_path())
 
     # Asynchronen Sync starten (blockierend von Thread aus)
     loop = asyncio.new_event_loop()
@@ -161,9 +161,9 @@ def sync_repo(repo_id: str) -> None:
         log_lines.append(line)
 
     # Engine
-    from astrapi_mirror._paths import mirror_path
+    from astrapi_mirror._paths import archlinux_mirror_path
 
-    engine = SyncEngine(mirror_path())
+    engine = SyncEngine(archlinux_mirror_path())
     repo_with_id = {"id": repo_id, **repo_data}
 
     # Asynchronen Sync starten (blockierend von Thread aus)

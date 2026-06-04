@@ -381,7 +381,7 @@ def client_sources_file(repo: dict, base_url: str) -> str:
 
     Format (Beispiel):
         Types: deb
-        URIs: https://mirror.example.com/repo/debian/caddy
+        URIs: https://mirror.example.com/files/debian/caddy
         Suites: bookworm
         Components: main
         Architectures: amd64 arm64
@@ -389,7 +389,7 @@ def client_sources_file(repo: dict, base_url: str) -> str:
     """
     base_url = base_url.rstrip("/")
     repo_id = repo.get("slug") or str(repo.get("id", ""))
-    mirror_url = f"{base_url}/repo/debian/{repo_id}"
+    mirror_url = f"{base_url}/files/debian/{repo_id}"
 
     lines: list[str] = [f"Types: {repo.get('repo_type', 'deb')}"]
 

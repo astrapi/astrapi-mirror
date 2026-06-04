@@ -80,7 +80,9 @@ class ArchDownloader:
 
     async def _download_arch(self, base_url: str, arch: str) -> int:
         """Lädt alle Dateien einer Architektur herunter."""
-        arch_url = f"{base_url}/os/{arch}/"
+        # Ersetze $arch/$repo Platzhalter (pacman mirrorlist Format)
+        expanded = base_url.replace("$arch", arch).replace("$repo", arch)
+        arch_url = expanded.rstrip("/") + "/"
         arch_path = self.staging_path / "os" / arch
         arch_path.mkdir(parents=True, exist_ok=True)
 
@@ -121,17 +123,42 @@ class ArchDownloader:
         # Wir laden db.tar.gz herunter und extrahieren die Dateiliste daraus
         # ODER: wir machen einen einfachen HTTP-Request und parsen verlinkte Dateien
 
-        # Für MVP: fest definierte Muster (*.db.tar.gz, *.files.tar.gz, *.pkg.tar.*)
-        # In Produktion würde man besseres Listing implementieren
+        import re
+        from urllib.parse import unquote
 
-        patterns = ["*.db.tar.gz", "*.files.tar.gz"]
+        loop = asyncio.get_event_loop()
 
-        # Vereinfachung: Simuliere Dateiliste (echte Implementierung würde
-        # HTML-Listing parsen oder db extrahieren)
+        def _fetch_listing():
+            resp = urlopen(arch_url, timeout=30)
+            return resp.read().decode("utf-8", errors="replace")
+
+        html = await loop.run_in_executor(None, _fetch_listing)
+
+        _ARCH_EXTS = (
+            ".pkg.tar.zst",
+            ".pkg.tar.xz",
+            ".pkg.tar.gz",
+            ".pkg.tar.zst.sig",
+            ".pkg.tar.xz.sig",
+            ".db",
+            ".db.tar.gz",
+            ".db.tar.zst",
+            ".files",
+            ".files.tar.gz",
+            ".files.tar.zst",
+        )
+
+        # Extrahiere href-Werte (relativ und absolut)
+        pattern = re.compile(r'href="([^"#][^"]*)"', re.IGNORECASE)
         files = []
-        for pattern in patterns:
-            # Placeholder: würde echte HTTP-Listing-Parsing sein
-            pass
+        seen = set()
+        for m in pattern.finditer(html):
+            href = unquote(m.group(1).strip())
+            # Bei absoluten Pfaden nur den Dateinamen verwenden
+            name = href.split("/")[-1] or href
+            if name and name not in seen and any(name.endswith(ext) for ext in _ARCH_EXTS):
+                files.append(name)
+                seen.add(name)
 
         return files
 

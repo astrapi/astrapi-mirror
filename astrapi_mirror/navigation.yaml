@@ -1,5 +1,7 @@
 # navigation.yaml – Modulreihenfolge im Menü
 - key:   debian
-  group: Debian
+  group: Repos
+  label: Debian
 - key:   archlinux
-  group: Arch Linux
+  group: Repos
+  label: Archlinux

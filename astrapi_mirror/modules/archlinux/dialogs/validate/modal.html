@@ -1,0 +1,44 @@
+<!-- Arch Linux Validate Modal -->
+<div class="modal-header">
+    <h2>Validierung: {{ item.label }}</h2>
+</div>
+<div class="modal-body">
+    {% if validation.status == 'ok' %}
+    <div class="validation-status ok">
+        ✅ Validierung erfolgreich
+    </div>
+    <div class="validation-details">
+        <p><strong>{{ validation.checked_archs }} Architektur(en) geprüft</strong></p>
+        <p>Repository-Struktur ist intakt.</p>
+    </div>
+    {% elif validation.status == 'error' %}
+    <div class="validation-status error">
+        ❌ Validierung fehlgeschlagen
+    </div>
+    {% if validation.issues %}
+    <div class="issues-list">
+        <h4>Probleme:</h4>
+        <ul>
+        {% for issue in validation.issues %}
+            <li>{{ issue }}</li>
+        {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+    {% else %}
+    <div class="validation-status unknown">
+        ❓ Status unbekannt
+    </div>
+    {% endif %}
+
+    <div class="modal-footer">
+        <button type="button" 
+                hx-post="/ui/archlinux/{{ item_id }}/sync"
+                hx-target="closest .modal"
+                hx-swap="outerHTML"
+                class="btn btn-primary">
+            Neu synchronisieren
+        </button>
+        <button type="button" onclick="closeModal()" class="btn btn-secondary">Schließen</button>
+    </div>
+</div>

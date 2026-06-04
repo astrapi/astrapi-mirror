@@ -203,8 +203,8 @@ class FileDownloader:
         comp_set = set(components) if components else None
 
         if not suites:
-            self._log("ℹ️ Keine Suites definiert (Flat-Repo?)")
-            return 0
+            self._log("ℹ️ Keine Suites definiert – behandle als Flat-Repo")
+            return await self._download_flat_repo(repo)
 
         # Sammelt alle Pool-Dateien aus allen Suites (dedupliziert am Ende)
         pool_files: list[tuple[str, Path, str | None]] = []

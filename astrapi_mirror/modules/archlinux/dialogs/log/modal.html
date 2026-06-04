@@ -1,0 +1,42 @@
+<!-- Arch Linux Log Modal -->
+<div class="modal-header">
+    <h2>Sync-Log: {{ item.label }}</h2>
+    {% if item.last_run %}
+    <p class="hint">Letzter Sync: {{ item.last_run }}</p>
+    {% endif %}
+</div>
+<div class="modal-body">
+    <div class="log-viewer">
+        {% if item.last_status == 'running' %}
+        <div class="log-status running">
+            ⏳ Synchronisierung läuft...
+        </div>
+        <div hx-sse="connect:/api/archlinux/{{ item_id }}/log/stream"
+             hx-swap="innerHTML">
+            Warte auf Output...
+        </div>
+        {% elif item.last_status == 'ok' %}
+        <div class="log-status ok">
+            ✅ Letzter Sync erfolgreich
+        </div>
+        {% elif item.last_status == 'error' %}
+        <div class="log-status error">
+            ❌ Letzter Sync fehlgeschlagen
+        </div>
+        {% if item.last_sync_issues %}
+        <div class="issues-list">
+            <h4>Fehler:</h4>
+            <ul>
+            {% for issue in item.last_sync_issues %}
+                <li>{{ issue }}</li>
+            {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        {% endif %}
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" onclick="closeModal()" class="btn btn-secondary">Schließen</button>
+    </div>
+</div>

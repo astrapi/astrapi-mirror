@@ -5,7 +5,7 @@ from pathlib import Path
 from astrapi_core.ui.crud_blueprint import make_crud_router
 from astrapi_core.ui.render import render
 from fastapi import Request
-from fastapi.responses import HTMLResponse, PlainTextResponse
+from fastapi.responses import HTMLResponse
 
 from .. import KEY, store
 
@@ -50,12 +50,40 @@ def ui_sync_repo(repo_id: str, request: Request):
     store.upsert(repo_id, {"last_status": "syncing"})
     sync_repo_async(repo_id)
 
-    item = store.get(repo_id)
+    item_data = store.get(repo_id) or {}
     return render(
-        f"{KEY}/partials/list_row.html",
         request,
-        item=item,
-        item_id=repo_id,
+        "partials/row_single.html",
+        {
+            "item_name": repo_id,
+            "item_data": item_data,
+            "module": KEY,
+            "container_id": f"mod-{KEY}",
+            "loading_id": f"{KEY}-loading",
+            "running": {},
+        },
+    )
+
+
+# ---------------------------------------------------------------------------
+# Sync-All-Action
+# ---------------------------------------------------------------------------
+
+
+@router.post(f"/ui/{KEY}/sync-all", response_class=HTMLResponse)
+def ui_sync_all(request: Request):
+    from ..jobs import sync_all_async
+
+    sync_all_async()
+    return render(
+        request,
+        "content.html",
+        {
+            "cfg": store.list(),
+            "module": KEY,
+            "container_id": f"mod-{KEY}",
+            "loading_id": f"{KEY}-loading",
+        },
     )
 
 
@@ -75,11 +103,13 @@ def ui_validate_repo(repo_id: str, request: Request):
     validation = validate_repo({"id": repo_id, **item})
 
     return render(
-        f"{KEY}/modals/validate.html",
         request,
-        item=item,
-        item_id=repo_id,
-        validation=validation,
+        f"{KEY}/dialogs/validate/modal.html",
+        {
+            "item": item,
+            "item_id": repo_id,
+            "validation": validation,
+        },
     )
 
 
@@ -88,16 +118,26 @@ def ui_validate_repo(repo_id: str, request: Request):
 # ---------------------------------------------------------------------------
 
 
-@router.get(f"/ui/{KEY}/{{repo_id}}/sources-snippet", response_class=PlainTextResponse)
+@router.get(f"/ui/{KEY}/{{repo_id}}/sources-snippet", response_class=HTMLResponse)
 def ui_sources_snippet(repo_id: str, request: Request):
     from .._sync_engine.engine import client_pacman_snippet
 
     item = store.get(repo_id)
     if not item:
-        return "# Nicht gefunden"
+        return "<p>Nicht gefunden</p>"
 
     base_url = str(request.base_url).rstrip("/")
-    return client_pacman_snippet(item, base_url)
+    snippet = client_pacman_snippet(item, base_url)
+
+    return render(
+        request,
+        f"{KEY}/dialogs/sources-snippet/modal.html",
+        {
+            "item": item,
+            "item_id": repo_id,
+            "base_url": base_url,
+        },
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -112,8 +152,10 @@ def ui_log_repo(repo_id: str, request: Request):
         return "<p>Nicht gefunden</p>"
 
     return render(
-        f"{KEY}/modals/log.html",
         request,
-        item=item,
-        item_id=repo_id,
+        f"{KEY}/dialogs/log/modal.html",
+        {
+            "item": item,
+            "item_id": repo_id,
+        },
     )

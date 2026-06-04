@@ -1,16 +1,20 @@
-"""astrapi_mirror.api.repo – Debian-Mirror HTTP-Server unter /repo/debian/.
+"""astrapi_mirror.api.repo – Generischer Mirror-File-Server unter /files/.
 
-URLs sind ID-basiert: /repo/debian/{repo_id}/… – der Upstream-Hostname
-wird nicht in der URL abgebildet. Die Abbildung repo_id → Dateisystem-Pfad
-erfolgt über den Store; refrapts physisches Layout (hostname/url-pfad) bleibt
-auf Disk unverändert.
+Unterstützte OS-Typen werden in ``_OS_REGISTRY`` registriert.
+Neue Distributionen können durch einen weiteren Eintrag eingebunden werden.
 """
 
 import html as _html
 from pathlib import Path
 
 from fastapi import APIRouter, HTTPException, Request
-from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
+from fastapi.responses import (
+    FileResponse,
+    HTMLResponse,
+    PlainTextResponse,
+    RedirectResponse,
+    Response,
+)
 
 router = APIRouter()
 
@@ -34,12 +38,6 @@ _CSS = """
                 padding: 4px; border-radius: 4px; opacity: .65; color: #8b949e; transition: opacity .15s; }
     .copy-btn:hover { opacity: 1; }
 """
-
-
-def _mirror_root() -> Path:
-    from astrapi_mirror._paths import mirror_path
-
-    return mirror_path()
 
 
 def _fmt_size(n: int) -> str:
@@ -93,135 +91,81 @@ def _safe_child(base: Path, *parts: str) -> Path:
     return resolved
 
 
-def _repo_real_path(repo_id: str) -> Path | None:
-    """Gibt den realen Dateisystem-Pfad für ein Repo anhand seiner ID zurück.
+# ---------------------------------------------------------------------------
+# OS-Registry – lazy callables um zirkuläre Imports beim Laden zu vermeiden
+# ---------------------------------------------------------------------------
 
-    Bevorzugt das neue ID-basierte Layout (mirror_root/{repo_id}/current).
-    Fällt auf das alte URL-basierte Layout zurück wenn nötig.
-    """
-    # Neues Layout: mirror_root/{repo_id}/current → vN/
-    current_path = _mirror_root() / repo_id / "current"
-    if current_path.exists():
-        return current_path
 
-    # Fallback: altes URL-basiertes Layout (hostname/url-pfad)
+def _debian_mirror_root() -> Path:
+    from astrapi_mirror._paths import mirror_path
+
+    return mirror_path()
+
+
+def _archlinux_mirror_root() -> Path:
+    from astrapi_mirror._paths import archlinux_mirror_path
+
+    return archlinux_mirror_path()
+
+
+def _get_debian_store():
+    from astrapi_mirror.modules.debian import store
+
+    return store
+
+
+def _get_archlinux_store():
+    from astrapi_mirror.modules.archlinux import store
+
+    return store
+
+
+def _debian_hint(repo_id: str, repo_data: dict, request: Request) -> str:
     try:
-        from astrapi_mirror.modules.debian import store
-        from astrapi_mirror.modules.debian.engine import _host_path_from_url
-    except ImportError:
-        return None
-    data = store.get(repo_id)
-    if not data:
-        return None
-    url = (data.get("url") or "").rstrip("/")
-    if not url:
-        return None
-    return _mirror_root() / _host_path_from_url(url)
+        from astrapi_mirror.modules.debian.engine import client_sources_file
 
-
-# ---------------------------------------------------------------------------
-# /repo  →  /repo/
-# ---------------------------------------------------------------------------
-@router.get("/repo", include_in_schema=False)
-def repo_redirect():
-    return RedirectResponse(url="/repo/", status_code=301)
-
-
-# ---------------------------------------------------------------------------
-# /repo/  – OS-Typ-Übersicht
-# ---------------------------------------------------------------------------
-@router.get("/repo/", response_class=HTMLResponse, include_in_schema=False)
-def repo_index():
-    rows = '<tr><td><a href="/repo/debian/">debian/</a></td><td class="size">—</td></tr>'
-    return HTMLResponse(_page("Repository", "Verfügbare Distributionen", rows))
-
-
-# ---------------------------------------------------------------------------
-# /repo/debian  →  /repo/debian/
-# ---------------------------------------------------------------------------
-@router.get("/repo/debian", include_in_schema=False)
-def debian_redirect():
-    return RedirectResponse(url="/repo/debian/", status_code=301)
-
-
-# ---------------------------------------------------------------------------
-# /repo/debian/  – Repo-Listing (ID-basiert, aus dem Store)
-# ---------------------------------------------------------------------------
-@router.get("/repo/debian/", response_class=HTMLResponse, include_in_schema=False)
-def debian_index(request: Request):
-    try:
-        from astrapi_mirror.modules.debian import store
-
-        repos = list(store.list().values())
-    except Exception:
-        repos = []
-
-    synced = [
-        r
-        for r in repos
-        if (p := _repo_real_path(r.get("slug", str(r.get("id", ""))))) is not None and p.exists()
-    ]
-
-    if not synced:
-        return HTMLResponse(
-            _page(
-                "Debian Mirror",
-                "Noch keine synchronisierten Repositories vorhanden.",
-                "<tr><td colspan='2'>Bitte zuerst einen Sync starten.</td></tr>",
-            )
+        base_url = str(request.base_url).rstrip("/")
+        src_full = client_sources_file(repo_data, base_url)
+        if "Signed-By:\n" in src_full:
+            idx = src_full.find("Signed-By:\n")
+            src_display = src_full[:idx] + "Signed-By: …\n"
+        else:
+            src_display = src_full
+        safe_id = f"src-{repo_id}"
+        _copy_icon = (
+            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none"'
+            ' stroke="currentColor" stroke-width="2">'
+            '<rect x="9" y="9" width="13" height="13" rx="2"/>'
+            '<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>'
+            "</svg>"
         )
-
-    rows = "\n".join(
-        f"<tr>"
-        f'<td><a href="/repo/debian/{r.get("slug", str(r.get("id", "")))}/"> {r.get("label") or r.get("slug", "")}</a></td>'
-        f'<td class="size">—</td>'
-        f"</tr>"
-        for r in synced
-    )
-    return HTMLResponse(_page("Debian Mirror", "", rows))
-
-
-# ---------------------------------------------------------------------------
-# /repo/debian/{repo_id}.gpg  – GPG-Schlüssel-Download
-# ---------------------------------------------------------------------------
-@router.get("/repo/debian/{repo_id}.gpg", include_in_schema=False)
-def debian_repo_gpg(repo_id: str):
-    try:
-        from astrapi_mirror.modules.debian import store
-
-        data = store.get(repo_id)
+        _check_icon = (
+            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none"'
+            ' stroke="currentColor" stroke-width="2.5">'
+            '<polyline points="20 6 9 17 4 12"/>'
+            "</svg>"
+        )
+        return (
+            f"{repo_id}.sources:"
+            f'<div class="pre-wrap">'
+            f"<pre>{_html.escape(src_display)}</pre>"
+            f'<textarea id="{safe_id}" style="display:none">{_html.escape(src_full)}</textarea>'
+            f'<button class="copy-btn" title="Kopieren" onclick="copySnippet(\'{safe_id}\', this)">'
+            f'<span class="ci">{_copy_icon}</span>'
+            f'<span class="ck" style="display:none">{_check_icon}</span>'
+            f"</button></div>"
+        )
     except Exception:
-        data = None
-    if not data or not data.get("gpg_key"):
-        raise HTTPException(404, "Kein GPG-Schlüssel hinterlegt")
-    from fastapi.responses import Response
-
-    return Response(
-        content=data["gpg_key"].encode(),
-        media_type="application/pgp-keys",
-        headers={"Content-Disposition": f'attachment; filename="{repo_id}.gpg"'},
-    )
+        return ""
 
 
-# ---------------------------------------------------------------------------
-# /repo/debian/{repo_id}  →  /repo/debian/{repo_id}/
-# ---------------------------------------------------------------------------
-@router.get("/repo/debian/{repo_id}", include_in_schema=False)
-def debian_repo_redirect(repo_id: str):
-    return RedirectResponse(url=f"/repo/debian/{repo_id}/", status_code=301)
+def _archlinux_hint(repo_id: str, repo_data: dict, request: Request) -> str:
+    archs = ", ".join(repo_data.get("architectures") or ["x86_64"])
+    return f"Repository: {_html.escape(repo_data.get('label', repo_id))} · Architekturen: {archs}"
 
 
-# ---------------------------------------------------------------------------
-# /repo/debian/{repo_id}/{path:path}  – Datei-Download / Directory-Listing
-# ---------------------------------------------------------------------------
-@router.get("/repo/debian/{repo_id}/{path:path}", include_in_schema=False)
-def debian_repo_serve(repo_id: str, path: str, request: Request):
-    real_root = _repo_real_path(repo_id)
-    if real_root is None:
-        raise HTTPException(404, "Repo nicht gefunden")
-
-    # --- Virtuelle Dateien im Repo-Root -----------------------------------
-
+def _debian_virtual_file(repo_id: str, path: str, request: Request):
+    """Gibt Response für virtuelle Debian-Dateien zurück oder None."""
     if path == f"{repo_id}.sources":
         try:
             from astrapi_mirror.modules.debian import store
@@ -232,244 +176,223 @@ def debian_repo_serve(repo_id: str, path: str, request: Request):
             content = client_sources_file(data, base_url)
         except Exception:
             raise HTTPException(500, "Fehler beim Generieren der .sources-Datei")
-        from fastapi.responses import PlainTextResponse
-
         return PlainTextResponse(
             content,
             headers={"Content-Disposition": f'inline; filename="{repo_id}.sources"'},
         )
-
     if path == f"{repo_id}.gpg":
-        return debian_repo_gpg(repo_id)
+        try:
+            from astrapi_mirror.modules.debian import store
 
-    # --- Normales Filesystem-Serving ---------------------------------------
-
-    if not real_root.exists():
-        return HTMLResponse(
-            _page(
-                f"debian/{repo_id}",
-                "Noch nicht synchronisiert – bitte zuerst einen Sync starten.",
-                "",
-                back="/repo/debian/",
-            )
+            data = store.get(repo_id)
+        except Exception:
+            data = None
+        if not data or not data.get("gpg_key"):
+            raise HTTPException(404, "Kein GPG-Schlüssel hinterlegt")
+        return Response(
+            content=data["gpg_key"].encode(),
+            media_type="application/pgp-keys",
+            headers={"Content-Disposition": f'attachment; filename="{repo_id}.gpg"'},
         )
+    return None
 
-    target = _safe_child(real_root, path) if path else real_root
 
-    if target.is_dir():
-        entries = sorted(target.iterdir(), key=lambda p: (p.is_file(), p.name))
-        rows = []
+def _debian_virtual_entries(repo_id: str, os_type: str) -> list[str]:
+    """Gibt zusätzliche Tabellenzeilen für virtuelle Dateien im Repo-Root."""
+    rows = [
+        f'<tr><td><a href="/files/{os_type}/{repo_id}/{repo_id}.sources">{repo_id}.sources</a></td>'
+        f'<td class="size">—</td></tr>'
+    ]
+    try:
+        from astrapi_mirror.modules.debian import store
 
-        # Virtuelle Einträge nur im Repo-Root einblenden
-        if not path:
-            src_name = f"{repo_id}.sources"
+        d = store.get(repo_id) or {}
+        gpg = (d.get("gpg_key") or "").strip()
+        if gpg and not gpg.startswith("-----BEGIN PGP PUBLIC KEY BLOCK-----"):
             rows.append(
-                f'<tr><td><a href="/repo/debian/{repo_id}/{src_name}">{src_name}</a></td>'
+                f'<tr><td><a href="/files/{os_type}/{repo_id}/{repo_id}.gpg">{repo_id}.gpg</a></td>'
                 f'<td class="size">—</td></tr>'
             )
-            try:
-                from astrapi_mirror.modules.debian import store as _st
+    except Exception:
+        pass
+    return rows
 
-                _d = _st.get(repo_id)
-                gpg_key = (_d.get("gpg_key") or "").strip() if _d else ""
-                # .gpg-Datei nur anzeigen wenn Key NICHT inline armoriert ist (Fallback)
-                if gpg_key and not gpg_key.startswith("-----BEGIN PGP PUBLIC KEY BLOCK-----"):
-                    gpg_name = f"{repo_id}.gpg"
-                    rows.append(
-                        f'<tr><td><a href="/repo/debian/{gpg_name}">{gpg_name}</a></td>'
-                        f'<td class="size">—</td></tr>'
-                    )
-            except Exception:
-                pass
 
-        for e in entries:
-            name = e.name + ("/" if e.is_dir() else "")
-            base_href = f"/repo/debian/{repo_id}"
-            if path:
-                href = f"{base_href}/{path.rstrip('/')}/{e.name}" + ("/" if e.is_dir() else "")
-            else:
-                href = f"{base_href}/{e.name}" + ("/" if e.is_dir() else "")
-            size = "—" if e.is_dir() else _fmt_size(e.stat().st_size)
-            rows.append(
-                f'<tr><td><a href="{href}">{name}</a></td><td class="size">{size}</td></tr>'
-            )
+_OS_REGISTRY: dict[str, dict] = {
+    "debian": {
+        "label": "Debian",
+        "mirror_root_fn": _debian_mirror_root,
+        "store_fn": _get_debian_store,
+        "hint_fn": _debian_hint,
+        "virtual_file_fn": _debian_virtual_file,
+        "virtual_entries_fn": _debian_virtual_entries,
+    },
+    "archlinux": {
+        "label": "Arch Linux",
+        "mirror_root_fn": _archlinux_mirror_root,
+        "store_fn": _get_archlinux_store,
+        "hint_fn": _archlinux_hint,
+        "virtual_file_fn": None,
+        "virtual_entries_fn": None,
+    },
+}
 
-        if path:
-            path_parts = path.rstrip("/").split("/")
-            if len(path_parts) > 1:
-                parent = f"/repo/debian/{repo_id}/" + "/".join(path_parts[:-1])
-            else:
-                parent = f"/repo/debian/{repo_id}/"
-        else:
-            parent = "/repo/debian/"
 
-        display = f"debian/{repo_id}" + (f"/{path.rstrip('/')}" if path else "")
+def _resolve_repo_path(os_type: str, repo_id: str) -> Path | None:
+    """Gibt {mirror_root}/{repo_id}/current zurück wenn vorhanden, sonst None."""
+    try:
+        cfg = _OS_REGISTRY[os_type]
+        p = cfg["mirror_root_fn"]() / repo_id / "current"
+        return p if p.exists() else None
+    except Exception:
+        return None
 
-        hint = ""
-        if not path:
-            try:
-                from astrapi_mirror.modules.debian import store as _st2
-                from astrapi_mirror.modules.debian.engine import client_sources_file
 
-                _d2 = _st2.get(repo_id) or {}
-                base_url = str(request.base_url).rstrip("/")
-                _src_full = client_sources_file(_d2, base_url)
-                # Inline-GPG-Block nicht anzeigen
-                if "Signed-By:\n" in _src_full:
-                    _idx = _src_full.find("Signed-By:\n")
-                    _src_display = _src_full[:_idx] + "Signed-By: \u2026\n"
-                else:
-                    _src_display = _src_full
-                _copy_icon = (
-                    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none"'
-                    ' stroke="currentColor" stroke-width="2">'
-                    '<rect x="9" y="9" width="13" height="13" rx="2"/>'
-                    '<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>'
-                    "</svg>"
-                )
-                _check_icon = (
-                    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none"'
-                    ' stroke="currentColor" stroke-width="2.5">'
-                    '<polyline points="20 6 9 17 4 12"/>'
-                    "</svg>"
-                )
-                _safe_id = f"src-{repo_id}"
-                hint = (
-                    f"{repo_id}.sources:"
-                    f'<div class="pre-wrap">'
-                    f"<pre>{_html.escape(_src_display)}</pre>"
-                    f'<textarea id="{_safe_id}" style="display:none">'
-                    f"{_html.escape(_src_full)}"
-                    f"</textarea>"
-                    f'<button class="copy-btn" title="Kopieren"'
-                    f" onclick=\"copySnippet('{_safe_id}', this)\">"
-                    f'<span class="ci">{_copy_icon}</span>'
-                    f'<span class="ck" style="display:none">{_check_icon}</span>'
-                    f"</button>"
-                    f"</div>"
-                )
-            except Exception:
-                pass
+# ---------------------------------------------------------------------------
+# Routes
+# ---------------------------------------------------------------------------
 
+
+@router.get("/files", include_in_schema=False)
+def files_redirect():
+    return RedirectResponse("/files/", status_code=301)
+
+
+@router.get("/files/", response_class=HTMLResponse, include_in_schema=False)
+def files_index():
+    rows = "\n".join(
+        f'<tr><td><a href="/files/{os}/">{_html.escape(cfg["label"])}/</a></td>'
+        f'<td class="size">—</td></tr>'
+        for os, cfg in _OS_REGISTRY.items()
+    )
+    return HTMLResponse(_page("Mirror", "Verfügbare Distributionen", rows))
+
+
+@router.get("/files/{os_type}", include_in_schema=False)
+def os_type_redirect(os_type: str):
+    if os_type not in _OS_REGISTRY:
+        raise HTTPException(404, f"Unbekannter OS-Typ: {os_type}")
+    return RedirectResponse(f"/files/{os_type}/", status_code=301)
+
+
+@router.get("/files/{os_type}/", response_class=HTMLResponse, include_in_schema=False)
+def os_repo_listing(os_type: str):
+    cfg = _OS_REGISTRY.get(os_type)
+    if not cfg:
+        raise HTTPException(404, f"Unbekannter OS-Typ: {os_type}")
+    try:
+        repos = cfg["store_fn"]().list()
+    except Exception:
+        repos = {}
+    rows = []
+    for _key, repo_data in sorted(repos.items(), key=lambda x: x[1].get("label", "")):
+        repo_id = repo_data.get("slug") or str(_key)
+        if _resolve_repo_path(os_type, repo_id) is None:
+            continue
+        label = repo_data.get("label") or repo_id
+        rows.append(
+            f'<tr><td><a href="/files/{os_type}/{repo_id}/">{_html.escape(label)}</a></td>'
+            f'<td class="size">—</td></tr>'
+        )
+    if not rows:
         return HTMLResponse(
             _page(
-                display,
-                hint,
-                "\n".join(rows) or "<tr><td colspan='2'>Leer.</td></tr>",
-                back=parent,
+                f"{cfg['label']} Mirror",
+                "Noch keine synchronisierten Repositories vorhanden.",
+                "<tr><td colspan='2'>Bitte zuerst einen Sync starten.</td></tr>",
+                back="/files/",
             )
         )
+    return HTMLResponse(_page(f"{cfg['label']} Mirror", "", "\n".join(rows), back="/files/"))
+
+
+@router.get("/files/{os_type}/{repo_id}", include_in_schema=False)
+def repo_redirect(os_type: str, repo_id: str):
+    return RedirectResponse(f"/files/{os_type}/{repo_id}/", status_code=301)
+
+
+@router.get("/files/{os_type}/{repo_id}/{path:path}", include_in_schema=False)
+def generic_serve(os_type: str, repo_id: str, path: str, request: Request):
+    cfg = _OS_REGISTRY.get(os_type)
+    if not cfg:
+        raise HTTPException(404, f"Unbekannter OS-Typ: {os_type}")
+
+    # Virtuelle Dateien (OS-spezifisch)
+    virtual_fn = cfg.get("virtual_file_fn")
+    if virtual_fn and path:
+        resp = virtual_fn(repo_id, path, request)
+        if resp is not None:
+            return resp
+
+    real_root = _resolve_repo_path(os_type, repo_id)
+    if real_root is None:
+        return HTMLResponse(
+            _page(
+                f"{os_type}/{repo_id}",
+                "Noch nicht synchronisiert – bitte zuerst einen Sync starten.",
+                "",
+                back=f"/files/{os_type}/",
+            )
+        )
+
+    target = _safe_child(real_root, path.strip("/")) if path.strip("/") else real_root
 
     if target.is_file():
         return FileResponse(str(target))
 
-    raise HTTPException(404, "Nicht gefunden")
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Arch Linux Repository Serving
-# ─────────────────────────────────────────────────────────────────────────────
-
-
-@router.get("/repo/arch", include_in_schema=False)
-def arch_root_redirect():
-    return RedirectResponse("/repo/arch/", status_code=301)
-
-
-@router.get("/repo/arch/", response_class=HTMLResponse, include_in_schema=False)
-def arch_root_listing(request: Request):
-    """Listing aller Arch-Repositories."""
-    try:
-        from astrapi_mirror.modules.archlinux import store
-    except ImportError:
-        raise HTTPException(503, "Arch Linux Modul nicht verfügbar")
-
-    repos = store.list()
-    rows = []
-
-    for repo_id, repo_data in sorted(repos.items()):
-        href = f"/repo/arch/{repo_id}/"
-        label = repo_data.get("label", repo_id)
-        rows.append(f'<tr><td><a href="{href}">{_html.escape(label)}</a></td><td>–</td></tr>')
-
-    hint = "Arch Linux Repositories · Wähle ein Repository um die Dateien zu durchsuchen."
-
-    return HTMLResponse(
-        _page(
-            "Arch Linux Mirrors",
-            hint,
-            "\n".join(rows) or "<tr><td colspan='2'>Keine Repositories vorhanden.</td></tr>",
-        )
-    )
-
-
-@router.get("/repo/arch/{repo_id}", include_in_schema=False)
-def arch_repo_redirect(repo_id: str):
-    return RedirectResponse(f"/repo/arch/{repo_id}/", status_code=301)
-
-
-@router.get(
-    "/repo/arch/{repo_id}/{path:path}", response_class=HTMLResponse, include_in_schema=False
-)
-def arch_repo_listing(repo_id: str, path: str, request: Request):
-    """File-serving und Directory-Listing für Arch Linux Repositories."""
-    try:
-        from astrapi_mirror.modules.archlinux import store
-    except ImportError:
-        raise HTTPException(503, "Arch Linux Modul nicht verfügbar")
-
-    repo_data = store.get(repo_id)
-    if not repo_data:
-        raise HTTPException(404, f"Arch Repository nicht gefunden: {repo_id}")
-
-    # Resolve path
-    mirror_base = _mirror_root() / repo_id / "current"
-    if not mirror_base.exists():
-        raise HTTPException(503, f"Mirror für {repo_id} nicht vorhanden")
-
-    target = _safe_child(mirror_base, path.strip("/"))
-
-    # Directory listing
     if target.is_dir():
-        rows = []
+        path_clean = path.rstrip("/")
+        path_parts = path_clean.split("/") if path_clean else []
+        if len(path_parts) > 1:
+            back = f"/files/{os_type}/{repo_id}/" + "/".join(path_parts[:-1]) + "/"
+        elif path_parts:
+            back = f"/files/{os_type}/{repo_id}/"
+        else:
+            back = f"/files/{os_type}/"
+
+        title = f"{os_type}/{repo_id}" + (f"/{path_clean}" if path_clean else "")
+
+        hint = ""
+        if not path_clean:
+            hint_fn = cfg.get("hint_fn")
+            if hint_fn:
+                try:
+                    repo_data = cfg["store_fn"]().get(repo_id) or {}
+                    hint = hint_fn(repo_id, repo_data, request)
+                except Exception:
+                    pass
+
         try:
-            for item in sorted(target.iterdir()):
-                name = item.name
-                href_name = f"{path.rstrip('/')}/{name}" if path.rstrip("/") else name
-                href = f"/repo/arch/{repo_id}/{href_name}" + ("/" if item.is_dir() else "")
-                size = "–" if item.is_dir() else _fmt_size(item.stat().st_size)
-                display = name + ("/" if item.is_dir() else "")
-                rows.append(
-                    f'<tr><td><a href="{href}">{_html.escape(display)}</a></td><td class="size">{size}</td></tr>'
-                )
+            fs_entries = sorted(target.iterdir(), key=lambda p: (p.is_file(), p.name))
         except PermissionError:
             raise HTTPException(403, "Zugriff verweigert")
 
-        # Breadcrumb
-        path_parts = path.rstrip("/").split("/") if path.rstrip("/") else []
-        parent = f"/repo/arch/{repo_id}/"
-        if path_parts and path_parts[-1]:
-            parent = (
-                f"/repo/arch/{repo_id}/"
-                + "/".join(path_parts[:-1])
-                + ("/" if len(path_parts) > 1 else "")
+        repo_prefix = f"/files/{os_type}/{repo_id}"
+        rows = []
+        if not path_clean:
+            ve_fn = cfg.get("virtual_entries_fn")
+            if ve_fn:
+                rows.extend(ve_fn(repo_id, os_type))
+        for e in fs_entries:
+            display = e.name + ("/" if e.is_dir() else "")
+            suffix = "/" if e.is_dir() else ""
+            href = (
+                f"{repo_prefix}/{path_clean}/{e.name}{suffix}"
+                if path_clean
+                else f"{repo_prefix}/{e.name}{suffix}"
             )
-        else:
-            parent = f"/repo/arch/{repo_id}/"
-
-        display = f"arch/{repo_id}" + (f"/{path.rstrip('/')}" if path else "")
-        hint = f"Repository: {repo_data.get('label', repo_id)} · Architekturen: {', '.join(repo_data.get('architectures', ['x86_64']))}"
-
+            size = "—" if e.is_dir() else _fmt_size(e.stat().st_size)
+            rows.append(
+                f'<tr><td><a href="{href}">{_html.escape(display)}</a></td>'
+                f'<td class="size">{size}</td></tr>'
+            )
         return HTMLResponse(
             _page(
-                display,
+                title,
                 hint,
                 "\n".join(rows) or "<tr><td colspan='2'>Leer.</td></tr>",
-                back=parent,
+                back=back,
             )
         )
-
-    if target.is_file():
-        return FileResponse(str(target))
 
     raise HTTPException(404, "Nicht gefunden")

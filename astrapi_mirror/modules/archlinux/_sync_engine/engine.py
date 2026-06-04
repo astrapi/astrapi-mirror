@@ -6,6 +6,12 @@ import time
 from pathlib import Path
 from typing import Callable
 
+from astrapi_mirror.modules.debian._sync_engine.versioning import (
+    atomic_swap,
+    cleanup_old_versions,
+    prepare_staging,
+)
+
 from .downloader import ArchDownloader
 from .validator import test_pacman_sync
 
@@ -18,11 +24,6 @@ class SyncEngine:
     """Interne Sync-Engine für Arch Linux Repositories."""
 
     def __init__(self, mirror_root: Path, partial_root: Path | None = None):
-        """
-        Args:
-            mirror_root: Basis-Verzeichnis für Mirrors (z.B. /storage/mirror)
-            partial_root: Verzeichnis für Partial-Downloads (Standard: mirror_root/.partial)
-        """
         self.mirror_root = mirror_root
         self.partial_root = partial_root or mirror_root / ".partial"
         self.partial_root.mkdir(parents=True, exist_ok=True)
@@ -32,15 +33,6 @@ class SyncEngine:
         repos: list[dict],
         on_line: Callable[[str], None] | None = None,
     ) -> tuple[int, str]:
-        """Synchronisiert mehrere Repos sequenziell.
-
-        Args:
-            repos: Liste von Repo-Dicts mit url, architectures, enabled
-            on_line: Optional Callback pro Zeile Output
-
-        Returns:
-            (returncode, output): 0 = OK, >0 = Fehler
-        """
         if not repos:
             msg = "Keine aktivierten Repos zum Synchronisieren"
             log.info(msg)
@@ -90,15 +82,6 @@ class SyncEngine:
         repo: dict,
         on_line: Callable[[str], None] | None = None,
     ) -> tuple[int, str]:
-        """Synchronisiert ein einzelnes Arch Linux Repository.
-
-        Args:
-            repo: Repo-Dict mit id, slug, url, architectures, enabled
-            on_line: Optional Callback pro Zeile Output
-
-        Returns:
-            (returncode, output): 0 = OK, >0 = Fehler
-        """
         repo_id = repo.get("slug") or str(repo.get("id", "unknown"))
         url = (repo.get("url") or "").rstrip("/")
 
@@ -119,12 +102,12 @@ class SyncEngine:
         t0 = time.time()
 
         try:
-            # Phase 1: Staging vorbereiten
+            # Phase 1: Staging vorbereiten (mit Hardlinks von current → vN)
             _log("\n[1/4] Staging vorbereiten...")
             production_path = self.mirror_root / repo_id
             staging_path = production_path / "staging"
 
-            self._prepare_staging(production_path, staging_path, _log)
+            prepare_staging(production_path, staging_path, _log)
 
             # Phase 2: Downloaden
             _log("\n[2/4] Dateien herunterladen...")
@@ -150,16 +133,14 @@ class SyncEngine:
             except Exception as e:
                 _log(f"⚠️ Docker nicht verfügbar: {e}")
 
-            # Phase 4: Atomic Swap
+            # Phase 4: Atomic Swap (staging → vN, current-Symlink → vN)
             _log("\n[4/4] Atomic Swap...")
             try:
-                self._atomic_swap(staging_path, production_path)
-                _log("✅ Swap erfolgreich")
+                new_version_path = atomic_swap(staging_path, production_path)
+                _log(f"✅ Swap erfolgreich zu {new_version_path.name}")
 
-                # Cleanup alte Versionen
-                self._cleanup_old_versions(production_path, keep=2)
+                cleanup_old_versions(production_path, keep=3)
 
-                # Partial-Verzeichnis leeren
                 try:
                     if self.partial_root.exists():
                         shutil.rmtree(self.partial_root)
@@ -182,82 +163,6 @@ class SyncEngine:
             log.exception("sync_repo: unerwarteter Fehler")
             return 1, f"Unerwarteter Fehler: {e}"
 
-    def _prepare_staging(
-        self, production_path: Path, staging_path: Path, on_line: Callable
-    ) -> None:
-        """Bereitet Staging-Verzeichnis vor (mit Hardlinks wenn möglich)."""
-        if staging_path.exists():
-            shutil.rmtree(staging_path)
-
-        # Erstelle staging mit initialer Struktur
-        staging_path.mkdir(parents=True, exist_ok=True)
-
-        # Versuche Hardlinks von production zu erstellen (schneller als Copy)
-        current_link = production_path / "current"
-        if current_link.exists():
-            try:
-                current_real = current_link.resolve()
-                for item in current_real.rglob("*"):
-                    if item.is_file():
-                        rel_path = item.relative_to(current_real)
-                        target = staging_path / rel_path
-                        target.parent.mkdir(parents=True, exist_ok=True)
-                        try:
-                            # Versuche Hardlink
-                            import os
-
-                            os.link(item, target)
-                        except (OSError, FileExistsError):
-                            # Fallback: copy falls Hardlink nicht möglich
-                            shutil.copy2(item, target)
-            except Exception as e:
-                on_line(f"⚠️ Hardlink-Vorbereitung teilweise fehlgeschlagen: {e}")
-
-    def _atomic_swap(self, staging_path: Path, production_path: Path) -> None:
-        """Atomic Swap: staging → current, alte versionen → *.old"""
-        staging_path_real = staging_path.resolve()
-        production_path.mkdir(parents=True, exist_ok=True)
-
-        current_link = production_path / "current"
-
-        # Backup alte version
-        if current_link.exists():
-            current_real = current_link.resolve()
-            timestamp = int(time.time())
-            backup_path = production_path / f"backup-{timestamp}"
-            try:
-                current_real.rename(backup_path)
-            except OSError:
-                shutil.rmtree(current_real, ignore_errors=True)
-
-        # Staging -> aktuell
-        production_path.mkdir(parents=True, exist_ok=True)
-
-        # Remove old staging
-        if staging_path.exists():
-            shutil.rmtree(staging_path)
-
-        staging_path.mkdir(parents=True, exist_ok=True)
-
-        # Erstelle aktuellen Mirror aus Repository
-        # (wird vom Downloader genutzt)
-
-    def _cleanup_old_versions(self, production_path: Path, keep: int = 2) -> None:
-        """Entfernt alte Backup-Versionen, behalte letzte `keep` Versionen."""
-        if not production_path.exists():
-            return
-
-        backups = sorted(
-            [p for p in production_path.iterdir() if p.is_dir() and p.name.startswith("backup-")]
-        )
-        if len(backups) > keep:
-            for old_backup in backups[:-keep]:
-                try:
-                    shutil.rmtree(old_backup)
-                    log.info(f"Gelöschte alte Backup: {old_backup.name}")
-                except Exception as e:
-                    log.warning(f"Fehler beim Löschen {old_backup.name}: {e}")
-
 
 def validate_repo(repo: dict, base_path: Path | None = None) -> dict:
     """Validiert ein Arch-Repository.
@@ -269,13 +174,13 @@ def validate_repo(repo: dict, base_path: Path | None = None) -> dict:
     Returns:
         {'status': 'ok'/'error', 'issues': [...], 'checked_archs': n}
     """
-    from astrapi_mirror._paths import mirror_path
+    from astrapi_mirror._paths import archlinux_mirror_path
 
     if base_path is not None:
         mirror_base = Path(base_path)
     else:
         repo_id = repo.get("slug") or str(repo.get("id", ""))
-        repo_root = mirror_path() / repo_id / "current"
+        repo_root = archlinux_mirror_path() / repo_id / "current"
         if repo_root.exists():
             mirror_base = repo_root
         else:
