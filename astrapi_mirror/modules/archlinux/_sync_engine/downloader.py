@@ -52,7 +52,7 @@ class ArchDownloader:
             {url}/os/{arch}/*.files.tar.gz
 
         Args:
-            repo: Repo-Dict mit url, architectures
+            repo: Repo-Dict mit url, architectures, id/slug
 
         Returns:
             0 = OK, >0 = Fehler
@@ -62,11 +62,14 @@ class ArchDownloader:
         if isinstance(architectures, str):
             architectures = [a.strip() for a in architectures.split(",")]
 
+        # Repo-Name für $repo-Platzhalter ermitteln
+        repo_name = repo.get("slug") or repo.get("id") or repo.get("label", "")
+
         self._log(f"Lade {len(architectures)} Architektur(en) herunter...")
 
         tasks = []
         for arch in architectures:
-            task = asyncio.create_task(self._download_arch(url, arch))
+            task = asyncio.create_task(self._download_arch(url, arch, repo_name))
             tasks.append(task)
 
         results = await asyncio.gather(*tasks, return_exceptions=True)
@@ -78,10 +81,10 @@ class ArchDownloader:
 
         return 0
 
-    async def _download_arch(self, base_url: str, arch: str) -> int:
+    async def _download_arch(self, base_url: str, arch: str, repo_name: str = "") -> int:
         """Lädt alle Dateien einer Architektur herunter."""
         # Ersetze $arch/$repo Platzhalter (pacman mirrorlist Format)
-        expanded = base_url.replace("$arch", arch).replace("$repo", arch)
+        expanded = base_url.replace("$arch", arch).replace("$repo", repo_name)
         arch_url = expanded.rstrip("/") + "/"
         arch_path = self.staging_path / "os" / arch
         arch_path.mkdir(parents=True, exist_ok=True)
