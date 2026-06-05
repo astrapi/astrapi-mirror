@@ -3,6 +3,7 @@
 import logging
 import threading
 import time
+import traceback
 import urllib.request
 from datetime import datetime
 
@@ -125,52 +126,63 @@ def sync_all() -> None:
 
     act_id = _act_start("Debian: Alle Repos syncen")
     t0 = time.time()
+    output = ""
+    status = "error"
 
-    log_lines: list[str] = []
+    try:
+        output_lines: list[str] = []
 
-    def _flush(line: str) -> None:
-        log_lines.append(line)
+        def _flush(line: str) -> None:
+            output_lines.append(line)
 
-    # Nutze neue SyncEngine
-    engine = SyncEngine()
-    rc, output = engine.sync_repos(repos, on_line=_flush)
+        # Nutze neue SyncEngine
+        engine = SyncEngine()
+        rc, output = engine.sync_repos(repos, on_line=_flush)
 
-    status = "ok" if rc == 0 else "error"
-    duration = int(time.time() - t0)
+        status = "ok" if rc == 0 else "error"
 
-    # Validierung nach dem Sync
-    validation = {}
-    if status == "ok":
-        validation = validate_all(repos)
-        failed = [rid for rid, r in validation.items() if r["status"] == "error"]
-        if failed:
-            status = "error"
-            output += f"\n\nValidierung fehlgeschlagen für: {', '.join(failed)}"
+        # Validierung nach dem Sync
+        validation = {}
+        if status == "ok":
+            validation = validate_all(repos)
+            failed = [rid for rid, r in validation.items() if r["status"] == "error"]
+            if failed:
+                status = "error"
+                output += f"\n\nValidierung fehlgeschlagen für: {', '.join(failed)}"
 
-    # GPG-Schlüssel herunterladen
-    for repo in repos:
-        url = repo.get("gpg_key_url", "").strip()
-        if url:
-            key = _fetch_gpg_key(repo.get("slug", str(repo["id"])), url)
-            if key:
-                store.upsert(str(repo["id"]), {"gpg_key": key})
+        # GPG-Schlüssel herunterladen
+        for repo in repos:
+            url = repo.get("gpg_key_url", "").strip()
+            if url:
+                key = _fetch_gpg_key(repo.get("slug", str(repo["id"])), url)
+                if key:
+                    store.upsert(str(repo["id"]), {"gpg_key": key})
 
-    # Status pro Repo speichern
-    _ts = _now()
-    for repo in repos:
-        slug = repo.get("slug") or str(repo["id"])
-        v = validation.get(slug, {})
-        _s = v.get("status", status)
-        store.upsert(
-            str(repo["id"]),
-            {
-                "last_run": _ts,
-                "last_status": _s,
-                "last_sync_issues": v.get("issues", []),
-            },
-        )
+        # Status pro Repo speichern
+        _ts = _now()
+        for repo in repos:
+            slug = repo.get("slug") or str(repo["id"])
+            v = validation.get(slug, {})
+            _s = v.get("status", status)
+            store.upsert(
+                str(repo["id"]),
+                {
+                    "last_run": _ts,
+                    "last_status": _s,
+                    "last_sync_issues": v.get("issues", []),
+                },
+            )
 
-    _act_done(act_id, status, duration, output)
+    except Exception:
+        tb = traceback.format_exc()
+        log.exception("debian.sync_all: unerwarteter Fehler")
+        output += f"\n\n=== EXCEPTION ===\n{tb}"
+        status = "error"
+
+    finally:
+        duration = int(time.time() - t0)
+        _act_done(act_id, status, duration, output)
+
     _notify(
         f"Debian Mirror Sync {'erfolgreich' if status == 'ok' else 'fehlgeschlagen'}",
         f"{len(repos)} Repos, {duration}s",
@@ -198,46 +210,53 @@ def sync_repo(repo_id: str) -> None:
     repo = repo_data
     act_id = _act_start(f"Debian: {repo.get('slug', repo_id)} syncen", item_id=repo_id)
     t0 = time.time()
+    output = ""
+    status = "error"
+    validation: dict = {}
 
     store.upsert(repo_id, {"last_status": "syncing"})
 
-    log_lines: list[str] = []
+    try:
+        # Nutze neue SyncEngine
+        engine = SyncEngine()
+        rc, output = engine.sync_repo(repo, on_line=None)
 
-    def _flush(line: str) -> None:
-        log_lines.append(line)
+        status = "ok" if rc == 0 else "error"
 
-    # Nutze neue SyncEngine
-    engine = SyncEngine()
-    rc, output = engine.sync_repo(repo, on_line=_flush)
+        if status == "ok":
+            validation = validate_repo(repo)
+            if validation["status"] == "error":
+                status = "error"
+                issues_text = "\n".join(validation["issues"][:20])
+                output += f"\n\nValidierung:\n{issues_text}"
 
-    status = "ok" if rc == 0 else "error"
-    duration = int(time.time() - t0)
+        # GPG-Schlüssel herunterladen
+        gpg_url = repo_data.get("gpg_key_url", "").strip()
+        if gpg_url:
+            key = _fetch_gpg_key(repo_id, gpg_url)
+            if key:
+                store.upsert(repo_id, {"gpg_key": key})
 
-    validation: dict = {}
-    if status == "ok":
-        validation = validate_repo(repo)
-        if validation["status"] == "error":
-            status = "error"
-            issues_text = "\n".join(validation["issues"][:20])
-            output += f"\n\nValidierung:\n{issues_text}"
+        store.upsert(
+            repo_id,
+            {
+                "last_run": _now(),
+                "last_status": validation.get("status", status),
+                "last_sync_issues": validation.get("issues", []),
+            },
+        )
 
-    # GPG-Schlüssel herunterladen
-    gpg_url = repo_data.get("gpg_key_url", "").strip()
-    if gpg_url:
-        key = _fetch_gpg_key(repo_id, gpg_url)
-        if key:
-            store.upsert(repo_id, {"gpg_key": key})
+    except Exception:
+        tb = traceback.format_exc()
+        log.exception("debian.sync_repo: unerwarteter Fehler bei '%s'", repo_id)
+        output += f"\n\n=== EXCEPTION ===\n{tb}"
+        status = "error"
+        store.upsert(repo_id, {"last_status": "error"})
 
-    store.upsert(
-        repo_id,
-        {
-            "last_run": _now(),
-            "last_status": validation.get("status", status),
-            "last_sync_issues": validation.get("issues", []),
-        },
-    )
+    finally:
+        duration = int(time.time() - t0)
+        _act_done(act_id, status, duration, output)
 
-    _act_done(act_id, status, duration, output)
     _notify(
         f"Debian: {repo_id} {'✓' if status == 'ok' else '✗'}",
         output[-400:].strip() if status == "error" else f"{duration}s",
