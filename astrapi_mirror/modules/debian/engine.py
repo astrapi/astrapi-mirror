@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import logging
 import re
-import urllib.request
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -31,50 +30,6 @@ def _armor_inline(armored_key: str) -> str:
     for line in armored_key.strip().splitlines():
         result.append(f" {line}" if line.strip() else " .")
     return "\n".join(result)
-
-
-# ---------------------------------------------------------------------------
-# Flat-Repo-Erkennung
-# ---------------------------------------------------------------------------
-
-
-def detect_flat(url: str, suites: list[str] | None = None) -> bool:
-    """Erkennt automatisch ob ein Repo flat ist (kein dists/-Verzeichnis).
-
-    Prüfreihenfolge via HTTP HEAD:
-    1. {url}/dists/{erste_suite}/InRelease  → 2xx = nicht flat
-    2. {url}/dists/                          → 2xx = nicht flat
-    3. {url}/InRelease                       → 2xx = flat
-    4. Fallback                              → False (Standard-Repo)
-    """
-    url = (url or "").rstrip("/")
-    if not url:
-        return False
-
-    def _head_ok(probe_url: str) -> bool:
-        try:
-            req = urllib.request.Request(probe_url, method="HEAD")
-            with urllib.request.urlopen(req, timeout=3) as resp:
-                return resp.status < 400
-        except Exception:
-            return False
-
-    # Zuerst Standard-Layout prüfen (nicht flat)
-    clean_suites = [s.strip() for s in (suites or []) if s.strip()]
-    if clean_suites and _head_ok(f"{url}/dists/{clean_suites[0]}/InRelease"):
-        log.debug("detect_flat(%s): nicht flat (dists/%s/InRelease gefunden)", url, clean_suites[0])
-        return False
-    if _head_ok(f"{url}/dists/"):
-        log.debug("detect_flat(%s): nicht flat (dists/ gefunden)", url)
-        return False
-
-    # Flat-Layout prüfen
-    if _head_ok(f"{url}/InRelease"):
-        log.debug("detect_flat(%s): flat (InRelease im Root)", url)
-        return True
-
-    log.debug("detect_flat(%s): Fallback → nicht flat", url)
-    return False
 
 
 # ---------------------------------------------------------------------------
@@ -319,9 +274,6 @@ def validate_repo(repo: dict, base_path: Path | None = None) -> dict:
     """
     from astrapi_mirror._paths import mirror_path
 
-    if repo.get("is_flat"):
-        return {"status": "ok", "issues": [], "checked_suites": 0}
-
     url = (repo.get("url") or "").rstrip("/")
 
     if base_path is not None:
@@ -335,6 +287,10 @@ def validate_repo(repo: dict, base_path: Path | None = None) -> dict:
             # Fallback: alter URL-basierter Pfad
             host_path = _host_path_from_url(url)
             mirror_base = mirror_path() / host_path
+
+    # Flat-Repo oder noch nicht synchronisiert: kein dists/-Verzeichnis vorhanden
+    if not (mirror_base / "dists").is_dir():
+        return {"status": "ok", "issues": [], "checked_suites": 0}
 
     suites = [s.strip() for s in (repo.get("suites") or []) if s.strip()]
     archs = [a.strip() for a in (repo.get("architectures") or []) if a.strip()]
@@ -393,15 +349,16 @@ def client_sources_file(repo: dict, base_url: str) -> str:
 
     lines: list[str] = [f"Types: {repo.get('repo_type', 'deb')}"]
 
-    if repo.get("is_flat"):
+    suites = [s.strip() for s in (repo.get("suites") or []) if s.strip()]
+    components = [c.strip() for c in (repo.get("components") or []) if c.strip()]
+
+    if not suites:
+        # Flat-Repo: kein dists/-Verzeichnis, apt nutzt "./" als Suite
         lines.append(f"URIs: {mirror_url}/")
         lines.append("Suites: ./")
     else:
-        suites = [s.strip() for s in (repo.get("suites") or []) if s.strip()]
-        components = [c.strip() for c in (repo.get("components") or []) if c.strip()]
         lines.append(f"URIs: {mirror_url}")
-        if suites:
-            lines.append(f"Suites: {' '.join(suites)}")
+        lines.append(f"Suites: {' '.join(suites)}")
         if components:
             lines.append(f"Components: {' '.join(components)}")
 

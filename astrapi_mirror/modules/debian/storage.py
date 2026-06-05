@@ -22,7 +22,6 @@ CREATE TABLE IF NOT EXISTS debian_repos (
     suites           TEXT NOT NULL DEFAULT '',
     components       TEXT NOT NULL DEFAULT '',
     architectures    TEXT NOT NULL DEFAULT '',
-    is_flat          INTEGER NOT NULL DEFAULT 0,
     gpg_key_url      TEXT NOT NULL DEFAULT '',
     gpg_key          TEXT NOT NULL DEFAULT '',
     enabled          INTEGER NOT NULL DEFAULT 1,
@@ -40,7 +39,6 @@ _COLS = (
     "suites",
     "components",
     "architectures",
-    "is_flat",
     "gpg_key_url",
     "gpg_key",
     "enabled",
@@ -49,7 +47,7 @@ _COLS = (
     "last_sync_issues",
 )
 _LIST_COLS = frozenset({"suites", "components", "architectures"})
-_BOOL_COLS = frozenset({"is_flat", "enabled"})
+_BOOL_COLS = frozenset({"enabled"})
 
 _log = __import__("logging").getLogger(__name__)
 
@@ -87,6 +85,13 @@ class DebianRepoStore:
         try:
             db = _db()
             db.execute(_DDL)
+            # Migration: is_flat-Spalte entfernen (Erkennung jetzt inline beim Sync)
+            try:
+                cols = [r[1] for r in db.execute(f"PRAGMA table_info({_TABLE})").fetchall()]
+                if "is_flat" in cols:
+                    db.execute(f"ALTER TABLE {_TABLE} DROP COLUMN is_flat")
+            except Exception:
+                pass  # SQLite < 3.35: Spalte bleibt ungenutzt, kein Problem
             db.commit()
             self._table_ready = True
             return True
@@ -167,31 +172,11 @@ class DebianRepoStore:
             )
         return self._row_to_dict(row) if row else None
 
-    def _detect_flat(self, data: dict) -> bool:
-        """Ruft engine.detect_flat() auf; gibt False bei Fehler zurück."""
-        url = data.get("url", "").strip()
-        if not url:
-            return False
-        try:
-            from .engine import detect_flat
-
-            suites = data.get("suites", [])
-            if isinstance(suites, str):
-                suites = [s.strip() for s in suites.split(",") if s.strip()]
-            result = detect_flat(url, suites)
-            _log.info("detect_flat(%s) → %s", url, result)
-            return result
-        except Exception as e:
-            _log.warning("detect_flat fehlgeschlagen (%s): %s", url, e)
-            return False
-
     def create(self, item_id, data: dict) -> dict:
         """item_id wird ignoriert – slug wird automatisch aus label generiert."""
         if not self._ensure_table():
             raise RuntimeError("DB nicht verfügbar")
         data = dict(data)
-        data.pop("is_flat", None)  # Nutzereingabe ignorieren, immer auto-detektieren
-        data["is_flat"] = self._detect_flat(data)
         label = data.get("label", "")
         base_slug = _make_slug(label)
         with self._lock:
@@ -220,8 +205,6 @@ class DebianRepoStore:
         if not self._ensure_table():
             raise KeyError("DB nicht verfügbar")
         data = dict(data)
-        data.pop("is_flat", None)  # Nutzereingabe ignorieren, immer auto-detektieren
-        data["is_flat"] = self._detect_flat(data)
         row = self._to_db(data)  # include_slug=False → slug bleibt unverändert
         if not row:
             raise KeyError("Keine Daten")
@@ -326,7 +309,6 @@ class DebianRepoStore:
                 "architectures": ",".join(architectures)
                 if isinstance(architectures, list)
                 else str(architectures),
-                "is_flat": 1 if d.get("is_flat") else 0,
                 "gpg_key_url": d.get("gpg_key_url", ""),
                 "gpg_key": d.get("gpg_key", ""),
                 "enabled": 1 if d.get("enabled", True) else 0,
