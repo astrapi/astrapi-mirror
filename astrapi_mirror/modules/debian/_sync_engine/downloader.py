@@ -376,6 +376,12 @@ class FileDownloader:
 
         filtered = [e for e in entries if not _flat_skip(e["filename"])]
         filtered = _select_preferred_index_entries(filtered)
+
+        # Release und Release.gpg sind redundant wenn InRelease vorhanden ist.
+        # Inkonsistenzen (z.B. veraltete Release-Datei) sollen den Sync nicht abbrechen.
+        _SOFT_NAMES = frozenset({"Release", "Release.gpg"})
+        soft_entries = [e for e in filtered if e["filename"] in _SOFT_NAMES]
+        filtered = [e for e in filtered if e["filename"] not in _SOFT_NAMES]
         self._log(f"  {len(filtered)}/{len(entries)} Dateien nach Filter")
 
         # 4. Index-Dateien parallel herunterladen
@@ -392,6 +398,16 @@ class FileDownloader:
             for e in filtered
         ]
         await asyncio.gather(*tasks, return_exceptions=True)
+
+        # Release / Release.gpg ohne Checksummen-Validierung (soft)
+        for e in soft_entries:
+            await self._bounded_download(
+                sem,
+                f"{url}/{e['filename']}",
+                self.staging_path / e["filename"],
+                checksum=None,
+                soft=True,
+            )
 
         # 5. Pool-Pfade aus Packages extrahieren und herunterladen
         pool_files: list[tuple[str, Path, str | None]] = []
@@ -450,10 +466,11 @@ class FileDownloader:
         path: Path,
         checksum: str | None = None,
         force: bool = False,
+        soft: bool = False,
     ) -> None:
         """Download mit Semaphore-Begrenzung."""
         async with sem:
-            await self._download_file(url, path, checksum=checksum, force=force)
+            await self._download_file(url, path, checksum=checksum, force=force, soft=soft)
 
     @staticmethod
     def _parse_inrelease(content: str) -> list[dict]:
@@ -527,7 +544,12 @@ class FileDownloader:
         return entries
 
     async def _download_file(
-        self, url: str, target_path: Path, checksum: str | None = None, force: bool = False
+        self,
+        url: str,
+        target_path: Path,
+        checksum: str | None = None,
+        force: bool = False,
+        soft: bool = False,
     ) -> tuple[int, str]:
         """Lädt eine einzelne Datei herunter mit Resume-Unterstützung.
 
@@ -535,6 +557,7 @@ class FileDownloader:
             url: URL der Datei
             target_path: Ziel-Pfad
             checksum: Optional SHA256-Checksumme
+            soft: Fehler nicht in stats["failed"] zählen (z.B. redundante Dateien)
             force: Immer herunterladen, auch wenn Datei bereits existiert
 
         Returns:
@@ -604,9 +627,12 @@ class FileDownloader:
             )
             self.stats["bytes"] += bytes_written
             if rc != 0:
-                self._log(f"❌ {target_path.name}: {error_msg}")
-                self.stats["failed"] += 1
-                self.stats["failed_files"].append((url, error_msg))
+                if soft:
+                    self._log(f"⚠️ {target_path.name}: {error_msg} (nicht kritisch)")
+                else:
+                    self._log(f"❌ {target_path.name}: {error_msg}")
+                    self.stats["failed"] += 1
+                    self.stats["failed_files"].append((url, error_msg))
                 return 1, error_msg
 
             # Validiere Checksumme (falls vorhanden)
@@ -614,9 +640,12 @@ class FileDownloader:
                 file_hash = self._compute_sha256(partial_path)
                 if file_hash != checksum:
                     msg = f"Checksumme stimmt nicht: {checksum} vs {file_hash}"
-                    self._log(f"❌ {target_path.name}: {msg}")
-                    self.stats["failed"] += 1
-                    self.stats["failed_files"].append((url, msg))
+                    if soft:
+                        self._log(f"⚠️ {target_path.name}: {msg} (nicht kritisch)")
+                    else:
+                        self._log(f"❌ {target_path.name}: {msg}")
+                        self.stats["failed"] += 1
+                        self.stats["failed_files"].append((url, msg))
                     return 1, msg
 
             # Verschiebe zu Final-Pfad
@@ -629,9 +658,12 @@ class FileDownloader:
             return 0, "OK"
 
         except Exception as e:
-            self._log(f"❌ {target_path.name}: {e}")
-            self.stats["failed"] += 1
-            self.stats["failed_files"].append((url, str(e)))
+            if soft:
+                self._log(f"⚠️ {target_path.name}: {e} (nicht kritisch)")
+            else:
+                self._log(f"❌ {target_path.name}: {e}")
+                self.stats["failed"] += 1
+                self.stats["failed_files"].append((url, str(e)))
             return 1, str(e)
 
     @staticmethod
