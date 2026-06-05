@@ -188,10 +188,6 @@ class FileDownloader:
             self._log("❌ Keine URL definiert")
             return 1
 
-        # Flat-Repos haben keine dists/-Struktur
-        if repo.get("is_flat"):
-            return await self._download_flat_repo(repo)
-
         suites = [s.strip() for s in (repo.get("suites") or []) if s.strip()]
         architectures = [a.strip() for a in (repo.get("architectures") or []) if a.strip()]
         components = [c.strip() for c in (repo.get("components") or []) if c.strip()]
@@ -204,6 +200,14 @@ class FileDownloader:
 
         if not suites:
             self._log("ℹ️ Keine Suites definiert – behandle als Flat-Repo")
+            return await self._download_flat_repo(repo)
+
+        # Flat-Repo-Erkennung: prüfe ob dists/{suite}/InRelease erreichbar ist
+        is_flat = await asyncio.to_thread(
+            self._check_is_flat, url, suites[0], self.deadline
+        )
+        if is_flat:
+            self._log(f"ℹ️ dists/{suites[0]}/InRelease nicht vorhanden – Flat-Repo erkannt")
             return await self._download_flat_repo(repo)
 
         # Sammelt alle Pool-Dateien aus allen Suites (dedupliziert am Ende)
@@ -592,28 +596,18 @@ class FileDownloader:
                 pass
 
         try:
-            # Download starten
             start_size = partial_path.stat().st_size if partial_path.exists() else 0
 
-            req = Request(url, headers={"User-Agent": "astrapi-mirror/1.0"})
-            if start_size > 0:
-                req.add_header("Range", f"bytes={start_size}-")
-
-            with urlopen(req, timeout=300) as resp:
-                # Schreibe zu Partial-Datei
-                partial_path.parent.mkdir(parents=True, exist_ok=True)
-                mode = "ab" if start_size > 0 else "wb"
-
-                with open(partial_path, mode) as f:
-                    while True:
-                        if time.time() > self.deadline:
-                            return 1, "Timeout"
-
-                        chunk = resp.read(8192)
-                        if not chunk:
-                            break
-                        f.write(chunk)
-                        self.stats["bytes"] += len(chunk)
+            # Download in Thread-Pool (blockiert nicht die Event-Loop)
+            rc, bytes_written, error_msg = await asyncio.to_thread(
+                self._blocking_download_to_partial, url, start_size, partial_path, self.deadline
+            )
+            self.stats["bytes"] += bytes_written
+            if rc != 0:
+                self._log(f"❌ {target_path.name}: {error_msg}")
+                self.stats["failed"] += 1
+                self.stats["failed_files"].append((url, error_msg))
+                return 1, error_msg
 
             # Validiere Checksumme (falls vorhanden)
             if checksum:
@@ -639,6 +633,64 @@ class FileDownloader:
             self.stats["failed"] += 1
             self.stats["failed_files"].append((url, str(e)))
             return 1, str(e)
+
+    @staticmethod
+    def _check_is_flat(url: str, first_suite: str, deadline: float) -> bool:
+        """True wenn dists/{suite}/InRelease mit HTTP 404 antwortet (= Flat-Repo).
+
+        Nutzt GET mit Range-Header statt HEAD, da manche Server HEAD nicht unterstützen.
+        Bei Timeout, Verbindungsfehlern oder anderen HTTP-Fehlern wird False zurückgegeben
+        (Standard-Repo annehmen, Sync soll mit echtem Fehler abbrechen).
+        """
+        from urllib.error import HTTPError
+
+        probe = f"{url}/dists/{first_suite}/InRelease"
+        timeout = min(15.0, max(1.0, deadline - time.time()))
+        try:
+            req = Request(
+                probe,
+                headers={"User-Agent": "astrapi-mirror/1.0", "Range": "bytes=0-0"},
+            )
+            with urlopen(req, timeout=timeout):
+                return False  # 200/206 → Standard-Repo
+        except HTTPError as e:
+            return e.code == 404
+        except Exception:
+            return False  # Netzwerkfehler → Standard-Repo annehmen
+
+    @staticmethod
+    def _blocking_download_to_partial(
+        url: str,
+        start_size: int,
+        partial_path: Path,
+        deadline: float,
+    ) -> tuple[int, int, str]:
+        """Blockierender HTTP-Download in Partial-Datei (läuft via asyncio.to_thread).
+
+        Returns:
+            (returncode, bytes_written, error_msg)
+        """
+        bytes_written = 0
+        try:
+            req = Request(url, headers={"User-Agent": "astrapi-mirror/1.0"})
+            if start_size > 0:
+                req.add_header("Range", f"bytes={start_size}-")
+
+            with urlopen(req, timeout=300) as resp:
+                partial_path.parent.mkdir(parents=True, exist_ok=True)
+                mode = "ab" if start_size > 0 else "wb"
+                with open(partial_path, mode) as f:
+                    while True:
+                        if time.time() > deadline:
+                            return 1, bytes_written, "Timeout"
+                        chunk = resp.read(8192)
+                        if not chunk:
+                            break
+                        f.write(chunk)
+                        bytes_written += len(chunk)
+            return 0, bytes_written, ""
+        except Exception as e:
+            return 1, bytes_written, str(e)
 
     @staticmethod
     def _compute_sha256(file_path: Path) -> str:
