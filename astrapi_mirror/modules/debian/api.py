@@ -58,17 +58,5 @@ def api_sources_list(repo_id: str, request: Request):
     return client_sources_file(data, base_url)
 
 
-@router.get(
-    "/refrapt-config",
-    response_class=PlainTextResponse,
-    summary="Generierte refrapt.conf anzeigen",
-)
-def api_refrapt_config():
-    from .engine import generate_refrapt_config
-
-    repos = [{"id": k, **v} for k, v in store.list().items()]
-    return generate_refrapt_config(repos)
-
-
 # Registriere CRUD-Router (GET /debian, POST /debian, PUT /debian/{id}, DELETE /debian/{id})
 router.include_router(crud_router)
