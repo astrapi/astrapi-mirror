@@ -4,6 +4,7 @@ import asyncio
 import logging
 import threading
 import time
+import traceback
 from datetime import datetime
 
 log = logging.getLogger(__name__)
@@ -72,69 +73,102 @@ def sync_all() -> None:
 
     act_id = _act_start("Arch Linux: Alle Repos syncen")
     t0 = time.time()
-
-    log_lines: list[str] = []
-
-    def _flush(line: str) -> None:
-        log_lines.append(line)
-
-    # Engine initialisieren
-    from astrapi_mirror._paths import archlinux_mirror_path
-
-    engine = SyncEngine(archlinux_mirror_path())
-
-    # Asynchronen Sync starten (blockierend von Thread aus)
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    try:
-        rc, output = loop.run_until_complete(engine.sync_repos(repos, on_line=_flush))
-    finally:
-        loop.close()
-
-    status = "ok" if rc == 0 else "error"
-    duration = int(time.time() - t0)
-
-    # Validierung nach dem Sync
+    output = ""
+    status = "error"
+    per_repo_rc: dict[str, int] = {}
     all_issues: dict[str, list[str]] = {}
-    if status == "ok":
+
+    try:
+        from astrapi_mirror._paths import archlinux_mirror_path
+
+        engine = SyncEngine(archlinux_mirror_path())
+        output_lines: list[str] = []
+
+        async def _run_all() -> None:
+            for repo in repos:
+                repo_id = repo.get("slug") or str(repo.get("id", "unknown"))
+                output_lines.append(f"\n{'=' * 60}")
+                output_lines.append(f"Starte Sync: {repo_id}")
+                output_lines.append(f"{'=' * 60}\n")
+                try:
+                    rc, repo_out = await engine.sync_repo(repo, on_line=None)
+                    output_lines.append(repo_out)
+                    per_repo_rc[repo_id] = rc
+                    output_lines.append(
+                        f"{'✅' if rc == 0 else '❌'} {repo_id}\n"
+                    )
+                except Exception:
+                    per_repo_rc[repo_id] = 1
+                    output_lines.append(
+                        f"❌ Exception bei {repo_id}:\n{traceback.format_exc()}\n"
+                    )
+
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            loop.run_until_complete(_run_all())
+        finally:
+            loop.close()
+
+        output = "\n".join(output_lines)
+        failed = [rid for rid, rc in per_repo_rc.items() if rc != 0]
+        status = "ok" if not failed else "error"
+
+        # Validierung pro erfolgreich synchronisiertem Repo
         for repo in repos:
+            repo_id = repo.get("slug") or str(repo.get("id"))
+            if per_repo_rc.get(repo_id, 1) != 0:
+                continue
             val = validate_repo(repo)
             if val["status"] == "error":
-                all_issues[repo.get("slug") or str(repo.get("id"))] = val.get("issues", [])
+                all_issues[repo_id] = val.get("issues", [])
+
         if all_issues:
-            status = "error"
+            if status == "ok":
+                status = "error"
             issues_text = "\n".join(
-                [f"  {rid}: {', '.join(issues)}" for rid, issues in all_issues.items()]
+                f"  {rid}: {', '.join(issues)}" for rid, issues in all_issues.items()
             )
             output += f"\n\n⚠️ Validierungsfehler:\n{issues_text}"
 
-    # Activity-Log aktualisieren
-    _act_done(act_id, status, duration, output)
+        # Status pro Repo speichern
+        _ts = _now()
+        for repo in repos:
+            repo_id = repo.get("slug") or str(repo.get("id"))
+            rc = per_repo_rc.get(repo_id, 1)
+            issues = all_issues.get(repo_id, [])
+            repo_status = "error" if (rc != 0 or issues) else "ok"
+            store.upsert(
+                repo_id,
+                {
+                    "last_status": repo_status,
+                    "last_run": _ts,
+                    "last_sync_issues": issues,
+                },
+            )
 
-    # Status in Store aktualisieren
-    for repo in repos:
-        repo_id = repo.get("slug") or str(repo.get("id"))
-        issues = all_issues.get(repo_id, [])
-        store.upsert(
-            repo_id,
-            {
-                "last_status": status,
-                "last_run": _now(),
-                "last_sync_issues": issues,
-            },
-        )
+    except Exception:
+        tb = traceback.format_exc()
+        log.exception("archlinux.sync_all: unerwarteter Fehler")
+        output += f"\n\n=== EXCEPTION ===\n{tb}"
+        status = "error"
+
+    finally:
+        duration = int(time.time() - t0)
+        _act_done(act_id, status, duration, output)
 
     # Benachrichtigung
     if status == "ok":
         _notify("Arch Linux", f"Alle {len(repos)} Repos erfolgreich synchronisiert", True)
     else:
+        failed_ids = [rid for rid, rc in per_repo_rc.items() if rc != 0] + list(all_issues)
         _notify(
             "Arch Linux",
-            f"Sync teilweise fehlgeschlagen ({duration}s)",
+            f"Sync teilweise fehlgeschlagen: {', '.join(dict.fromkeys(failed_ids))} ({duration}s)",
             False,
         )
 
-    log.info(f"archlinux.sync_all: abgeschlossen (status={status}, duration={duration}s)")
+    log.info("archlinux.sync_all: abgeschlossen (status=%s, duration=%ds)", status, duration)
 
 
 # ---------------------------------------------------------------------------
@@ -154,60 +188,60 @@ def sync_repo(repo_id: str) -> None:
 
     act_id = _act_start(f"Arch Linux: Sync {repo_id}", item_id=repo_id)
     t0 = time.time()
+    output = ""
+    status = "error"
+    issues: list[str] = []
 
-    log_lines: list[str] = []
-
-    def _flush(line: str) -> None:
-        log_lines.append(line)
-
-    # Engine
-    from astrapi_mirror._paths import archlinux_mirror_path
-
-    engine = SyncEngine(archlinux_mirror_path())
-    repo_with_id = {"id": repo_id, **repo_data}
-
-    # Asynchronen Sync starten (blockierend von Thread aus)
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
     try:
-        rc, output = loop.run_until_complete(engine.sync_repo(repo_with_id, on_line=_flush))
+        from astrapi_mirror._paths import archlinux_mirror_path
+
+        engine = SyncEngine(archlinux_mirror_path())
+        repo_with_id = {"id": repo_id, **repo_data}
+
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            rc, output = loop.run_until_complete(engine.sync_repo(repo_with_id, on_line=None))
+        finally:
+            loop.close()
+
+        status = "ok" if rc == 0 else "error"
+
+        if status == "ok":
+            val = validate_repo(repo_with_id)
+            if val["status"] == "error":
+                status = "error"
+                issues = val.get("issues", [])
+                issues_text = "\n  ".join(issues)
+                output += f"\n\n⚠️ Validierungsfehler:\n  {issues_text}"
+
+        store.upsert(
+            repo_id,
+            {
+                "last_status": status,
+                "last_run": _now(),
+                "last_sync_issues": issues,
+            },
+        )
+
+    except Exception:
+        tb = traceback.format_exc()
+        log.exception("archlinux.sync_repo: unerwarteter Fehler bei '%s'", repo_id)
+        output += f"\n\n=== EXCEPTION ===\n{tb}"
+        status = "error"
+        store.upsert(repo_id, {"last_status": "error"})
+
     finally:
-        loop.close()
+        duration = int(time.time() - t0)
+        _act_done(act_id, status, duration, output)
 
-    status = "ok" if rc == 0 else "error"
-    duration = int(time.time() - t0)
-    issues = []
-
-    # Validierung nach dem Sync
-    if status == "ok":
-        val = validate_repo(repo_with_id)
-        if val["status"] == "error":
-            status = "error"
-            issues = val.get("issues", [])
-            issues_text = "\n  ".join(issues)
-            output += f"\n\n⚠️ Validierungsfehler:\n  {issues_text}"
-
-    # Activity-Log aktualisieren
-    _act_done(act_id, status, duration, output)
-
-    # Status in Store aktualisieren
-    store.upsert(
-        repo_id,
-        {
-            "last_status": status,
-            "last_run": _now(),
-            "last_sync_issues": issues,
-        },
-    )
-
-    # Benachrichtigung
     label = repo_data.get("label", repo_id)
     if status == "ok":
         _notify("Arch Linux", f"Repo '{label}' erfolgreich synchronisiert", True)
     else:
         _notify("Arch Linux", f"Sync für '{label}' fehlgeschlagen", False)
 
-    log.info(f"archlinux.sync_repo: {repo_id} abgeschlossen (status={status})")
+    log.info("archlinux.sync_repo: %s abgeschlossen (status=%s)", repo_id, status)
 
 
 # ---------------------------------------------------------------------------
