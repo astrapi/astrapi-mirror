@@ -11,4 +11,4 @@ card_actions:
   - type: info
     url:  /ui/debian/{item}/sources-list
   - type: log
-    url:  /ui/debian/{item}/log
+    url:  /api/debian/{item}/logs

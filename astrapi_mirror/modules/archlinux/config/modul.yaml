@@ -11,4 +11,4 @@ card_actions:
   - type: info
     url:  /ui/archlinux/{item}/sources-snippet
   - type: log
-    url:  /ui/archlinux/{item}/log
+    url:  /api/archlinux/{item}/logs
