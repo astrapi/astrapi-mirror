@@ -6,9 +6,7 @@ settings_button: false
 card_actions:
   - type: run
     url:  /ui/archlinux/{item}/sync
-  - type: preview
-    url:  /ui/archlinux/{item}/validate
-  - type: info
+- type: info
     url:  /ui/archlinux/{item}/sources-snippet
   - type: log
     url:  /api/archlinux/{item}/logs
