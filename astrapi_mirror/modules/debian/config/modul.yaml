@@ -6,7 +6,7 @@ settings_button: false
 card_actions:
   - type: run
     url:  /ui/debian/{item}/sync
-- type: info
+  - type: info
     url:  /ui/debian/{item}/sources-list
   - type: log
     url:  /api/debian/{item}/logs
