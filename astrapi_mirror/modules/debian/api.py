@@ -2,14 +2,7 @@
 
 import asyncio
 
-from astrapi_core.system.activity_log import (
-    get_activity_log,
-    get_latest_activity_log_id,
-    get_log_lines,
-    list_runs_for_item,
-)
 from astrapi_core.ui.crud_router import make_crud_router as make_json_crud_router
-from astrapi_core.ui.render import render
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, StreamingResponse
 
@@ -74,6 +67,9 @@ def api_sources_list(repo_id: str, request: Request):
 
 @router.get("/{repo_id}/logs", response_class=HTMLResponse)
 def api_logs(repo_id: str, request: Request):
+    from astrapi_core.system.activity_log import get_log_lines, list_runs_for_item
+    from astrapi_core.ui.render import render
+
     data = store.get(repo_id) or {}
     runs = list_runs_for_item(KEY, repo_id)
     act_log_id = runs[0]["id"] if runs else None
@@ -99,6 +95,12 @@ def api_logs(repo_id: str, request: Request):
 
 @router.get("/{repo_id}/logs/stream")
 async def api_logs_stream(repo_id: str):
+    from astrapi_core.system.activity_log import (
+        get_activity_log,
+        get_latest_activity_log_id,
+        get_log_lines,
+    )
+
     async def _gen():
         act_log_id = None
         waited = 0.0
@@ -141,6 +143,9 @@ async def api_logs_stream(repo_id: str):
 
 @router.get("/{repo_id}/logs/{log_id}", response_class=HTMLResponse)
 def api_log_by_id(repo_id: str, log_id: str, request: Request):
+    from astrapi_core.system.activity_log import get_log_lines
+    from astrapi_core.ui.render import render
+
     lines = [r["line"] for r in get_log_lines(int(log_id))] if log_id.isdigit() else []
     return render(request, "partials/log_content.html", {"lines": lines, "date": log_id})
 
