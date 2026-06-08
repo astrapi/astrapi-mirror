@@ -1,50 +1,18 @@
-"""astrapi_mirror.modules.debian.jobs – Hintergrund-Sync via interne Engine."""
+"""astrapi_mirror.modules.debian.jobs – Sync via run_logged/run_all (wie astrapi-backup)."""
 
-import logging
 import threading
-import time
-import traceback
 import urllib.request
 from datetime import datetime
 
-log = logging.getLogger(__name__)
+from astrapi_core.system.logger import log, log_context
+from astrapi_core.system.runner import run_all, run_logged
 
 
 def _now() -> str:
     return datetime.now().strftime("%Y-%m-%d %H:%M")
 
 
-def _act_start(label: str, item_id: str | None = None) -> int | None:
-    try:
-        from astrapi_core.system.activity_log import log_activity
-
-        return log_activity("job", "debian", label, status="running", item_id=item_id)
-    except Exception:
-        return None
-
-
-def _act_done(act_id: int | None, status: str, duration: int, output: str) -> None:
-    if act_id is None:
-        return
-    try:
-        from astrapi_core.system.activity_log import update_activity_log
-
-        update_activity_log(
-            log_id=act_id,
-            status=status,
-            duration_s=duration,
-            full_log=output[-20_000:],
-            error_message=output[-500:] if status == "error" else None,
-        )
-    except Exception:
-        pass
-
-
 def _armor_binary_key(raw: bytes) -> str:
-    """Konvertiert einen binären OpenPGP-Schlüssel in ASCII-armored Format (Pure Python).
-
-    Fallback wenn ``gpg --armor`` nicht verfügbar oder fehlgeschlagen ist.
-    """
     import base64
 
     def _crc24(data: bytes) -> int:
@@ -57,7 +25,7 @@ def _armor_binary_key(raw: bytes) -> str:
                     crc ^= 0x1864CFB
         return crc & 0xFFFFFF
 
-    b64 = base64.encodebytes(raw).decode("ascii")  # auto-wrapped at 76 Zeichen
+    b64 = base64.encodebytes(raw).decode("ascii")
     crc = base64.b64encode(_crc24(raw).to_bytes(3, "big")).decode("ascii")
     return (
         "-----BEGIN PGP PUBLIC KEY BLOCK-----\n\n"
@@ -70,199 +38,124 @@ def _armor_binary_key(raw: bytes) -> str:
 
 
 def _fetch_gpg_key(repo_id: str, url: str) -> str | None:
-    """Lädt einen GPG-Schlüssel herunter und gibt ihn als armored ASCII zurück.
-
-    Binäre Keyring-Dateien werden via Pure-Python-Armor-Konvertierung (CRC-24)
-    in das ASCII-armored Format umgewandelt – kein gpg-Befehl erforderlich.
-    """
     try:
         req = urllib.request.Request(url, headers={"User-Agent": "astrapi-mirror/1.0"})
         with urllib.request.urlopen(req, timeout=30) as resp:
             raw: bytes = resp.read()
     except Exception as e:
-        log.warning("debian.gpg_key: %s – Download fehlgeschlagen: %s", repo_id, e)
+        log("WARNING", f"GPG-Key {repo_id}: Download fehlgeschlagen: {e}")
         return None
 
-    # Bereits armored ASCII?
     if raw.lstrip().startswith(b"-----BEGIN PGP PUBLIC KEY BLOCK-----"):
         return raw.decode("ascii", errors="replace")
-
-    # Binär → Pure-Python ASCII-Armor (gpg --armor ist unzuverlässig mit Keyrings)
-    log.debug("debian.gpg_key: %s – binary key, verwende Pure-Python-Armor", repo_id)
     return _armor_binary_key(raw)
 
 
-def _notify(title: str, message: str, ok: bool) -> None:
-    try:
-        from astrapi_core.modules.notify import engine as _n
-
-        _n.send(
-            title=title,
-            message=message,
-            event=_n.SUCCESS if ok else _n.ERROR,
-            source="debian",
-        )
-    except Exception:
-        pass
-
-
-# ---------------------------------------------------------------------------
-# Sync: alle aktivierten Repos
-# ---------------------------------------------------------------------------
-
-
-def sync_all() -> None:
-    """Synchronisiert alle aktivierten Debian-Repos via interne Engine (blockierend)."""
-    from . import store
-    from ._sync_engine import SyncEngine
-    from .engine import validate_all
-
-    repos_raw = store.list()
-    repos = [v for v in repos_raw.values() if v.get("enabled", True)]
-
-    if not repos:
-        log.info("debian.sync_all: keine aktivierten Repos")
-        return
-
-    act_id = _act_start("Debian: Alle Repos syncen")
-    t0 = time.time()
-    output = ""
-    status = "error"
-
-    try:
-        output_lines: list[str] = []
-
-        def _flush(line: str) -> None:
-            output_lines.append(line)
-
-        # Nutze neue SyncEngine
-        engine = SyncEngine()
-        rc, output = engine.sync_repos(repos, on_line=_flush)
-
-        status = "ok" if rc == 0 else "error"
-
-        # Validierung nach dem Sync
-        validation = {}
-        if status == "ok":
-            validation = validate_all(repos)
-            failed = [rid for rid, r in validation.items() if r["status"] == "error"]
-            if failed:
-                status = "error"
-                output += f"\n\nValidierung fehlgeschlagen für: {', '.join(failed)}"
-
-        # GPG-Schlüssel herunterladen
-        for repo in repos:
-            url = repo.get("gpg_key_url", "").strip()
-            if url:
-                key = _fetch_gpg_key(repo.get("slug", str(repo["id"])), url)
-                if key:
-                    store.upsert(str(repo["id"]), {"gpg_key": key})
-
-        # Status pro Repo speichern
-        _ts = _now()
-        for repo in repos:
-            slug = repo.get("slug") or str(repo["id"])
-            v = validation.get(slug, {})
-            _s = v.get("status", status)
-            store.upsert(
-                str(repo["id"]),
-                {
-                    "last_run": _ts,
-                    "last_status": _s,
-                    "last_sync_issues": v.get("issues", []),
-                },
-            )
-
-    except Exception:
-        tb = traceback.format_exc()
-        log.exception("debian.sync_all: unerwarteter Fehler")
-        output += f"\n\n=== EXCEPTION ===\n{tb}"
-        status = "error"
-
-    finally:
-        duration = int(time.time() - t0)
-        _act_done(act_id, status, duration, output)
-
-    _notify(
-        f"Debian Mirror Sync {'erfolgreich' if status == 'ok' else 'fehlgeschlagen'}",
-        f"{len(repos)} Repos, {duration}s",
-        status == "ok",
-    )
-    log.info("debian.sync_all: %s (%ds)", status, duration)
+def _important(line: str) -> bool:
+    """True für Zeilen die ins Activity-Log gehören (Phasen, Fehler, Zusammenfassungen)."""
+    s = line.strip()
+    if not s:
+        return False
+    return any(m in s for m in (
+        "❌", "⚠️",
+        "[1/", "[2/", "[3/", "[4/", "[5/",
+        "📊 Download-Statistik",
+        "📦 Suite:", "📦 Pool:", "📦 Pakete:",
+        "✅ Sync erfolgreich", "✅ Validierung", "✅ Swap",
+        "Repo-ID:", "URL:", "Suites:", "Komponenten:", "Architekturen:",
+        "Fehlgeschlagene Repos",
+    ))
 
 
 # ---------------------------------------------------------------------------
-# Sync: einzelnes Repo
+# run_single – wird von run_all/run_logged pro Repo aufgerufen
 # ---------------------------------------------------------------------------
 
 
-def sync_repo(repo_id: str) -> None:
-    """Synchronisiert ein einzelnes Repo via interne Engine (blockierend)."""
+def run_single(repo_id: str, repo: dict | None = None) -> None:
+    """Synchronisiert ein einzelnes Debian-Repo (blockierend, für run_all/run_logged)."""
     from . import store
     from ._sync_engine import SyncEngine
     from .engine import validate_repo
 
-    repo_data = store.get(repo_id)
-    if not repo_data:
-        log.warning("debian.sync_repo: '%s' nicht gefunden", repo_id)
+    if repo is None:
+        repo = store.get(repo_id)
+    if not repo:
+        log("ERROR", f"Debian Repo '{repo_id}' nicht gefunden")
         return
 
-    repo = repo_data
-    act_id = _act_start(f"Debian: {repo.get('slug', repo_id)} syncen", item_id=repo_id)
-    t0 = time.time()
-    output = ""
-    status = "error"
-    validation: dict = {}
+    slug = repo.get("slug", repo_id)
 
-    store.upsert(repo_id, {"last_status": "syncing"})
+    with log_context("debian", repo_id):
+        log("INFO", f"=== Debian Repo '{slug}' synchronisieren ===")
+        store.upsert(repo_id, {"last_status": "syncing"})
 
-    try:
-        # Nutze neue SyncEngine
+        def _on_line(line: str) -> None:
+            if _important(line):
+                level = "ERROR" if "❌" in line else "WARNING" if "⚠️" in line else "INFO"
+                log(level, line.strip())
+
         engine = SyncEngine()
-        rc, output = engine.sync_repo(repo, on_line=None)
+        rc, _ = engine.sync_repo(repo, on_line=_on_line)
 
-        status = "ok" if rc == 0 else "error"
+        if rc != 0:
+            log("ERROR", "Sync fehlgeschlagen")
+            store.upsert(repo_id, {"last_status": "error", "last_run": _now(), "last_sync_issues": []})
+            return
 
-        if status == "ok":
-            validation = validate_repo(repo)
-            if validation["status"] == "error":
-                status = "error"
-                issues_text = "\n".join(validation["issues"][:20])
-                output += f"\n\nValidierung:\n{issues_text}"
+        val = validate_repo(repo)
+        if val["status"] == "error":
+            for issue in val["issues"][:10]:
+                log("ERROR", issue)
+            store.upsert(repo_id, {
+                "last_status": "error",
+                "last_run": _now(),
+                "last_sync_issues": val.get("issues", []),
+            })
+            return
 
-        # GPG-Schlüssel herunterladen
-        gpg_url = repo_data.get("gpg_key_url", "").strip()
+        gpg_url = (repo.get("gpg_key_url") or "").strip()
         if gpg_url:
-            key = _fetch_gpg_key(repo_id, gpg_url)
+            key = _fetch_gpg_key(slug, gpg_url)
             if key:
                 store.upsert(repo_id, {"gpg_key": key})
 
-        store.upsert(
-            repo_id,
-            {
-                "last_run": _now(),
-                "last_status": validation.get("status", status),
-                "last_sync_issues": validation.get("issues", []),
-            },
-        )
+        store.upsert(repo_id, {
+            "last_status": "ok",
+            "last_run": _now(),
+            "last_sync_issues": [],
+        })
+        log("INFO", f"=== Debian Repo '{slug}' erfolgreich synchronisiert ===")
 
-    except Exception:
-        tb = traceback.format_exc()
-        log.exception("debian.sync_repo: unerwarteter Fehler bei '%s'", repo_id)
-        output += f"\n\n=== EXCEPTION ===\n{tb}"
-        status = "error"
-        store.upsert(repo_id, {"last_status": "error"})
 
-    finally:
-        duration = int(time.time() - t0)
-        _act_done(act_id, status, duration, output)
+# ---------------------------------------------------------------------------
+# Öffentliche Sync-Funktionen
+# ---------------------------------------------------------------------------
 
-    _notify(
-        f"Debian: {repo_id} {'✓' if status == 'ok' else '✗'}",
-        output[-400:].strip() if status == "error" else f"{duration}s",
-        status == "ok",
-    )
-    log.info("debian.sync_repo: %s → %s (%ds)", repo_id, status, duration)
+
+def sync_all() -> None:
+    """Synchronisiert alle aktivierten Debian-Repos (blockierend)."""
+    from . import store
+
+    repos = {
+        str(k): {**v, "id": k}
+        for k, v in store.list().items()
+        if v.get("enabled", True)
+    }
+    if not repos:
+        return
+    run_all("debian", repos, run_single, desc_fn=lambda iid, e: e.get("slug", iid))
+
+
+def sync_repo(repo_id: str) -> None:
+    """Synchronisiert ein einzelnes Debian-Repo (blockierend)."""
+    from . import store
+
+    repo = store.get(repo_id)
+    if not repo:
+        return
+    run_logged("debian", repo_id, repo.get("slug", repo_id),
+               lambda: run_single(repo_id, repo))
 
 
 # ---------------------------------------------------------------------------
