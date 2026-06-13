@@ -125,17 +125,19 @@ class ArchDownloader:
 
         self._log(f"\n📦 Lade Architektur: {arch} ({len(urls)} Mirror(s))")
 
-        # Ersten erreichbaren Mirror mit Dateiliste verwenden
+        # Alle Mirror-URLs normalisieren
+        ordered_urls = [u.rstrip("/") + "/" for u in urls]
+
+        # Ersten erreichbaren Mirror mit Dateiliste als primären Mirror wählen
         active_url: str | None = None
         file_list: list[str] = []
-        for url in urls:
-            candidate_url = url.rstrip("/") + "/"
+        for candidate_url in ordered_urls:
             try:
                 candidate_list = await self._get_file_list(candidate_url)
                 if candidate_list:
                     active_url = candidate_url
                     file_list = candidate_list
-                    self._log(f"  Verwende Mirror: {active_url} ({len(file_list)} Dateien)")
+                    self._log(f"  Primärer Mirror: {active_url} ({len(file_list)} Dateien)")
                     break
                 self._log(f"  ⚠️ {candidate_url}: keine Dateien, versuche nächsten...")
             except Exception as e:
@@ -145,17 +147,17 @@ class ArchDownloader:
             self._log(f"❌ Alle Mirrors für {arch} nicht erreichbar oder leer")
             return 1
 
-        # Parallele Downloads
+        # Primärer Mirror zuerst, dann Fallbacks in ursprünglicher Reihenfolge
+        mirror_priority = [active_url] + [u for u in ordered_urls if u != active_url]
+
+        # Parallele Downloads mit Mirror-Fallback pro Datei
         sem = asyncio.Semaphore(self.max_concurrent)
 
-        async def download_with_semaphore(filename: str, remote_url: str, local_path: Path):
+        async def download_with_semaphore(filename: str):
             async with sem:
-                return await self._download_file(filename, remote_url, local_path)
+                return await self._download_file_with_fallback(filename, mirror_priority, arch_path)
 
-        tasks = [
-            download_with_semaphore(fname, f"{active_url}{fname}", arch_path / fname)
-            for fname in file_list
-        ]
+        tasks = [download_with_semaphore(fname) for fname in file_list]
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
         failed = sum(1 for r in results if isinstance(r, Exception) or r != 0)
@@ -174,6 +176,43 @@ class ArchDownloader:
             return 1
 
         return 0
+
+    async def _download_file_with_fallback(
+        self, filename: str, mirror_urls: list[str], arch_path: Path
+    ) -> int:
+        """Lädt eine Datei herunter und wechselt bei Fehler auf den nächsten Mirror."""
+        local_path = arch_path / filename
+        if local_path.exists():
+            self.stats["skipped"] += 1
+            return 0
+
+        partial_path = self.partial_root / filename
+        loop = asyncio.get_event_loop()
+
+        for i, base_url in enumerate(mirror_urls):
+            # Beim Fallback-Mirror Partial verwerfen (sauberer Neustart)
+            if i > 0:
+                partial_path.unlink(missing_ok=True)
+
+            remote_url = f"{base_url}{filename}"
+            try:
+                await loop.run_in_executor(
+                    None,
+                    lambda u=remote_url: self._sync_download(u, partial_path, local_path),
+                )
+                self.stats["downloaded"] += 1
+                return 0
+            except Exception as e:
+                if i < len(mirror_urls) - 1:
+                    self._log(
+                        f"  ⚠️ {filename}: Mirror {i + 1} fehlgeschlagen, versuche Mirror {i + 2}..."
+                    )
+                else:
+                    self._log(f"  ❌ Alle Mirrors fehlgeschlagen: {filename} ({str(e)[:50]})")
+                    self.stats["failed"] += 1
+                    self.stats["failed_files"].append((remote_url, str(e)))
+
+        return 1
 
     @staticmethod
     def _check_completeness(file_list: list[str], arch_path: Path) -> list[str]:
@@ -221,30 +260,6 @@ class ArchDownloader:
                 seen.add(name)
 
         return files
-
-    async def _download_file(self, filename: str, remote_url: str, local_path: Path) -> int:
-        """Lädt eine einzelne Datei herunter."""
-        try:
-            if local_path.exists():
-                self.stats["skipped"] += 1
-                return 0
-
-            partial_path = self.partial_root / filename
-
-            loop = asyncio.get_event_loop()
-            await loop.run_in_executor(
-                None,
-                lambda: self._sync_download(remote_url, partial_path, local_path),
-            )
-
-            self.stats["downloaded"] += 1
-            return 0
-
-        except Exception as e:
-            self._log(f"  ❌ Download fehlgeschlagen: {filename} ({str(e)[:50]})")
-            self.stats["failed"] += 1
-            self.stats["failed_files"].append((remote_url, str(e)))
-            return 1
 
     def _sync_download(self, url: str, partial_path: Path, target_path: Path) -> None:
         """Synchroner Download mit Resume-Support."""
