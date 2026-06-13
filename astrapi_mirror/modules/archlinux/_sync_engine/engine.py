@@ -13,7 +13,7 @@ from astrapi_mirror.modules.debian._sync_engine.versioning import (
 )
 
 from .downloader import ArchDownloader
-from .validator import test_pacman_sync
+from .validator import quick_validate, test_pacman_sync
 
 log = logging.getLogger(__name__)
 
@@ -82,11 +82,13 @@ class SyncEngine:
         repo: dict,
         on_line: Callable[[str], None] | None = None,
     ) -> tuple[int, str]:
-        repo_id = repo.get("slug") or str(repo.get("id", "unknown"))
-        url = (repo.get("url") or "").rstrip("/")
+        from .downloader import ArchDownloader as _DL
 
-        if not url:
-            return 1, f"Repo {repo_id}: Keine URL definiert"
+        repo_id = repo.get("slug") or str(repo.get("id", "unknown"))
+
+        all_urls = _DL._get_mirror_list(repo)
+        if not all_urls:
+            return 1, f"Repo {repo_id}: Keine URL(s) definiert"
 
         output_lines: list[str] = []
 
@@ -96,8 +98,7 @@ class SyncEngine:
                 on_line(line)
 
         _log(f"Repo-ID: {repo_id}")
-        _log(f"URL: {url}")
-        _log(f"Architekturen: {', '.join(repo.get('architectures', ['x86_64']))}")
+        _log(f"URLs: {', '.join(all_urls)}")
 
         t0 = time.time()
 
@@ -122,16 +123,26 @@ class SyncEngine:
                 _log("❌ Download fehlgeschlagen")
                 return 1, "".join(output_lines)
 
-            # Phase 3: Docker-Test (pacman -Sy)
-            _log("\n[3/4] Validierung (pacman -Sy Test)...")
-            try:
+            # Phase 3: Validierung
+            _log("\n[3/4] Validierung...")
+
+            # 3a: Strukturcheck (immer, kein Docker nötig)
+            struct_ok, struct_issues = quick_validate(repo, staging_path)
+            if not struct_ok:
+                _log(f"❌ Strukturelle Validierung fehlgeschlagen: {struct_issues}")
+                return 1, "".join(output_lines)
+            _log("✅ Strukturelle Validierung OK")
+
+            # 3b: Docker-Test (nur wenn Docker installiert)
+            if shutil.which("docker"):
                 docker_ok, docker_msg = test_pacman_sync(repo_id, staging_path)
                 if docker_ok:
                     _log("✅ Pacman -Sy Test erfolgreich")
                 else:
-                    _log(f"⚠️ Pacman -Sy Test fehlgeschlagen: {docker_msg}")
-            except Exception as e:
-                _log(f"⚠️ Docker nicht verfügbar: {e}")
+                    _log(f"❌ Pacman -Sy Test fehlgeschlagen: {docker_msg}")
+                    return 1, "".join(output_lines)
+            else:
+                _log("⚠️ Docker nicht verfügbar, Container-Test übersprungen")
 
             # Phase 4: Atomic Swap (staging → vN, current-Symlink → vN)
             _log("\n[4/4] Atomic Swap...")
@@ -168,12 +179,14 @@ def validate_repo(repo: dict, base_path: Path | None = None) -> dict:
     """Validiert ein Arch-Repository.
 
     Args:
-        repo: Repo-Dict mit id/slug, url, architectures
+        repo: Repo-Dict mit id/slug
         base_path: Pfad zum Staging-Verzeichnis (optional)
 
     Returns:
         {'status': 'ok'/'error', 'issues': [...], 'checked_archs': n}
     """
+    import glob
+
     from astrapi_mirror._paths import archlinux_mirror_path
 
     if base_path is not None:
@@ -186,27 +199,21 @@ def validate_repo(repo: dict, base_path: Path | None = None) -> dict:
         else:
             return {"status": "error", "issues": ["Repo nicht gefunden"], "checked_archs": 0}
 
-    architectures = repo.get("architectures", ["x86_64"])
-    if isinstance(architectures, str):
-        architectures = [a.strip() for a in architectures.split(",")]
+    os_path = mirror_base / "os"
+    if not os_path.exists():
+        return {"status": "error", "issues": ["os/-Verzeichnis nicht vorhanden"], "checked_archs": 0}
+
+    arch_dirs = [d for d in os_path.iterdir() if d.is_dir()]
+    if not arch_dirs:
+        return {"status": "error", "issues": ["Keine Architektur-Verzeichnisse unter os/"], "checked_archs": 0}
 
     issues: list[str] = []
     checked = 0
 
-    # Prüfe pro Architektur
-    for arch in architectures:
-        arch_path = mirror_base / "os" / arch
-        if not arch_path.exists():
-            issues.append(f"Architektur-Verzeichnis nicht gefunden: {arch}")
-            continue
-
-        # Prüfe auf db.tar.gz
-        db_file = arch_path / "*.db.tar.gz"
-        import glob
-
-        dbs = glob.glob(str(db_file))
+    for arch_path in arch_dirs:
+        dbs = glob.glob(str(arch_path / "*.db.tar.gz"))
         if not dbs:
-            issues.append(f"Keine *.db.tar.gz in {arch} gefunden")
+            issues.append(f"Keine *.db.tar.gz in {arch_path.name} gefunden")
         checked += 1
 
     status = "ok" if not issues else "error"

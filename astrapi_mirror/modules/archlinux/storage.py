@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS arch_repos (
     slug             TEXT UNIQUE NOT NULL DEFAULT '',
     label            TEXT NOT NULL DEFAULT '',
     url              TEXT NOT NULL DEFAULT '',
+    mirror_urls      TEXT NOT NULL DEFAULT '',
     architectures    TEXT NOT NULL DEFAULT 'x86_64',
     enabled          INTEGER NOT NULL DEFAULT 1,
     last_status      TEXT NOT NULL DEFAULT 'neu',
@@ -25,18 +26,21 @@ CREATE TABLE IF NOT EXISTS arch_repos (
     last_sync_issues TEXT NOT NULL DEFAULT '[]'
 )"""
 
+_MIGRATION_ALTER = "ALTER TABLE arch_repos ADD COLUMN mirror_urls TEXT NOT NULL DEFAULT ''"
+
 _COLS = (
     "id",
     "slug",
     "label",
     "url",
+    "mirror_urls",
     "architectures",
     "enabled",
     "last_status",
     "last_run",
     "last_sync_issues",
 )
-_LIST_COLS = frozenset({"architectures"})
+_LIST_COLS = frozenset({"mirror_urls"})
 _BOOL_COLS = frozenset({"enabled"})
 
 _log = __import__("logging").getLogger(__name__)
@@ -76,6 +80,11 @@ class ArchlinuxRepoStore:
             db = _db()
             db.execute(_DDL)
             db.commit()
+            try:
+                db.execute(_MIGRATION_ALTER)
+                db.commit()
+            except Exception:
+                pass  # Spalte existiert bereits
             self._table_ready = True
             return True
         except Exception:

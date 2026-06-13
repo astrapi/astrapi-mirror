@@ -17,8 +17,7 @@ store = ArchlinuxRepoStore()
 
 class RepoIn(BaseModel):
     label: str = ""
-    url: str = ""
-    architectures: list[str] = ["x86_64"]
+    mirror_urls: list[str] = []
     enabled: bool = True
 
 
@@ -37,7 +36,7 @@ module = load_modul(
     ui_router,
     ui_content=ContentTable(
         columns=[
-            Col.trunc("url", "URL"),
+            Col.text("mirror_count", "Mirrors", sortable=False),
             Col.text("slug", "Slug"),
         ],
     ),

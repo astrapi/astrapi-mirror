@@ -8,22 +8,14 @@ fields:
     row:         1
     colspan:     2
 
-  - name:        url
-    label:       Repository-URL
-    type:        text
-    placeholder: "https://mirror.archlinux.org/iso/latest"
-    max:         500
+  - name:        mirror_urls
+    label:       Quellmirrors (eine vollständige URL pro Eintrag)
+    type:        list
+    placeholder: "https://mirror.archlinux.org/archlinux/extra/os/x86_64"
     column:      1
     row:         2
-
-  - name:        architectures
-    label:       Architekturen
-    type:        list
-    placeholder: "x86_64"
-    max:         100
-    column:      2
-    row:         2
-    description: "Standard: x86_64; weitere: aarch64, armv7h"
+    colspan:     2
+    description: "Erste URL = primärer Mirror; weitere = Fallbacks. Arch direkt in der URL angeben."
 
   - name:        enabled
     label:       Aktiviert

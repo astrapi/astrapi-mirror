@@ -12,6 +12,9 @@ def _now() -> str:
     return datetime.now().strftime("%Y-%m-%d %H:%M")
 
 
+_MAX_RETRIES = 5
+
+
 def _important(line: str) -> bool:
     """True für Zeilen die ins Activity-Log gehören (Phasen, Fehler, Zusammenfassungen)."""
     s = line.strip()
@@ -20,8 +23,7 @@ def _important(line: str) -> bool:
     return any(m in s for m in (
         "❌", "⚠️",
         "[1/", "[2/", "[3/", "[4/",
-        "📊 Download-Statistik",
-        "📦 Repo:", "Repo-ID:", "URL:", "Architekturen:",
+        "📦 Repo:", "Repo-ID:", "URLs:",
         "✅ Sync erfolgreich", "✅ Pacman", "✅ Swap",
         "Fehlgeschlagene Repos",
     ))
@@ -94,6 +96,63 @@ def run_single(repo_id: str, repo: dict | None = None) -> None:
 # ---------------------------------------------------------------------------
 
 
+def _retry_failed(repos: dict) -> None:
+    """Wiederholt fehlgeschlagene Repos bis zu _MAX_RETRIES-mal; sendet ntfy bei dauerhaftem Fehler."""
+    from . import store
+
+    for attempt in range(1, _MAX_RETRIES + 1):
+        failed_ids = [
+            repo_id for repo_id in repos
+            if (store.get(repo_id) or {}).get("last_status") == "error"
+        ]
+        if not failed_ids:
+            return
+
+        log(
+            "INFO",
+            f"Retry {attempt}/{_MAX_RETRIES} für {len(failed_ids)} Repo(s): "
+            + ", ".join(repos[rid].get("label", rid) for rid in failed_ids),
+        )
+
+        for repo_id in failed_ids:
+            repo = store.get(repo_id) or {}
+            label = f"{repo.get('label', repo_id)} (Retry {attempt}/{_MAX_RETRIES})"
+            run_logged(
+                "archlinux",
+                repo_id,
+                label,
+                lambda rid=repo_id, r=repo: run_single(rid, r),
+            )
+
+    still_failed = [
+        repo_id for repo_id in repos
+        if (store.get(repo_id) or {}).get("last_status") == "error"
+    ]
+    if still_failed:
+        _notify_sync_failure(still_failed, repos)
+
+
+def _notify_sync_failure(failed_ids: list[str], repos: dict) -> None:
+    """Sendet ntfy-Benachrichtigung für dauerhaft fehlgeschlagene Repos."""
+    labels = [repos[rid].get("label", rid) for rid in failed_ids]
+    body = (
+        f"Nach {_MAX_RETRIES} Versuchen fehlgeschlagen:\n"
+        + "\n".join(f"• {label}" for label in labels)
+    )
+    try:
+        from astrapi_core.modules.notify import engine as _ne
+
+        _ne.send(
+            title=f"Arch Mirror: {len(failed_ids)} Repo(s) nicht synchronisierbar",
+            message=body,
+            event=_ne.ERROR,
+            source="archlinux",
+            tags=["mirror", "sync-fehler"],
+        )
+    except Exception as e:
+        log("WARNING", f"ntfy-Benachrichtigung fehlgeschlagen: {e}")
+
+
 def sync_all() -> None:
     """Synchronisiert alle aktivierten Arch Linux Repos (blockierend)."""
     from . import store
@@ -105,7 +164,13 @@ def sync_all() -> None:
     }
     if not repos:
         return
-    run_all("archlinux", repos, run_single, desc_fn=lambda iid, e: e.get("label", iid))
+
+    try:
+        run_all("archlinux", repos, run_single, desc_fn=lambda iid, e: e.get("label", iid))
+    except RuntimeError:
+        pass  # Fehlgeschlagene Repos werden durch _retry_failed behandelt
+
+    _retry_failed(repos)
 
 
 def sync_repo(repo_id: str) -> None:

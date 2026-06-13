@@ -92,24 +92,24 @@ Server = file://{staging_abs}/$arch
 def quick_validate(repo: dict, base_path: Path) -> tuple[bool, list[str]]:
     """Schnelle Validierung ohne Docker (nur Dateistruktur-Checks).
 
+    Erkennt vorhandene Architektur-Verzeichnisse automatisch aus dem Staging-Pfad.
+
     Returns:
         (ok: bool, issues: list[str])
     """
     issues = []
 
-    architectures = repo.get("architectures", ["x86_64"])
-    if isinstance(architectures, str):
-        architectures = [a.strip() for a in architectures.split(",")]
+    os_path = base_path / "os"
+    if not os_path.exists():
+        return False, ["os/-Verzeichnis nicht vorhanden"]
 
-    for arch in architectures:
-        arch_path = base_path / "os" / arch
-        if not arch_path.exists():
-            issues.append(f"Architektur {arch}: Verzeichnis nicht gefunden")
-            continue
+    arch_dirs = [d for d in os_path.iterdir() if d.is_dir()]
+    if not arch_dirs:
+        return False, ["Keine Architektur-Verzeichnisse unter os/"]
 
-        # Prüfe auf db.tar.gz
+    for arch_path in arch_dirs:
         db_files = list(arch_path.glob("*.db.tar.gz"))
         if not db_files:
-            issues.append(f"Architektur {arch}: Keine *.db.tar.gz gefunden")
+            issues.append(f"Architektur {arch_path.name}: Keine *.db.tar.gz gefunden")
 
     return len(issues) == 0, issues
