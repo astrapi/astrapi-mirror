@@ -7,6 +7,6 @@ card_actions:
   - type: run
     url:  /ui/debian/{item}/sync
   - type: info
-    url:  /ui/debian/{item}/sources-list
+    url:  /ui/debian/{item}/info
   - type: log
     url:  /api/debian/{item}/logs

@@ -1,0 +1,57 @@
+{% import 'partials/components/ui_macros.html' as ui %}
+{% call ui.modal_wrapper("debian-info-modal", max_width="560px", padding="24px 28px") %}
+  {{ ui.modal_title(title=label, icon="info") }}
+  <div style="margin-top:16px;">
+
+    <div class="meta-grid">
+      <span class="meta-label">Status</span>
+      <span class="meta-value">{{ ui.status_inline(last_status) }}</span>
+      <span class="meta-label">Letzter Sync</span>
+      <span class="meta-value" style="font-family:var(--mono);font-size:.9em;">{{ last_run }}</span>
+    </div>
+
+    {% if issues %}
+    <div style="margin-top:14px;">
+      <p style="font-weight:600;margin-bottom:8px;color:var(--color-error);font-size:.85em;">
+        Letzte Fehler ({{ issues | length }})
+      </p>
+      <div style="background:var(--color-surface-2);border-radius:6px;padding:10px 14px;max-height:160px;overflow-y:auto;">
+        {% for issue in issues %}
+        <div style="font-size:.8em;font-family:var(--mono);padding:3px 0;border-bottom:1px solid var(--color-border);">{{ issue }}</div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <div style="margin-top:16px;border-top:1px solid var(--color-border);padding-top:14px;">
+      <p style="font-size:.75em;font-weight:600;text-transform:uppercase;color:var(--color-text-muted);letter-spacing:.05em;margin-bottom:10px;">Speicher &amp; Pakete</p>
+      <div class="meta-grid">
+        {% if info.published %}
+        <span class="meta-label">Aktuelle Version</span>
+        <span class="meta-value" style="font-family:var(--mono);font-size:.9em;">{{ info.current_version or '—' }}</span>
+        <span class="meta-label">Speicher (aktuell)</span>
+        <span class="meta-value">{{ info.current_size_fmt }}</span>
+        <span class="meta-label">Pakete (.deb)</span>
+        <span class="meta-value">{{ info.pkg_count }}</span>
+        {% else %}
+        <span class="meta-label">Status</span>
+        <span class="meta-value" style="color:var(--color-text-muted);">Noch nicht synchronisiert</span>
+        {% endif %}
+        {% if info.version_count %}
+        <span class="meta-label">Gehaltene Versionen</span>
+        <span class="meta-value" style="font-family:var(--mono);font-size:.9em;">
+          {{ info.versions | join(', ') }}{% if info.staging_exists %}, staging{% endif %}
+        </span>
+        <span class="meta-label">Speicher (gesamt)</span>
+        <span class="meta-value">{{ info.total_size_fmt }}</span>
+        {% endif %}
+        {% if info.staging_exists and not info.version_count %}
+        <span class="meta-label">Staging</span>
+        <span class="meta-value" style="color:var(--color-text-muted);">vorhanden (Sync läuft oder unterbrochen)</span>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+  {{ ui.modal_footer_simple() }}
+{% endcall %}
