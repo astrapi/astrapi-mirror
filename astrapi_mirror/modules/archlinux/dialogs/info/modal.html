@@ -42,7 +42,7 @@
         <span class="meta-value" style="font-family:var(--mono);font-size:.9em;">
           {{ info.versions | join(', ') }}{% if info.staging_exists %}, staging{% endif %}
         </span>
-        <span class="meta-label">Speicher (gesamt)</span>
+        <span class="meta-label">Speicher (tatsächlich)</span>
         <span class="meta-value">{{ info.total_size_fmt }}</span>
         {% endif %}
         {% if info.staging_exists and not info.version_count %}

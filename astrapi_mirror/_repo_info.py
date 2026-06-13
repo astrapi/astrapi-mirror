@@ -12,6 +12,7 @@ def _fmt_size(size: int) -> str:
 
 
 def _dir_size(path: Path) -> int:
+    """Apparent-Größe (ignoriert Hardlinks – für 'wie viel Inhalt wird ausgeliefert')."""
     total = 0
     for f in path.rglob("*"):
         if f.is_file() and not f.is_symlink():
@@ -19,6 +20,24 @@ def _dir_size(path: Path) -> int:
                 total += f.stat().st_size
             except OSError:
                 pass
+    return total
+
+
+def _real_size(paths: list[Path]) -> int:
+    """Tatsächlicher Speicherbedarf über mehrere Verzeichnisse (Hardlinks nur einmal zählen)."""
+    total = 0
+    seen: set[tuple[int, int]] = set()
+    for path in paths:
+        for f in path.rglob("*"):
+            if f.is_file() and not f.is_symlink():
+                try:
+                    st = f.stat()
+                    key = (st.st_dev, st.st_ino)
+                    if key not in seen:
+                        seen.add(key)
+                        total += st.st_blocks * 512  # st_blocks in 512-Byte-Einheiten
+                except OSError:
+                    pass
     return total
 
 
@@ -72,11 +91,10 @@ def repo_info(repo_path: Path, pkg_suffixes: tuple[str, ...] = (".zst", ".deb"))
         except OSError:
             pass
 
-    total_size = sum(
-        _dir_size(repo_path / v) for v in versions
-    )
+    real_dirs = [repo_path / v for v in versions if (repo_path / v).exists()]
     if staging_exists:
-        total_size += _dir_size(repo_path / "staging")
+        real_dirs.append(repo_path / "staging")
+    total_size = _real_size(real_dirs)
 
     return {
         "published": published,
