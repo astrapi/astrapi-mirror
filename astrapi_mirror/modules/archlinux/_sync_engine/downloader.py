@@ -177,14 +177,28 @@ class ArchDownloader:
 
         return 0
 
+    # Metadaten-Dateien werden immer neu geladen (nie übersprungen)
+    _META_EXTS = (".db", ".db.tar.gz", ".db.tar.zst", ".files", ".files.tar.gz", ".files.tar.zst")
+
+    def _is_metadata(self, filename: str) -> bool:
+        return any(filename.endswith(ext) for ext in self._META_EXTS)
+
     async def _download_file_with_fallback(
         self, filename: str, mirror_urls: list[str], arch_path: Path
     ) -> int:
-        """Lädt eine Datei herunter und wechselt bei Fehler auf den nächsten Mirror."""
+        """Lädt eine Datei herunter und wechselt bei Fehler auf den nächsten Mirror.
+
+        Metadaten-Dateien (DB, Files-Index) werden immer neu heruntergeladen,
+        da sie sich bei jedem Mirror-Update ändern können.
+        """
         local_path = arch_path / filename
-        if local_path.exists():
+        if local_path.exists() and not self._is_metadata(filename):
             self.stats["skipped"] += 1
             return 0
+
+        # Vorhandene Metadaten-Datei vor Neudownload entfernen
+        if local_path.exists():
+            local_path.unlink()
 
         partial_path = self.partial_root / filename
         loop = asyncio.get_event_loop()
