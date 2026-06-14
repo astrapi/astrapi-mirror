@@ -234,6 +234,9 @@ def _check_release_file(
                 continue
             file_path = base_dir / filename
             if not file_path.exists():
+                # Contents-* sind optional – nicht alle Repos stellen sie bereit
+                if filename.split("/")[-1].startswith("Contents-"):
+                    continue
                 issues.append(f"Fehlende Datei: {filename}")
                 continue
             try:
