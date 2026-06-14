@@ -170,5 +170,9 @@ def ui_log_repo(repo_id: str, request: Request):
         {
             "item": item,
             "item_id": repo_id,
+            "label": item.get("label") or repo_id,
+            "last_run": item.get("last_run") or "—",
+            "last_status": item.get("last_status") or "neu",
+            "issues": item.get("last_sync_issues") or [],
         },
     )

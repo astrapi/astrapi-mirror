@@ -1,42 +1,30 @@
-<!-- Arch Linux Log Modal -->
-<div class="modal-header">
-    <h2>Sync-Log: {{ item.label }}</h2>
-    {% if item.last_run %}
-    <p class="hint">Letzter Sync: {{ item.last_run }}</p>
-    {% endif %}
-</div>
-<div class="modal-body">
-    <div class="log-viewer">
-        {% if item.last_status == 'running' %}
-        <div class="log-status running">
-            ⏳ Synchronisierung läuft...
-        </div>
-        <div hx-sse="connect:/api/archlinux/{{ item_id }}/log/stream"
-             hx-swap="innerHTML">
-            Warte auf Output...
-        </div>
-        {% elif item.last_status == 'ok' %}
-        <div class="log-status ok">
-            ✅ Letzter Sync erfolgreich
-        </div>
-        {% elif item.last_status == 'error' %}
-        <div class="log-status error">
-            ❌ Letzter Sync fehlgeschlagen
-        </div>
-        {% if item.last_sync_issues %}
-        <div class="issues-list">
-            <h4>Fehler:</h4>
-            <ul>
-            {% for issue in item.last_sync_issues %}
-                <li>{{ issue }}</li>
-            {% endfor %}
-            </ul>
-        </div>
-        {% endif %}
-        {% endif %}
+{% import 'partials/components/ui_macros.html' as ui %}
+{% call ui.modal_wrapper("archlinux-log-modal", max_width="700px", padding="24px 28px") %}
+  {{ ui.modal_title(title="Sync-Log – " ~ label, icon="log") }}
+  <div style="margin-top:16px;">
+
+    <div class="meta-grid" style="margin-bottom:16px;">
+      <span class="meta-label">Letzter Sync</span>
+      <span class="meta-value">{{ last_run or '—' }}</span>
+      <span class="meta-label">Status</span>
+      <span class="meta-value">{{ ui.status_inline(last_status) }}</span>
     </div>
 
-    <div class="modal-footer">
-        <button type="button" onclick="closeModal()" class="btn btn-secondary">Schließen</button>
+    {% if issues %}
+    <p style="font-weight:600;margin-bottom:8px;color:var(--color-error);">Validierungsprobleme ({{ issues | length }})</p>
+    <div style="background:var(--color-surface-2);border-radius:6px;padding:14px 16px;max-height:320px;overflow-y:auto;">
+      {% for issue in issues %}
+      <div style="font-size:.82em;font-family:var(--mono);padding:3px 0;border-bottom:1px solid var(--color-border);">
+        {{ issue }}
+      </div>
+      {% endfor %}
     </div>
-</div>
+    {% else %}
+    <div style="color:var(--color-text-muted);font-size:.85em;padding:8px 0;">
+      Keine Validierungsprobleme.
+    </div>
+    {% endif %}
+
+  </div>
+  {{ ui.modal_footer_simple() }}
+{% endcall %}
