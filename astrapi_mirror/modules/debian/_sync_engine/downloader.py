@@ -23,16 +23,17 @@ _OPTIONAL_INDEX_SUFFIXES = ("/Packages", "/Sources")
 
 
 def _build_mirror_list(primary_url: str, mirror_urls) -> list[str]:
-    """Baut geordnete Mirror-Liste: primärer Mirror zuerst, dann Fallbacks."""
-    result = [primary_url]
+    """Baut geordnete Mirror-Liste.
+
+    Wenn mirror_urls befüllt ist, wird diese Liste direkt verwendet.
+    Andernfalls Fallback auf primary_url (Backward-Compat für alte Repos).
+    """
     extra = mirror_urls or []
     if isinstance(extra, str):
         extra = [e.strip() for e in extra.splitlines() if e.strip()]
-    for m in extra:
-        m = m.rstrip("/")
-        if m and m not in result:
-            result.append(m)
-    return result
+    if extra:
+        return [m.rstrip("/") for m in extra if m.strip()]
+    return [primary_url] if primary_url else []
 
 
 def _is_http_404(error_msg: str) -> bool:

@@ -35,6 +35,8 @@ CREATE TABLE IF NOT EXISTS debian_repos (
 _MIGRATIONS = [
     "ALTER TABLE debian_repos ADD COLUMN last_info TEXT NOT NULL DEFAULT '{}'",
     "ALTER TABLE debian_repos ADD COLUMN mirror_urls TEXT NOT NULL DEFAULT ''",
+    # Bestehende url-Werte in mirror_urls übernehmen (einmalig)
+    "UPDATE debian_repos SET mirror_urls = url WHERE mirror_urls = '' AND url != ''",
 ]
 
 _COLS = (
