@@ -287,7 +287,7 @@ class FileDownloader:
                         f"{suite_url}/{e['filename']}",
                         suite_path / e["filename"],
                         e.get("sha256"),
-                        soft="/Contents-" in e["filename"],
+                        soft=e["filename"].split("/")[-1].startswith("Contents-"),
                     )
                 )
                 for e in filtered
