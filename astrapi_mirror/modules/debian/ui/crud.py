@@ -127,28 +127,6 @@ def ui_info_repo(repo_id: str, request: Request):
 
 
 # ---------------------------------------------------------------------------
-# Validierungs-Modal
-# ---------------------------------------------------------------------------
-
-
-@router.get(f"/ui/{KEY}/{{repo_id}}/validate", response_class=HTMLResponse)
-def ui_validate(repo_id: str, request: Request):
-    data = store.get(repo_id) or {}
-    from ..engine import validate_repo
-
-    result = validate_repo(data)
-    return render(
-        request,
-        f"{KEY}/dialogs/validate/modal.html",
-        {
-            "repo_id": repo_id,
-            "label": data.get("label") or repo_id,
-            "result": result,
-        },
-    )
-
-
-# ---------------------------------------------------------------------------
 # Log-Modal
 # ---------------------------------------------------------------------------
 

@@ -105,32 +105,6 @@ def ui_sync_all(request: Request):
 
 
 # ---------------------------------------------------------------------------
-# Validate-Action
-# ---------------------------------------------------------------------------
-
-
-@router.get(f"/ui/{KEY}/{{repo_id}}/validate", response_class=HTMLResponse)
-def ui_validate_repo(repo_id: str, request: Request):
-    from .._sync_engine import validate_repo
-
-    item = store.get(repo_id)
-    if not item:
-        return "<p>Nicht gefunden</p>"
-
-    validation = validate_repo({"id": repo_id, **item})
-
-    return render(
-        request,
-        f"{KEY}/dialogs/validate/modal.html",
-        {
-            "item": item,
-            "item_id": repo_id,
-            "validation": validation,
-        },
-    )
-
-
-# ---------------------------------------------------------------------------
 # Info-Modal
 # ---------------------------------------------------------------------------
 
