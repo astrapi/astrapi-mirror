@@ -175,51 +175,6 @@ class SyncEngine:
             return 1, f"Unerwarteter Fehler: {e}"
 
 
-def validate_repo(repo: dict, base_path: Path | None = None) -> dict:
-    """Validiert ein Arch-Repository.
-
-    Args:
-        repo: Repo-Dict mit id/slug
-        base_path: Pfad zum Staging-Verzeichnis (optional)
-
-    Returns:
-        {'status': 'ok'/'error', 'issues': [...], 'checked_archs': n}
-    """
-    import glob
-
-    from astrapi_mirror._paths import archlinux_mirror_path
-
-    if base_path is not None:
-        mirror_base = Path(base_path)
-    else:
-        repo_id = repo.get("slug") or str(repo.get("id", ""))
-        repo_root = archlinux_mirror_path() / repo_id / "current"
-        if repo_root.exists():
-            mirror_base = repo_root
-        else:
-            return {"status": "error", "issues": ["Repo nicht gefunden"], "checked_archs": 0}
-
-    os_path = mirror_base / "os"
-    if not os_path.exists():
-        return {"status": "error", "issues": ["os/-Verzeichnis nicht vorhanden"], "checked_archs": 0}
-
-    arch_dirs = [d for d in os_path.iterdir() if d.is_dir()]
-    if not arch_dirs:
-        return {"status": "error", "issues": ["Keine Architektur-Verzeichnisse unter os/"], "checked_archs": 0}
-
-    issues: list[str] = []
-    checked = 0
-
-    for arch_path in arch_dirs:
-        dbs = glob.glob(str(arch_path / "*.db.tar.gz"))
-        if not dbs:
-            issues.append(f"Keine *.db.tar.gz in {arch_path.name} gefunden")
-        checked += 1
-
-    status = "ok" if not issues else "error"
-    return {"status": status, "issues": issues[:10], "checked_archs": checked}
-
-
 def client_pacman_snippet(repo: dict, base_url: str) -> str:
     """Erzeugt einen pacman.conf-Snippet für ein Arch-Repo."""
     base_url = base_url.rstrip("/")

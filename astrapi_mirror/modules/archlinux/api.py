@@ -40,7 +40,7 @@ def api_validate(repo_id: str):
     data = store.get(repo_id)
     if not data:
         raise HTTPException(404, "Nicht gefunden")
-    from ._sync_engine.engine import validate_repo
+    from ._sync_engine.validator import validate_repo
 
     return validate_repo(data)
 

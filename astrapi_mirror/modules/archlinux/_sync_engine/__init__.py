@@ -1,7 +1,7 @@
 """astrapi_mirror.modules.archlinux._sync_engine – Interne Sync-Engine für Arch Linux."""
 
-from .engine import SyncEngine, client_pacman_snippet, validate_repo
-from .validator import quick_validate, test_pacman_sync
+from .engine import SyncEngine, client_pacman_snippet
+from .validator import quick_validate, test_pacman_sync, validate_repo
 
 __all__ = [
     "SyncEngine",
