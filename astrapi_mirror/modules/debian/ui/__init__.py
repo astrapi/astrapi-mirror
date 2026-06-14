@@ -1,3 +1,5 @@
-"""astrapi_mirror.modules.debian.ui"""
+"""astrapi_mirror.modules.debian.ui – UI-Router für das Debian-Modul."""
 
-from .crud import router  # noqa: F401
+from .crud import router
+
+__all__ = ["router"]
