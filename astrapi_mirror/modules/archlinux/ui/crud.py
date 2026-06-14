@@ -1,4 +1,4 @@
-"""astrapi_mirror.modules.archlinux.ui.crud – UI-Router für das Archlinux-Modul."""
+"""astrapi_mirror.modules.archlinux.ui – UI-Router für das Archlinux-Modul."""
 
 from pathlib import Path
 
@@ -134,19 +134,15 @@ def ui_info_repo(repo_id: str, request: Request):
 
 @router.get(f"/ui/{KEY}/{{repo_id}}/log", response_class=HTMLResponse)
 def ui_log_repo(repo_id: str, request: Request):
-    item = store.get(repo_id)
-    if not item:
-        return "<p>Nicht gefunden</p>"
-
+    data = store.get(repo_id) or {}
     return render(
         request,
         f"{KEY}/dialogs/log/modal.html",
         {
-            "item": item,
-            "item_id": repo_id,
-            "label": item.get("label") or repo_id,
-            "last_run": item.get("last_run") or "—",
-            "last_status": item.get("last_status") or "neu",
-            "issues": item.get("last_sync_issues") or [],
+            "repo_id": repo_id,
+            "label": data.get("label") or repo_id,
+            "last_run": data.get("last_run") or "—",
+            "last_status": data.get("last_status") or "neu",
+            "issues": data.get("last_sync_issues") or [],
         },
     )
