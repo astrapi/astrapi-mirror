@@ -154,33 +154,6 @@ def ui_info_repo(repo_id: str, request: Request):
 
 
 # ---------------------------------------------------------------------------
-# Sources-Snippet-Action
-# ---------------------------------------------------------------------------
-
-
-@router.get(f"/ui/{KEY}/{{repo_id}}/sources-snippet", response_class=HTMLResponse)
-def ui_sources_snippet(repo_id: str, request: Request):
-    from .._sync_engine.engine import client_pacman_snippet
-
-    item = store.get(repo_id)
-    if not item:
-        return "<p>Nicht gefunden</p>"
-
-    base_url = str(request.base_url).rstrip("/")
-    snippet = client_pacman_snippet(item, base_url)
-
-    return render(
-        request,
-        f"{KEY}/dialogs/sources-snippet/modal.html",
-        {
-            "item": item,
-            "item_id": repo_id,
-            "base_url": base_url,
-        },
-    )
-
-
-# ---------------------------------------------------------------------------
 # Log-Action
 # ---------------------------------------------------------------------------
 
