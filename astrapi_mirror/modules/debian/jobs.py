@@ -76,7 +76,7 @@ def run_single(repo_id: str, repo: dict | None = None) -> None:
     """Synchronisiert ein einzelnes Debian-Repo (blockierend, für run_all/run_logged)."""
     from . import store
     from ._sync_engine import SyncEngine
-    from .engine import validate_repo
+    from ._sync_engine.validator import validate_repo
 
     if repo is None:
         repo = store.get(repo_id)

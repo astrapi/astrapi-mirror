@@ -149,7 +149,7 @@ class SyncEngine:
 
             # Phase 3: Manifest-Validierung (gegen Staging, nicht live)
             _log("\n[3/5] Manifest validieren...")
-            from ..engine import validate_repo
+            from .validator import validate_repo
 
             validation = validate_repo({"id": repo_id, **repo}, base_path=staging_path)
             if validation["status"] == "error":
@@ -216,3 +216,49 @@ class SyncEngine:
         if path:
             return f"{host}{path}"
         return host
+
+
+# ---------------------------------------------------------------------------
+# DEB822-.sources-Snippet
+# ---------------------------------------------------------------------------
+
+
+def _armor_inline(armored_key: str) -> str:
+    """Formatiert einen armierten GPG-Schlüssel als DEB822-Multiline-Fortsetzung."""
+    result = []
+    for line in armored_key.strip().splitlines():
+        result.append(f" {line}" if line.strip() else " .")
+    return "\n".join(result)
+
+
+def client_sources_file(repo: dict, base_url: str) -> str:
+    """Erzeugt den Inhalt einer DEB822 .sources-Datei für apt."""
+    base_url = base_url.rstrip("/")
+    repo_id = repo.get("slug") or str(repo.get("id", ""))
+    mirror_url = f"{base_url}/files/debian/{repo_id}"
+
+    lines: list[str] = [f"Types: {repo.get('repo_type', 'deb')}"]
+
+    suites = [s.strip() for s in (repo.get("suites") or []) if s.strip()]
+    components = [c.strip() for c in (repo.get("components") or []) if c.strip()]
+
+    if not suites:
+        lines.append(f"URIs: {mirror_url}/")
+        lines.append("Suites: ./")
+    else:
+        lines.append(f"URIs: {mirror_url}")
+        lines.append(f"Suites: {' '.join(suites)}")
+        if components:
+            lines.append(f"Components: {' '.join(components)}")
+
+    archs = [a.strip() for a in (repo.get("architectures") or []) if a.strip()]
+    if archs:
+        lines.append(f"Architectures: {' '.join(archs)}")
+
+    gpg_key = (repo.get("gpg_key") or "").strip()
+    if gpg_key.startswith("-----BEGIN PGP PUBLIC KEY BLOCK-----"):
+        lines.append(f"Signed-By:\n{_armor_inline(gpg_key)}")
+    elif gpg_key:
+        lines.append(f"Signed-By: /etc/apt/trusted.gpg.d/{repo_id}.gpg")
+
+    return "\n".join(lines) + "\n"

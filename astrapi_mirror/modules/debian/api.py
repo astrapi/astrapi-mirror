@@ -40,7 +40,7 @@ def api_validate(repo_id: str):
     data = store.get(repo_id)
     if not data:
         raise HTTPException(404, "Nicht gefunden")
-    from .engine import validate_repo
+    from ._sync_engine.validator import validate_repo
 
     return validate_repo(data)
 
@@ -54,7 +54,7 @@ def api_sources_list(repo_id: str, request: Request):
     data = store.get(repo_id)
     if not data:
         raise HTTPException(404, "Nicht gefunden")
-    from .engine import client_sources_file
+    from ._sync_engine.engine import client_sources_file
 
     base_url = str(request.base_url).rstrip("/")
     return client_sources_file(data, base_url)
