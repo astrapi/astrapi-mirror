@@ -1,4 +1,4 @@
-"""astrapi_mirror.modules.debian.jobs – Sync via run_logged/run_all (wie astrapi-backup)."""
+"""astrapi_mirror.modules.debian.jobs – Sync via run_logged/run_all."""
 
 import threading
 import urllib.request
@@ -10,6 +10,9 @@ from astrapi_core.system.runner import run_all, run_logged
 
 def _now() -> str:
     return datetime.now().strftime("%Y-%m-%d %H:%M")
+
+
+_MAX_RETRIES = 5
 
 
 def _armor_binary_key(raw: bytes) -> str:
@@ -60,7 +63,7 @@ def _important(line: str) -> bool:
         "❌", "⚠️",
         "[1/", "[2/", "[3/", "[4/", "[5/",
         "📊 Download-Statistik",
-        "📦 Suite:", "📦 Pool:", "📦 Pakete:",
+        "📦 Suite:", "📦 Pool:",
         "✅ Sync erfolgreich", "✅ Validierung", "✅ Swap",
         "Repo-ID:", "URL:", "Suites:", "Komponenten:", "Architekturen:",
         "Fehlgeschlagene Repos",
@@ -138,6 +141,63 @@ def run_single(repo_id: str, repo: dict | None = None) -> None:
 # ---------------------------------------------------------------------------
 
 
+def _retry_failed(repos: dict) -> None:
+    """Wiederholt fehlgeschlagene Repos bis zu _MAX_RETRIES-mal; sendet ntfy bei dauerhaftem Fehler."""
+    from . import store
+
+    for attempt in range(1, _MAX_RETRIES + 1):
+        failed_ids = [
+            repo_id for repo_id in repos
+            if (store.get(repo_id) or {}).get("last_status") == "error"
+        ]
+        if not failed_ids:
+            return
+
+        log(
+            "INFO",
+            f"Retry {attempt}/{_MAX_RETRIES} für {len(failed_ids)} Repo(s): "
+            + ", ".join(repos[rid].get("label", rid) for rid in failed_ids),
+        )
+
+        for repo_id in failed_ids:
+            repo = store.get(repo_id) or {}
+            label = f"{repo.get('label', repo_id)} (Retry {attempt}/{_MAX_RETRIES})"
+            run_logged(
+                "debian",
+                repo_id,
+                label,
+                lambda rid=repo_id, r=repo: run_single(rid, r),
+            )
+
+    still_failed = [
+        repo_id for repo_id in repos
+        if (store.get(repo_id) or {}).get("last_status") == "error"
+    ]
+    if still_failed:
+        _notify_sync_failure(still_failed, repos)
+
+
+def _notify_sync_failure(failed_ids: list[str], repos: dict) -> None:
+    """Sendet ntfy-Benachrichtigung für dauerhaft fehlgeschlagene Repos."""
+    labels = [repos[rid].get("label", rid) for rid in failed_ids]
+    body = (
+        f"Nach {_MAX_RETRIES} Versuchen fehlgeschlagen:\n"
+        + "\n".join(f"• {label}" for label in labels)
+    )
+    try:
+        from astrapi_core.modules.notify import engine as _ne
+
+        _ne.send(
+            title=f"Debian Mirror: {len(failed_ids)} Repo(s) nicht synchronisierbar",
+            message=body,
+            event=_ne.ERROR,
+            source="debian",
+            tags=["mirror", "sync-fehler"],
+        )
+    except Exception as e:
+        log("WARNING", f"ntfy-Benachrichtigung fehlgeschlagen: {e}")
+
+
 def sync_all() -> None:
     """Synchronisiert alle aktivierten Debian-Repos (blockierend)."""
     from . import store
@@ -149,7 +209,13 @@ def sync_all() -> None:
     }
     if not repos:
         return
-    run_all("debian", repos, run_single, desc_fn=lambda iid, e: e.get("slug", iid))
+
+    try:
+        run_all("debian", repos, run_single, desc_fn=lambda iid, e: e.get("label", iid))
+    except RuntimeError:
+        pass  # Fehlgeschlagene Repos werden durch _retry_failed behandelt
+
+    _retry_failed(repos)
 
 
 def sync_repo(repo_id: str) -> None:
@@ -159,7 +225,7 @@ def sync_repo(repo_id: str) -> None:
     repo = store.get(repo_id)
     if not repo:
         return
-    run_logged("debian", repo_id, repo.get("slug", repo_id),
+    run_logged("debian", repo_id, repo.get("label", repo_id),
                lambda: run_single(repo_id, repo))
 
 
