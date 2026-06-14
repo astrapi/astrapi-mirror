@@ -127,46 +127,6 @@ def ui_info_repo(repo_id: str, request: Request):
 
 
 # ---------------------------------------------------------------------------
-# sources.list Modal
-# ---------------------------------------------------------------------------
-
-
-@router.get(f"/ui/{KEY}/{{repo_id}}/sources-list", response_class=HTMLResponse)
-def ui_sources_list(repo_id: str, request: Request):
-    data = store.get(repo_id) or {}
-    from ..engine import client_sources_file
-
-    base_url = str(request.base_url).rstrip("/")
-    slug = data.get("slug", repo_id)
-    snippet = client_sources_file(data, base_url)
-
-    # Anzeige-Snippet: Inline-GPG-Block nicht anzeigen (nur Signed-By-Hinweis)
-    if "Signed-By:\n" in snippet:
-        idx = snippet.find("Signed-By:\n")
-        display_snippet = snippet[:idx] + "Signed-By: …\n"
-    else:
-        display_snippet = snippet
-
-    # GPG-curl-Befehl nur anzeigen wenn Key noch als Pfad-Referenz eingebunden ist
-    gpg_key = (data.get("gpg_key") or "").strip()
-    key_is_inline = gpg_key.startswith("-----BEGIN PGP PUBLIC KEY BLOCK-----")
-    gpg_url = f"{base_url}/repo/debian/{slug}.gpg" if gpg_key and not key_is_inline else None
-
-    return render(
-        request,
-        f"{KEY}/dialogs/sources_list/modal.html",
-        {
-            "repo_id": repo_id,
-            "label": data.get("label") or repo_id,
-            "snippet": snippet,
-            "display_snippet": display_snippet,
-            "filename": f"{slug}.sources",
-            "gpg_url": gpg_url,
-        },
-    )
-
-
-# ---------------------------------------------------------------------------
 # Validierungs-Modal
 # ---------------------------------------------------------------------------
 
