@@ -278,6 +278,7 @@ class FileDownloader:
             self._log(f"  {len(filtered)}/{len(index_entries)} Dateien nach Filter")
 
             # 4. Index-Dateien parallel herunterladen
+            # Contents-* Dateien sind optional – nicht alle Repos stellen sie bereit
             sem = asyncio.Semaphore(self.max_concurrent)
             tasks = [
                 asyncio.create_task(
@@ -286,6 +287,7 @@ class FileDownloader:
                         f"{suite_url}/{e['filename']}",
                         suite_path / e["filename"],
                         e.get("sha256"),
+                        soft="/Contents-" in e["filename"],
                     )
                 )
                 for e in filtered
@@ -411,6 +413,7 @@ class FileDownloader:
         self._log(f"  {len(filtered)}/{len(entries)} Dateien nach Filter")
 
         # 4. Index-Dateien parallel herunterladen
+        # Contents-* Dateien sind optional – nicht alle Repos stellen sie bereit
         sem = asyncio.Semaphore(self.max_concurrent)
         tasks = [
             asyncio.create_task(
@@ -419,6 +422,7 @@ class FileDownloader:
                     f"{url}/{e['filename']}",
                     self.staging_path / e["filename"],
                     e.get("sha256"),
+                    soft="/Contents-" in e["filename"],
                 )
             )
             for e in filtered
