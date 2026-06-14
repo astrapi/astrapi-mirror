@@ -39,8 +39,9 @@ module = load_modul(
     ui_router,
     ui_content=ContentTable(
         columns=[
-            Col.trunc("url", "URL"),
-            Col.text("slug", "Slug"),
+            Col.text("mirror_count", "Mirrors", sortable=False),
+            Col.text("info_pkg_count", "Pakete", sortable=False),
+            Col.text("info_size", "Speicher", sortable=False),
         ],
     ),
 )

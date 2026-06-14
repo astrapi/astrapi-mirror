@@ -23,7 +23,18 @@ class _LabelDescStore:
 
     def list(self, **kwargs):
         raw = self._inner.list(**kwargs)
-        return {k: {**v, "description": v.get("label", k)} for k, v in raw.items()}
+        result = {}
+        for k, v in raw.items():
+            count = len(v.get("mirror_urls") or [])
+            info = v.get("last_info") or {}
+            result[k] = {
+                **v,
+                "description": v.get("label", k),
+                "mirror_count": f"{count} Mirror" if count == 1 else f"{count} Mirrors",
+                "info_pkg_count": str(info["pkg_count"]) if info.get("pkg_count") else "—",
+                "info_size": info.get("total_size_fmt") or "—",
+            }
+        return result
 
 
 router = make_crud_router(

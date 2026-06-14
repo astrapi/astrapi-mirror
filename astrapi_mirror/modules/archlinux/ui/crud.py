@@ -26,8 +26,14 @@ class _LabelDescStore:
         result = {}
         for k, v in raw.items():
             count = len(v.get("mirror_urls") or [])
-            label = f"{count} Mirror" if count == 1 else f"{count} Mirrors"
-            result[k] = {**v, "description": v.get("label", k), "mirror_count": label}
+            info = v.get("last_info") or {}
+            result[k] = {
+                **v,
+                "description": v.get("label", k),
+                "mirror_count": f"{count} Mirror" if count == 1 else f"{count} Mirrors",
+                "info_pkg_count": str(info["pkg_count"]) if info.get("pkg_count") else "—",
+                "info_size": info.get("total_size_fmt") or "—",
+            }
         return result
 
 
