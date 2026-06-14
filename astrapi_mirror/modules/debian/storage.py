@@ -32,13 +32,6 @@ CREATE TABLE IF NOT EXISTS debian_repos (
     last_info        TEXT NOT NULL DEFAULT '{}'
 )"""
 
-_MIGRATIONS = [
-    "ALTER TABLE debian_repos ADD COLUMN last_info TEXT NOT NULL DEFAULT '{}'",
-    "ALTER TABLE debian_repos ADD COLUMN mirror_urls TEXT NOT NULL DEFAULT ''",
-    # Bestehende url-Werte in mirror_urls übernehmen (einmalig)
-    "UPDATE debian_repos SET mirror_urls = url WHERE mirror_urls = '' AND url != ''",
-]
-
 _COLS = (
     "id",
     "slug",
@@ -97,19 +90,6 @@ class DebianRepoStore:
         try:
             db = _db()
             db.execute(_DDL)
-            # Migration: is_flat-Spalte entfernen (Erkennung jetzt inline beim Sync)
-            try:
-                cols = [r[1] for r in db.execute(f"PRAGMA table_info({_TABLE})").fetchall()]
-                if "is_flat" in cols:
-                    db.execute(f"ALTER TABLE {_TABLE} DROP COLUMN is_flat")
-            except Exception:
-                pass  # SQLite < 3.35: Spalte bleibt ungenutzt, kein Problem
-            for migration in _MIGRATIONS:
-                try:
-                    db.execute(migration)
-                    db.commit()
-                except Exception:
-                    pass  # Spalte existiert bereits
             db.commit()
             self._table_ready = True
             return True
@@ -285,69 +265,3 @@ class DebianRepoStore:
             db.commit()
         return bool(new_val)
 
-    # ── Migration ─────────────────────────────────────────────────────────────
-
-    def migrate_from_kvstore(self) -> int:
-        """Migriert bestehende Einträge aus kvstore.debian → debian_repos.
-
-        Verwendet den alten String-Key direkt als slug. Bereits vorhandene
-        slugs werden übersprungen (idempotent).
-        """
-        try:
-            from astrapi_core.system.db import kv_list
-        except Exception:
-            return 0
-        entries = kv_list("debian")
-        if not entries:
-            return 0
-        existing_slugs = {v["slug"] for v in self.list().values()}
-        count = 0
-        db = _db()
-        for key, value_json in entries.items():
-            if key.startswith("__"):
-                continue
-            try:
-                d = json.loads(value_json)
-            except Exception:
-                continue
-            slug = key  # alter String-Key wird direkt als slug übernommen
-            if slug in existing_slugs:
-                continue
-            suites = d.get("suites", [])
-            components = d.get("components", [])
-            architectures = d.get("architectures", [])
-            issues = d.get("last_sync_issues", [])
-            row = {
-                "slug": slug,
-                "label": d.get("label", key),
-                "url": d.get("url", ""),
-                "repo_type": d.get("repo_type", "deb"),
-                "suites": ",".join(suites) if isinstance(suites, list) else str(suites),
-                "components": ",".join(components)
-                if isinstance(components, list)
-                else str(components),
-                "architectures": ",".join(architectures)
-                if isinstance(architectures, list)
-                else str(architectures),
-                "gpg_key_url": d.get("gpg_key_url", ""),
-                "gpg_key": d.get("gpg_key", ""),
-                "enabled": 1 if d.get("enabled", True) else 0,
-                "last_status": d.get("last_status", "neu"),
-                "last_run": d.get("last_run", ""),
-                "last_sync_issues": json.dumps(issues),
-            }
-            cols = list(row.keys())
-            try:
-                db.execute(
-                    f"INSERT OR IGNORE INTO {_TABLE} ({','.join(cols)}) "
-                    f"VALUES ({','.join(['?'] * len(cols))})",
-                    [row[c] for c in cols],
-                )
-                count += 1
-                existing_slugs.add(slug)
-                _log.info("Migriert: kvstore.debian[%s] → debian_repos", key)
-            except Exception as e:
-                _log.warning("Migration fehlgeschlagen für '%s': %s", key, e)
-        if count:
-            db.commit()
-        return count

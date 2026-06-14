@@ -27,11 +27,6 @@ CREATE TABLE IF NOT EXISTS arch_repos (
     last_info        TEXT NOT NULL DEFAULT '{}'
 )"""
 
-_MIGRATIONS = [
-    "ALTER TABLE arch_repos ADD COLUMN mirror_urls TEXT NOT NULL DEFAULT ''",
-    "ALTER TABLE arch_repos ADD COLUMN last_info TEXT NOT NULL DEFAULT '{}'",
-]
-
 _COLS = (
     "id",
     "slug",
@@ -86,12 +81,6 @@ class ArchlinuxRepoStore:
             db = _db()
             db.execute(_DDL)
             db.commit()
-            for migration in _MIGRATIONS:
-                try:
-                    db.execute(migration)
-                    db.commit()
-                except Exception:
-                    pass  # Spalte existiert bereits
             self._table_ready = True
             return True
         except Exception:
