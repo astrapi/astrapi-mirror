@@ -6,7 +6,17 @@ fields:
     max:         120
     column:      1
     row:         1
-    colspan:     2
+
+  - name:        repo_type
+    label:       Typ
+    type:        select
+    column:      2
+    row:         1
+    options:
+      - value: deb
+        label: "deb (Binär)"
+      - value: deb-src
+        label: "deb-src (Quellcode)"
 
   - name:        mirror_urls
     label:       Quellmirrors (eine URL pro Eintrag)
@@ -16,17 +26,6 @@ fields:
     row:         2
     colspan:     2
     description: "Erste URL = primärer Mirror; weitere = Fallbacks."
-
-  - name:        repo_type
-    label:       Typ
-    type:        select
-    column:      2
-    row:         2
-    options:
-      - value: deb
-        label: "deb (Binär)"
-      - value: deb-src
-        label: "deb-src (Quellcode)"
 
   - name:        suites
     label:       Suites / Distributionen
