@@ -44,14 +44,6 @@ module = load_modul(
     ),
 )
 
-# ── Auto-Seed ──────────────────────────────────────────────────────────────────
-
-try:
-    from ._seed import auto_seed
-
-    auto_seed(store)
-except Exception:
-    pass
 
 # ── Scheduler ──────────────────────────────────────────────────────────────────
 
