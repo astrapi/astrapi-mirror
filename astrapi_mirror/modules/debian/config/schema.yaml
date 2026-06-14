@@ -6,17 +6,7 @@ fields:
     max:         120
     column:      1
     row:         1
-
-  - name:        repo_type
-    label:       Typ
-    type:        select
-    column:      2
-    row:         1
-    options:
-      - value: deb
-        label: "deb (Binär)"
-      - value: deb-src
-        label: "deb-src (Quellcode)"
+    colspan:     2
 
   - name:        mirror_urls
     label:       Quellmirrors (eine URL pro Eintrag)
@@ -50,7 +40,18 @@ fields:
     max:         200
     column:      1
     row:         4
-    colspan:     2
+
+  - name:        repo_type
+    label:       Typ
+    type:        select
+    default:     deb
+    column:      2
+    row:         4
+    options:
+      - value: deb
+        label: "deb (Binär)"
+      - value: deb-src
+        label: "deb-src (Quellcode)"
 
   - name:        gpg_key_url
     label:       GPG-Schlüssel URL
