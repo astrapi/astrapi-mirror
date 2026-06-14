@@ -57,7 +57,7 @@ router = make_crud_router(
 
 
 # ---------------------------------------------------------------------------
-# Sync-Action (gibt aktualisierten Listeneintrag zurück)
+# Sync-Action
 # ---------------------------------------------------------------------------
 
 
@@ -67,6 +67,7 @@ def ui_sync_repo(repo_id: str, request: Request):
 
     store.upsert(repo_id, {"last_status": "syncing"})
     sync_repo_async(repo_id)
+
     return render(
         request,
         "partials/row_single.html",
@@ -82,7 +83,7 @@ def ui_sync_repo(repo_id: str, request: Request):
 
 
 # ---------------------------------------------------------------------------
-# Alle Repos syncen (Page-Action)
+# Sync-All-Action
 # ---------------------------------------------------------------------------
 
 
@@ -126,23 +127,3 @@ def ui_info_repo(repo_id: str, request: Request):
     )
 
 
-# ---------------------------------------------------------------------------
-# Log-Modal
-# ---------------------------------------------------------------------------
-
-
-@router.get(f"/ui/{KEY}/{{repo_id}}/log", response_class=HTMLResponse)
-def ui_log(repo_id: str, request: Request):
-    data = store.get(repo_id) or {}
-    issues = data.get("last_sync_issues") or []
-    return render(
-        request,
-        f"{KEY}/dialogs/log/modal.html",
-        {
-            "repo_id": repo_id,
-            "label": data.get("label") or repo_id,
-            "last_run": data.get("last_run", "—"),
-            "last_status": data.get("last_status", "—"),
-            "issues": issues,
-        },
-    )

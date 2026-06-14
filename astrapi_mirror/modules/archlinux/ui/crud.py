@@ -127,22 +127,3 @@ def ui_info_repo(repo_id: str, request: Request):
     )
 
 
-# ---------------------------------------------------------------------------
-# Log-Action
-# ---------------------------------------------------------------------------
-
-
-@router.get(f"/ui/{KEY}/{{repo_id}}/log", response_class=HTMLResponse)
-def ui_log_repo(repo_id: str, request: Request):
-    data = store.get(repo_id) or {}
-    return render(
-        request,
-        f"{KEY}/dialogs/log/modal.html",
-        {
-            "repo_id": repo_id,
-            "label": data.get("label") or repo_id,
-            "last_run": data.get("last_run") or "—",
-            "last_status": data.get("last_status") or "neu",
-            "issues": data.get("last_sync_issues") or [],
-        },
-    )
