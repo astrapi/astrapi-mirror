@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS debian_repos (
     slug             TEXT UNIQUE NOT NULL DEFAULT '',
     label            TEXT NOT NULL DEFAULT '',
     url              TEXT NOT NULL DEFAULT '',
+    mirror_urls      TEXT NOT NULL DEFAULT '',
     repo_type        TEXT NOT NULL DEFAULT 'deb',
     suites           TEXT NOT NULL DEFAULT '',
     components       TEXT NOT NULL DEFAULT '',
@@ -31,13 +32,17 @@ CREATE TABLE IF NOT EXISTS debian_repos (
     last_info        TEXT NOT NULL DEFAULT '{}'
 )"""
 
-_MIGRATION_INFO = "ALTER TABLE debian_repos ADD COLUMN last_info TEXT NOT NULL DEFAULT '{}'"
+_MIGRATIONS = [
+    "ALTER TABLE debian_repos ADD COLUMN last_info TEXT NOT NULL DEFAULT '{}'",
+    "ALTER TABLE debian_repos ADD COLUMN mirror_urls TEXT NOT NULL DEFAULT ''",
+]
 
 _COLS = (
     "id",
     "slug",
     "label",
     "url",
+    "mirror_urls",
     "repo_type",
     "suites",
     "components",
@@ -50,7 +55,7 @@ _COLS = (
     "last_sync_issues",
     "last_info",
 )
-_LIST_COLS = frozenset({"suites", "components", "architectures"})
+_LIST_COLS = frozenset({"suites", "components", "architectures", "mirror_urls"})
 _BOOL_COLS = frozenset({"enabled"})
 _JSON_COLS = frozenset({"last_sync_issues", "last_info"})
 
@@ -97,11 +102,12 @@ class DebianRepoStore:
                     db.execute(f"ALTER TABLE {_TABLE} DROP COLUMN is_flat")
             except Exception:
                 pass  # SQLite < 3.35: Spalte bleibt ungenutzt, kein Problem
-            try:
-                db.execute(_MIGRATION_INFO)
-                db.commit()
-            except Exception:
-                pass  # Spalte existiert bereits
+            for migration in _MIGRATIONS:
+                try:
+                    db.execute(migration)
+                    db.commit()
+                except Exception:
+                    pass  # Spalte existiert bereits
             db.commit()
             self._table_ready = True
             return True

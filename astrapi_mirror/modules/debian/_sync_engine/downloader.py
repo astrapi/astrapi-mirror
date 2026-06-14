@@ -22,6 +22,24 @@ _TRANSLATION_IN_PATH = re.compile(r"(?:^|/)i18n/Translation-([^./]+)")
 _OPTIONAL_INDEX_SUFFIXES = ("/Packages", "/Sources")
 
 
+def _build_mirror_list(primary_url: str, mirror_urls) -> list[str]:
+    """Baut geordnete Mirror-Liste: primärer Mirror zuerst, dann Fallbacks."""
+    result = [primary_url]
+    extra = mirror_urls or []
+    if isinstance(extra, str):
+        extra = [e.strip() for e in extra.splitlines() if e.strip()]
+    for m in extra:
+        m = m.rstrip("/")
+        if m and m not in result:
+            result.append(m)
+    return result
+
+
+def _is_http_404(error_msg: str) -> bool:
+    """True wenn der Fehler ein HTTP 404 ist (Datei existiert nicht auf dem Mirror)."""
+    return "HTTP Error 404" in error_msg or ": 404 " in error_msg
+
+
 def _index_group_key(filename: str) -> str | None:
     """Gruppiert alternative Index-Varianten auf denselben logischen Eintrag."""
     if filename.endswith(".diff/Index"):
@@ -188,6 +206,11 @@ class FileDownloader:
             self._log("❌ Keine URL definiert")
             return 1
 
+        self._primary_url = url
+        self._mirrors = _build_mirror_list(url, repo.get("mirror_urls"))
+        if len(self._mirrors) > 1:
+            self._log(f"ℹ️ {len(self._mirrors)} Mirror(s) konfiguriert")
+
         suites = [s.strip() for s in (repo.get("suites") or []) if s.strip()]
         architectures = [a.strip() for a in (repo.get("architectures") or []) if a.strip()]
         components = [c.strip() for c in (repo.get("components") or []) if c.strip()]
@@ -330,6 +353,8 @@ class FileDownloader:
             {url}/{arch}/*.deb
         """
         url = (repo.get("url") or "").rstrip("/")
+        self._primary_url = url
+        self._mirrors = _build_mirror_list(url, repo.get("mirror_urls"))
         architectures = [a.strip() for a in (repo.get("architectures") or []) if a.strip()]
         arch_set = set(architectures) if architectures else None
 
@@ -626,6 +651,25 @@ class FileDownloader:
                 self._blocking_download_to_partial, url, start_size, partial_path, self.deadline
             )
             self.stats["bytes"] += bytes_written
+
+            # Mirror-Fallback bei Netzwerkfehler (nicht bei HTTP 404)
+            if rc != 0 and not _is_http_404(error_msg):
+                mirrors = getattr(self, "_mirrors", [])
+                primary = getattr(self, "_primary_url", "")
+                if primary and url.startswith(primary) and len(mirrors) > 1:
+                    rel = url[len(primary):].lstrip("/")
+                    for fallback in mirrors[1:]:
+                        fallback_url = f"{fallback}/{rel}"
+                        self._log(f"  ⚠️ {target_path.name}: Netzwerkfehler, versuche {fallback}...")
+                        partial_path.unlink(missing_ok=True)
+                        rc2, bw2, err2 = await asyncio.to_thread(
+                            self._blocking_download_to_partial, fallback_url, 0, partial_path, self.deadline
+                        )
+                        self.stats["bytes"] += bw2
+                        if rc2 == 0:
+                            rc, error_msg = 0, ""
+                            break
+
             if rc != 0:
                 if soft:
                     self._log(f"⚠️ {target_path.name}: {error_msg} (nicht kritisch)")

@@ -9,11 +9,18 @@ fields:
     colspan:     2
 
   - name:        url
-    label:       Repository-URL
+    label:       Primärer Mirror (URL)
     type:        text
     placeholder: "http://deb.debian.org/debian"
     max:         500
     column:      1
+    row:         2
+
+  - name:        mirror_urls
+    label:       Fallback-Mirrors
+    type:        list
+    placeholder: "http://ftp.de.debian.org/debian"
+    column:      2
     row:         2
 
   - name:        repo_type
