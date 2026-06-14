@@ -6,7 +6,7 @@ import time
 from pathlib import Path
 from typing import Callable
 
-from astrapi_mirror.modules.debian._sync_engine.versioning import (
+from .versioning import (
     atomic_swap,
     cleanup_old_versions,
     prepare_staging,
