@@ -27,8 +27,11 @@ CREATE TABLE IF NOT EXISTS debian_repos (
     enabled          INTEGER NOT NULL DEFAULT 1,
     last_status      TEXT NOT NULL DEFAULT 'neu',
     last_run         TEXT NOT NULL DEFAULT '',
-    last_sync_issues TEXT NOT NULL DEFAULT '[]'
+    last_sync_issues TEXT NOT NULL DEFAULT '[]',
+    last_info        TEXT NOT NULL DEFAULT '{}'
 )"""
+
+_MIGRATION_INFO = "ALTER TABLE debian_repos ADD COLUMN last_info TEXT NOT NULL DEFAULT '{}'"
 
 _COLS = (
     "id",
@@ -45,9 +48,11 @@ _COLS = (
     "last_status",
     "last_run",
     "last_sync_issues",
+    "last_info",
 )
 _LIST_COLS = frozenset({"suites", "components", "architectures"})
 _BOOL_COLS = frozenset({"enabled"})
+_JSON_COLS = frozenset({"last_sync_issues", "last_info"})
 
 _log = __import__("logging").getLogger(__name__)
 
@@ -92,6 +97,11 @@ class DebianRepoStore:
                     db.execute(f"ALTER TABLE {_TABLE} DROP COLUMN is_flat")
             except Exception:
                 pass  # SQLite < 3.35: Spalte bleibt ungenutzt, kein Problem
+            try:
+                db.execute(_MIGRATION_INFO)
+                db.commit()
+            except Exception:
+                pass  # Spalte existiert bereits
             db.commit()
             self._table_ready = True
             return True
@@ -105,10 +115,12 @@ class DebianRepoStore:
             d[col] = [x.strip() for x in raw.split(",") if x.strip()]
         for col in _BOOL_COLS:
             d[col] = bool(d.get(col, 0))
-        try:
-            d["last_sync_issues"] = json.loads(d.get("last_sync_issues") or "[]")
-        except Exception:
-            d["last_sync_issues"] = []
+        for col in _JSON_COLS:
+            try:
+                default = [] if col == "last_sync_issues" else {}
+                d[col] = json.loads(d.get(col) or json.dumps(default))
+            except Exception:
+                d[col] = [] if col == "last_sync_issues" else {}
         return d
 
     def _to_db(self, data: dict, include_slug: bool = False) -> dict:
@@ -126,7 +138,7 @@ class DebianRepoStore:
                 row[col] = ",".join(val) if isinstance(val, list) else str(val or "")
             elif col in _BOOL_COLS:
                 row[col] = 1 if val else 0
-            elif col == "last_sync_issues":
+            elif col in _JSON_COLS:
                 row[col] = json.dumps(val) if not isinstance(val, str) else val
             else:
                 row[col] = val

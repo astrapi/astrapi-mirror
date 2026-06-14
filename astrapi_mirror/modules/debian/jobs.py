@@ -120,10 +120,15 @@ def run_single(repo_id: str, repo: dict | None = None) -> None:
             if key:
                 store.upsert(repo_id, {"gpg_key": key})
 
+        from astrapi_mirror._paths import mirror_path
+        from astrapi_mirror._repo_info import repo_info
+
+        info = repo_info(mirror_path() / slug, pkg_suffixes=(".deb",))
         store.upsert(repo_id, {
             "last_status": "ok",
             "last_run": _now(),
             "last_sync_issues": [],
+            "last_info": info,
         })
         log("INFO", f"=== Debian Repo '{slug}' erfolgreich synchronisiert ===")
 

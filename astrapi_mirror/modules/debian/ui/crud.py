@@ -93,13 +93,7 @@ def ui_sync_all(request: Request):
 
 @router.get(f"/ui/{KEY}/{{repo_id}}/info", response_class=HTMLResponse)
 def ui_info_repo(repo_id: str, request: Request):
-    from astrapi_mirror._paths import mirror_path
-    from astrapi_mirror._repo_info import repo_info
-
     item = store.get(repo_id) or {}
-    repo_path = mirror_path() / (item.get("slug") or repo_id)
-    info = repo_info(repo_path, pkg_suffixes=(".deb",))
-
     return render(
         request,
         f"{KEY}/dialogs/info/modal.html",
@@ -110,7 +104,7 @@ def ui_info_repo(repo_id: str, request: Request):
             "last_run": item.get("last_run") or "—",
             "last_status": item.get("last_status") or "neu",
             "issues": item.get("last_sync_issues") or [],
-            "info": info,
+            "info": item.get("last_info") or {},
         },
     )
 

@@ -23,10 +23,14 @@ CREATE TABLE IF NOT EXISTS arch_repos (
     enabled          INTEGER NOT NULL DEFAULT 1,
     last_status      TEXT NOT NULL DEFAULT 'neu',
     last_run         TEXT NOT NULL DEFAULT '',
-    last_sync_issues TEXT NOT NULL DEFAULT '[]'
+    last_sync_issues TEXT NOT NULL DEFAULT '[]',
+    last_info        TEXT NOT NULL DEFAULT '{}'
 )"""
 
-_MIGRATION_ALTER = "ALTER TABLE arch_repos ADD COLUMN mirror_urls TEXT NOT NULL DEFAULT ''"
+_MIGRATIONS = [
+    "ALTER TABLE arch_repos ADD COLUMN mirror_urls TEXT NOT NULL DEFAULT ''",
+    "ALTER TABLE arch_repos ADD COLUMN last_info TEXT NOT NULL DEFAULT '{}'",
+]
 
 _COLS = (
     "id",
@@ -39,7 +43,9 @@ _COLS = (
     "last_status",
     "last_run",
     "last_sync_issues",
+    "last_info",
 )
+_JSON_COLS = frozenset({"last_sync_issues", "last_info"})
 _LIST_COLS = frozenset({"mirror_urls"})
 _BOOL_COLS = frozenset({"enabled"})
 
@@ -80,11 +86,12 @@ class ArchlinuxRepoStore:
             db = _db()
             db.execute(_DDL)
             db.commit()
-            try:
-                db.execute(_MIGRATION_ALTER)
-                db.commit()
-            except Exception:
-                pass  # Spalte existiert bereits
+            for migration in _MIGRATIONS:
+                try:
+                    db.execute(migration)
+                    db.commit()
+                except Exception:
+                    pass  # Spalte existiert bereits
             self._table_ready = True
             return True
         except Exception:
@@ -97,10 +104,12 @@ class ArchlinuxRepoStore:
             d[col] = [x.strip() for x in raw.split(",") if x.strip()]
         for col in _BOOL_COLS:
             d[col] = bool(d.get(col, 0))
-        try:
-            d["last_sync_issues"] = json.loads(d.get("last_sync_issues") or "[]")
-        except Exception:
-            d["last_sync_issues"] = []
+        for col in _JSON_COLS:
+            try:
+                default = [] if col == "last_sync_issues" else {}
+                d[col] = json.loads(d.get(col) or json.dumps(default))
+            except Exception:
+                d[col] = [] if col == "last_sync_issues" else {}
         return d
 
     def _to_db(self, data: dict, include_slug: bool = False) -> dict:
@@ -118,7 +127,7 @@ class ArchlinuxRepoStore:
                 row[col] = ",".join(val) if isinstance(val, list) else str(val or "")
             elif col in _BOOL_COLS:
                 row[col] = 1 if val else 0
-            elif col == "last_sync_issues":
+            elif col in _JSON_COLS:
                 row[col] = json.dumps(val) if not isinstance(val, str) else val
             else:
                 row[col] = val

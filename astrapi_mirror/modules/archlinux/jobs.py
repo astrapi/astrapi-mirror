@@ -83,10 +83,18 @@ def run_single(repo_id: str, repo: dict | None = None) -> None:
             })
             return
 
+        from astrapi_mirror._paths import archlinux_mirror_path
+        from astrapi_mirror._repo_info import repo_info
+
+        info = repo_info(
+            archlinux_mirror_path() / repo_id,
+            pkg_suffixes=(".zst", ".xz"),
+        )
         store.upsert(repo_id, {
             "last_status": "ok",
             "last_run": _now(),
             "last_sync_issues": [],
+            "last_info": info,
         })
         log("INFO", f"=== Arch Linux Repo '{label}' erfolgreich synchronisiert ===")
 
