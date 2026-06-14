@@ -43,6 +43,7 @@ module = load_modul(
             Col.text("info_pkg_count", "Pakete", sortable=False),
             Col.text("info_size", "Speicher", sortable=False),
         ],
+        last_run_label="Letzter Sync",
     ),
 )
 
