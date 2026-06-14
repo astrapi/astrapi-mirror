@@ -76,7 +76,7 @@ def ui_sync_repo(repo_id: str, request: Request):
             "module": KEY,
             "container_id": f"mod-{KEY}",
             "loading_id": f"{KEY}-loading",
-            "running": {str(repo_id): True},
+            "running": {f"{KEY}:{repo_id}": True},
         },
     )
 
