@@ -21,24 +21,31 @@ class _LabelDescStore:
     def __getattr__(self, name):
         return getattr(self._inner, name)
 
+    @staticmethod
+    def _enrich(key: str, v: dict) -> dict:
+        count = len(v.get("mirror_urls") or [])
+        info = v.get("last_info") or {}
+        return {
+            **v,
+            "description": v.get("label", key),
+            "mirror_count": f"{count} Mirror" if count == 1 else f"{count} Mirrors",
+            "info_pkg_count": str(info["pkg_count"]) if info.get("pkg_count") else "—",
+            "info_size": info.get("total_size_fmt") or "—",
+        }
+
     def list(self, **kwargs):
         raw = self._inner.list(**kwargs)
-        result = {}
-        for k, v in raw.items():
-            count = len(v.get("mirror_urls") or [])
-            info = v.get("last_info") or {}
-            result[k] = {
-                **v,
-                "description": v.get("label", k),
-                "mirror_count": f"{count} Mirror" if count == 1 else f"{count} Mirrors",
-                "info_pkg_count": str(info["pkg_count"]) if info.get("pkg_count") else "—",
-                "info_size": info.get("total_size_fmt") or "—",
-            }
-        return result
+        return {k: self._enrich(k, v) for k, v in raw.items()}
 
+    def get_enriched(self, item_id) -> dict:
+        raw = self._inner.get(item_id) or {}
+        return self._enrich(str(item_id), raw)
+
+
+_wrapped_store = _LabelDescStore(store)
 
 router = make_crud_router(
-    _LabelDescStore(store),
+    _wrapped_store,
     KEY,
     schema_path=str(_DIR / "config" / "schema.yaml"),
     label="Arch Linux Repository",
@@ -61,17 +68,16 @@ def ui_sync_repo(repo_id: str, request: Request):
     store.upsert(repo_id, {"last_status": "syncing"})
     sync_repo_async(repo_id)
 
-    item_data = store.get(repo_id) or {}
     return render(
         request,
         "partials/row_single.html",
         {
             "item_name": repo_id,
-            "item_data": item_data,
+            "item_data": _wrapped_store.get_enriched(repo_id),
             "module": KEY,
             "container_id": f"mod-{KEY}",
             "loading_id": f"{KEY}-loading",
-            "running": {},
+            "running": {str(repo_id): True},
         },
     )
 
