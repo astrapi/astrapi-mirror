@@ -7,3 +7,5 @@ mirror/
 var/
 skel/
 app.db
+pin_deps.py
+pip_*.txt
