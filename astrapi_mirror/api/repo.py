@@ -294,7 +294,7 @@ def os_repo_listing(os_type: str, request: Request):
 
     is_debian = os_type == "debian"
     base_url = str(request.base_url).rstrip("/")
-    col_headers = ("Name", "Installation") if is_debian else ("Name", "")
+    col_headers = ("Name", "Letzter Sync", "Größe", "Installation") if is_debian else ("Name", "")
     rows = []
 
     for _key, repo_data in sorted(repos.items(), key=lambda x: x[1].get("label", "")):
@@ -305,6 +305,13 @@ def os_repo_listing(os_type: str, request: Request):
         name_cell = f'<td><a href="/files/{os_type}/{repo_id}/">{_html.escape(label)}</a></td>'
 
         if is_debian:
+            info = repo_data.get("last_info") or {}
+            last_run = repo_data.get("last_run") or "—"
+            size = info.get("current_size_fmt") or "—"
+            meta_cells = (
+                f'<td class="size" style="white-space:nowrap">{_html.escape(last_run)}</td>'
+                f'<td class="size">{_html.escape(size)}</td>'
+            )
             sources_url = f"{base_url}/files/{os_type}/{repo_id}/{repo_id}.sources"
             cmd = f"sudo curl -fsSL {sources_url} -o /etc/apt/sources.list.d/{repo_id}.sources"
             uid = f"curl-{repo_id}"
@@ -320,10 +327,9 @@ def os_repo_listing(os_type: str, request: Request):
                 f'<span class="ck" style="display:none;color:#3fb950">✓</span>'
                 f'</button></div></td>'
             )
+            rows.append(f"<tr>{name_cell}{meta_cells}{action_cell}</tr>")
         else:
-            action_cell = '<td class="size">—</td>'
-
-        rows.append(f"<tr>{name_cell}{action_cell}</tr>")
+            rows.append(f'<tr>{name_cell}<td class="size">—</td></tr>')
 
     if not rows:
         return HTMLResponse(
