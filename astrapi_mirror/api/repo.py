@@ -47,8 +47,15 @@ def _fmt_size(n: int) -> str:
     return f"{n} B"
 
 
-def _page(title: str, hint: str, rows_html: str, back: str | None = None) -> str:
+def _page(
+    title: str,
+    hint: str,
+    rows_html: str,
+    back: str | None = None,
+    col_headers: tuple[str, ...] = ("Name", "Größe"),
+) -> str:
     back_html = f'<p class="back"><a href="{back}">← Zurück</a></p>' if back else ""
+    headers_html = "".join(f"<th>{h}</th>" for h in col_headers)
     return f"""<!DOCTYPE html>
 <html lang="de">
 <head><meta charset="utf-8"><title>{title}</title><style>{_CSS}</style></head>
@@ -57,7 +64,7 @@ def _page(title: str, hint: str, rows_html: str, back: str | None = None) -> str
   <h1>{title}</h1>
   <div class="hint">{hint}</div>
   <table>
-    <thead><tr><th>Name</th><th>Größe</th></tr></thead>
+    <thead><tr>{headers_html}</tr></thead>
     <tbody>{rows_html}</tbody>
   </table>
 <script>
@@ -276,7 +283,7 @@ def os_type_redirect(os_type: str):
 
 
 @router.get("/files/{os_type}/", response_class=HTMLResponse, include_in_schema=False)
-def os_repo_listing(os_type: str):
+def os_repo_listing(os_type: str, request: Request):
     cfg = _OS_REGISTRY.get(os_type)
     if not cfg:
         raise HTTPException(404, f"Unbekannter OS-Typ: {os_type}")
@@ -284,16 +291,40 @@ def os_repo_listing(os_type: str):
         repos = cfg["store_fn"]().list()
     except Exception:
         repos = {}
+
+    is_debian = os_type == "debian"
+    base_url = str(request.base_url).rstrip("/")
+    col_headers = ("Name", "Installation") if is_debian else ("Name", "")
     rows = []
+
     for _key, repo_data in sorted(repos.items(), key=lambda x: x[1].get("label", "")):
         repo_id = repo_data.get("slug") or str(_key)
         if _resolve_repo_path(os_type, repo_id) is None:
             continue
         label = repo_data.get("label") or repo_id
-        rows.append(
-            f'<tr><td><a href="/files/{os_type}/{repo_id}/">{_html.escape(label)}</a></td>'
-            f'<td class="size">—</td></tr>'
-        )
+        name_cell = f'<td><a href="/files/{os_type}/{repo_id}/">{_html.escape(label)}</a></td>'
+
+        if is_debian:
+            sources_url = f"{base_url}/files/{os_type}/{repo_id}/{repo_id}.sources"
+            cmd = f"sudo curl -fsSL {sources_url} -o /etc/apt/sources.list.d/{repo_id}.sources"
+            uid = f"curl-{repo_id}"
+            action_cell = (
+                f'<td><div class="pre-wrap" style="display:flex;align-items:center;gap:.5rem;">'
+                f'<textarea id="{uid}" style="display:none">{_html.escape(cmd)}</textarea>'
+                f'<code style="font-size:.78em;color:#c9d1d9">{_html.escape(cmd)}</code>'
+                f'<button class="copy-btn" style="position:static;opacity:.7" '
+                f'onclick="copySnippet(\'{uid}\',this)" title="Kopieren">'
+                f'<span class="ci"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">'
+                f'<path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11'
+                f'c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg></span>'
+                f'<span class="ck" style="display:none;color:#3fb950">✓</span>'
+                f'</button></div></td>'
+            )
+        else:
+            action_cell = '<td class="size">—</td>'
+
+        rows.append(f"<tr>{name_cell}{action_cell}</tr>")
+
     if not rows:
         return HTMLResponse(
             _page(
@@ -301,9 +332,12 @@ def os_repo_listing(os_type: str):
                 "Noch keine synchronisierten Repositories vorhanden.",
                 "<tr><td colspan='2'>Bitte zuerst einen Sync starten.</td></tr>",
                 back="/files/",
+                col_headers=col_headers,
             )
         )
-    return HTMLResponse(_page(f"{cfg['label']} Mirror", "", "\n".join(rows), back="/files/"))
+    return HTMLResponse(
+        _page(f"{cfg['label']} Mirror", "", "\n".join(rows), back="/files/", col_headers=col_headers)
+    )
 
 
 @router.get("/files/{os_type}/{repo_id}", include_in_schema=False)
