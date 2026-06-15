@@ -4,7 +4,7 @@ import asyncio
 
 from astrapi_core.ui.crud_router import make_crud_router as make_json_crud_router
 from fastapi import APIRouter, HTTPException, Request
-from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, StreamingResponse
+from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 
 from . import KEY, RepoIn, store
 
@@ -45,21 +45,6 @@ def api_validate(repo_id: str):
     return validate_repo(data)
 
 
-@router.get(
-    "/{repo_id}/sources-list",
-    response_class=PlainTextResponse,
-    summary="apt sources.list-Snippet",
-)
-def api_sources_list(repo_id: str, request: Request):
-    data = store.get(repo_id)
-    if not data:
-        raise HTTPException(404, "Nicht gefunden")
-    from ._sync_engine.engine import client_sources_file
-
-    base_url = str(request.base_url).rstrip("/")
-    return client_sources_file(data, base_url)
-
-
 # ---------------------------------------------------------------------------
 # Log-Viewer (wie astrapi-backup)
 # ---------------------------------------------------------------------------
@@ -74,10 +59,7 @@ def api_logs(repo_id: str, request: Request):
     runs = list_runs_for_item(KEY, repo_id)
     act_log_id = runs[0]["id"] if runs else None
     lines = [r["line"] for r in get_log_lines(act_log_id)] if act_log_id else []
-    dates = [
-        {"id": str(r["id"]), "label": r.get("started_at") or str(r["id"])}
-        for r in runs
-    ]
+    dates = [{"id": str(r["id"]), "label": r.get("started_at") or str(r["id"])} for r in runs]
     return render(
         request,
         "partials/log_modal.html",
