@@ -21,23 +21,39 @@ router = APIRouter()
 _UNITS = [("GiB", 1 << 30), ("MiB", 1 << 20), ("KiB", 1 << 10)]
 
 _CSS = """
-    body { font-family: monospace; padding: 2rem; background: #0d1117; color: #c9d1d9; }
-    h1 { color: #58a6ff; margin-bottom: 0.25rem; }
-    p.hint { color: #8b949e; font-size: 0.85rem; margin-bottom: 1.5rem; }
-    p.back { margin-bottom: 1rem; font-size: 0.85rem; }
-    table { border-collapse: collapse; width: 100%; }
-    thead th { text-align: left; padding: 0.4rem 1rem; border-bottom: 2px solid #30363d; color: #8b949e; }
-    td { padding: 0.3rem 1rem; border-bottom: 1px solid #21262d; }
-    td.size { text-align: right; color: #8b949e; white-space: nowrap; }
-    div.hint { color: #8b949e; font-size: 0.85rem; margin-bottom: 1.5rem; }
-    div.hint pre { background: #161b22; border: 1px solid #30363d; border-radius: 6px; padding: 0.75rem 2.5rem 0.75rem 1rem; margin: 0.5rem 0 0; font-size: 0.82rem; white-space: pre; overflow-x: auto; color: #c9d1d9; }
-    a { text-decoration: none; color: #58a6ff; }
-    a:hover { text-decoration: underline; }
-    .pre-wrap { position: relative; }
-    .copy-btn { position: absolute; top: 6px; right: 8px; background: none; border: none; cursor: pointer;
-                padding: 4px; border-radius: 4px; opacity: .65; color: #8b949e; transition: opacity .15s; }
-    .copy-btn:hover { opacity: 1; }
+    @font-face { font-family:'Inter'; src:url('/static/fonts/sans.woff2') format('woff2'); }
+    @font-face { font-family:'JetBrains Mono'; src:url('/static/fonts/mono.woff2') format('woff2'); }
+    :root { --font:'Inter',ui-sans-serif,sans-serif; --mono:'JetBrains Mono',ui-monospace,monospace; }
+    body { font-family:var(--font); font-size:.9rem; padding:2rem; background:#0d1117; color:#c9d1d9; }
+    h1 { color:#58a6ff; margin-bottom:.25rem; }
+    p.hint { color:#8b949e; font-size:.85rem; margin-bottom:1.5rem; }
+    p.back { margin-bottom:1rem; font-size:.85rem; }
+    table { border-collapse:collapse; width:100%; }
+    thead th { text-align:left; padding:.4rem 1rem; border-bottom:2px solid #30363d; color:#8b949e; font-size:.8rem; font-weight:600; letter-spacing:.04em; }
+    td { padding:.35rem 1rem; border-bottom:1px solid #21262d; vertical-align:middle; }
+    td.num { text-align:right; color:#8b949e; white-space:nowrap; font-family:var(--mono); font-size:.82rem; }
+    td.size { text-align:right; color:#8b949e; white-space:nowrap; }
+    div.hint { color:#8b949e; font-size:.85rem; margin-bottom:1.5rem; }
+    div.hint pre { background:#161b22; border:1px solid #30363d; border-radius:6px; padding:.75rem 2.5rem .75rem 1rem; margin:.5rem 0 0; font-size:.82rem; white-space:pre; overflow-x:auto; color:#c9d1d9; font-family:var(--mono); }
+    a { text-decoration:none; color:#58a6ff; }
+    a:hover { text-decoration:underline; }
+    .copy-btn { background:none; border:none; cursor:pointer; padding:4px; border-radius:4px; opacity:.6; color:#8b949e; transition:opacity .15s; flex-shrink:0; }
+    .copy-btn:hover { opacity:1; }
+    .cmd { display:flex; align-items:center; gap:.5rem; }
+    .cmd code { font-family:var(--mono); font-size:.78rem; color:#c9d1d9; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 """
+
+
+def _fmt_date(raw: str) -> str:
+    """ISO-Datum 'YYYY-MM-DD HH:MM' → deutsches Format 'DD.MM.YYYY HH:MM'."""
+    if not raw or raw == "—":
+        return "—"
+    parts = raw.split(" ", 1)
+    if len(parts) == 2:
+        dp = parts[0].split("-")
+        if len(dp) == 3 and len(dp[0]) == 4:
+            return f"{dp[2]}.{dp[1]}.{dp[0]} {parts[1]}"
+    return raw
 
 
 def _fmt_size(n: int) -> str:
@@ -306,21 +322,20 @@ def os_repo_listing(os_type: str, request: Request):
 
         if is_debian:
             info = repo_data.get("last_info") or {}
-            last_run = repo_data.get("last_run") or "—"
+            last_run = _fmt_date(repo_data.get("last_run") or "")
             size = info.get("current_size_fmt") or "—"
             meta_cells = (
-                f'<td class="size" style="white-space:nowrap">{_html.escape(last_run)}</td>'
-                f'<td class="size">{_html.escape(size)}</td>'
+                f'<td class="num">{_html.escape(last_run)}</td>'
+                f'<td class="num">{_html.escape(size)}</td>'
             )
             sources_url = f"{base_url}/files/{os_type}/{repo_id}/{repo_id}.sources"
             cmd = f"sudo curl -fsSL {sources_url} -o /etc/apt/sources.list.d/{repo_id}.sources"
             uid = f"curl-{repo_id}"
             action_cell = (
-                f'<td><div class="pre-wrap" style="display:flex;align-items:center;gap:.5rem;">'
+                f'<td><div class="cmd">'
                 f'<textarea id="{uid}" style="display:none">{_html.escape(cmd)}</textarea>'
-                f'<code style="font-size:.78em;color:#c9d1d9">{_html.escape(cmd)}</code>'
-                f'<button class="copy-btn" style="position:static;opacity:.7" '
-                f'onclick="copySnippet(\'{uid}\',this)" title="Kopieren">'
+                f'<code>{_html.escape(cmd)}</code>'
+                f'<button class="copy-btn" onclick="copySnippet(\'{uid}\',this)" title="Kopieren">'
                 f'<span class="ci"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">'
                 f'<path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11'
                 f'c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg></span>'
