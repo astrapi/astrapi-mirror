@@ -33,6 +33,8 @@ _CSS = """
     col.c-size { width:8%; }
     col.c-inst { width:61%; }
     thead th { text-align:left; padding:.4rem 1rem; border-bottom:2px solid #30363d; color:#8b949e; font-size:.8rem; font-weight:600; letter-spacing:.04em; }
+    thead th:nth-child(2) { text-align:right; }
+    thead th:nth-child(3) { text-align:right; padding-right:2.5rem; }
     td { padding:.35rem 1rem; border-bottom:1px solid #21262d; vertical-align:middle; overflow:hidden; }
     td.num { text-align:right; color:#8b949e; white-space:nowrap; }
     td.num-gap { text-align:right; color:#8b949e; white-space:nowrap; padding-right:2.5rem; }
