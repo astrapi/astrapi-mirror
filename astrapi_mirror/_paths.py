@@ -9,17 +9,29 @@ def package_dir() -> Path:
     return Path(__file__).resolve().parent
 
 
-def mirror_path() -> Path:
-    """Wurzelverzeichnis des Debian-Spiegels (aus Settings oder Standard)."""
+def _extra_disk() -> str:
+    """Gibt den ersten konfigurierten Zusatzspeicher zurück, oder ''."""
     from astrapi_core.ui.settings_registry import get_module
 
-    raw = get_module("debian", "mirror_path", default="")
-    return Path(raw).resolve() if raw else work_dir().resolve() / "mirror"
+    raw = get_module("system", "extra_disks", default="") or ""
+    for part in raw.split(","):
+        path = part.strip()
+        if path:
+            return path
+    return ""
+
+
+def mirror_path() -> Path:
+    """Wurzelverzeichnis des Debian-Spiegels."""
+    disk = _extra_disk()
+    if disk:
+        return Path(disk).resolve() / "mirror"
+    return work_dir().resolve() / "mirror"
 
 
 def archlinux_mirror_path() -> Path:
-    """Wurzelverzeichnis des Arch Linux Spiegels (aus Settings oder Standard)."""
-    from astrapi_core.ui.settings_registry import get_module
-
-    raw = get_module("archlinux", "mirror_path", default="")
-    return Path(raw).resolve() if raw else work_dir().resolve() / "mirror_arch"
+    """Wurzelverzeichnis des Arch Linux Spiegels."""
+    disk = _extra_disk()
+    if disk:
+        return Path(disk).resolve() / "archlinux"
+    return work_dir().resolve() / "mirror_arch"

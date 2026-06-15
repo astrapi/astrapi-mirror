@@ -2,17 +2,6 @@ modal_width: 500
 
 fields:
   - type:  section
-    label: Verzeichnisse
-    cols:  1
-
-  - key:         mirror_path
-    label:       Mirror-Verzeichnis
-    type:        text
-    placeholder: "/storage/mirror"
-    default:     "{work_dir}/mirror"
-    description: "Hauptverzeichnis für alle gespiegelten Arch Linux Repos"
-
-  - type:  section
     label: Download
     cols:  1
 
