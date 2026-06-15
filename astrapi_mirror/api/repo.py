@@ -21,26 +21,28 @@ router = APIRouter()
 _UNITS = [("GiB", 1 << 30), ("MiB", 1 << 20), ("KiB", 1 << 10)]
 
 _CSS = """
-    @font-face { font-family:'Inter'; src:url('/static/fonts/sans.woff2') format('woff2'); }
     @font-face { font-family:'JetBrains Mono'; src:url('/static/fonts/mono.woff2') format('woff2'); }
-    :root { --font:'Inter',ui-sans-serif,sans-serif; --mono:'JetBrains Mono',ui-monospace,monospace; }
-    body { font-family:var(--font); font-size:.9rem; padding:2rem; background:#0d1117; color:#c9d1d9; }
+    :root { --mono:'JetBrains Mono',ui-monospace,monospace; }
+    body { font-family:var(--mono); font-size:.85rem; padding:2rem; background:#0d1117; color:#c9d1d9; }
     h1 { color:#58a6ff; margin-bottom:.25rem; }
     p.hint { color:#8b949e; font-size:.85rem; margin-bottom:1.5rem; }
     p.back { margin-bottom:1rem; font-size:.85rem; }
-    table { border-collapse:collapse; width:100%; }
+    table { border-collapse:collapse; width:100%; table-layout:fixed; }
+    col.c-name { width:15%; }
+    col.c-date { width:14%; }
+    col.c-size { width:8%; }
+    col.c-inst { width:63%; }
     thead th { text-align:left; padding:.4rem 1rem; border-bottom:2px solid #30363d; color:#8b949e; font-size:.8rem; font-weight:600; letter-spacing:.04em; }
-    td { padding:.35rem 1rem; border-bottom:1px solid #21262d; vertical-align:middle; }
-    td.num { text-align:right; color:#8b949e; white-space:nowrap; font-family:var(--mono); font-size:.82rem; }
-    td.size { text-align:right; color:#8b949e; white-space:nowrap; }
+    td { padding:.35rem 1rem; border-bottom:1px solid #21262d; vertical-align:middle; overflow:hidden; }
+    td.num { text-align:right; color:#8b949e; white-space:nowrap; }
     div.hint { color:#8b949e; font-size:.85rem; margin-bottom:1.5rem; }
-    div.hint pre { background:#161b22; border:1px solid #30363d; border-radius:6px; padding:.75rem 2.5rem .75rem 1rem; margin:.5rem 0 0; font-size:.82rem; white-space:pre; overflow-x:auto; color:#c9d1d9; font-family:var(--mono); }
+    div.hint pre { background:#161b22; border:1px solid #30363d; border-radius:6px; padding:.75rem 2.5rem .75rem 1rem; margin:.5rem 0 0; font-size:.82rem; white-space:pre; overflow-x:auto; color:#c9d1d9; }
     a { text-decoration:none; color:#58a6ff; }
     a:hover { text-decoration:underline; }
-    .copy-btn { background:none; border:none; cursor:pointer; padding:4px; border-radius:4px; opacity:.6; color:#8b949e; transition:opacity .15s; flex-shrink:0; }
-    .copy-btn:hover { opacity:1; }
-    .cmd { display:flex; align-items:center; gap:.5rem; }
-    .cmd code { font-family:var(--mono); font-size:.78rem; color:#c9d1d9; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .copy-btn { background:none; border:none; cursor:pointer; padding:4px 6px; border-radius:4px; opacity:.55; color:#8b949e; transition:opacity .15s; flex-shrink:0; }
+    .copy-btn:hover { opacity:1; color:#c9d1d9; }
+    .cmd { display:flex; align-items:center; gap:.4rem; min-width:0; }
+    .cmd code { color:#8b949e; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; flex:1; }
 """
 
 
@@ -63,12 +65,19 @@ def _fmt_size(n: int) -> str:
     return f"{n} B"
 
 
+_DEBIAN_COLS = (
+    ("c-name", "Name"), ("c-date", "Letzter Sync"),
+    ("c-size", "Größe"), ("c-inst", "Installation"),
+)
+
+
 def _page(
     title: str,
     hint: str,
     rows_html: str,
     back: str | None = None,
     col_headers: tuple[str, ...] = ("Name", "Größe"),
+    colgroup: str = "",
 ) -> str:
     back_html = f'<p class="back"><a href="{back}">← Zurück</a></p>' if back else ""
     headers_html = "".join(f"<th>{h}</th>" for h in col_headers)
@@ -80,6 +89,7 @@ def _page(
   <h1>{title}</h1>
   <div class="hint">{hint}</div>
   <table>
+    {colgroup}
     <thead><tr>{headers_html}</tr></thead>
     <tbody>{rows_html}</tbody>
   </table>
@@ -310,7 +320,8 @@ def os_repo_listing(os_type: str, request: Request):
 
     is_debian = os_type == "debian"
     base_url = str(request.base_url).rstrip("/")
-    col_headers = ("Name", "Letzter Sync", "Größe", "Installation") if is_debian else ("Name", "")
+    col_headers = tuple(h for _, h in _DEBIAN_COLS) if is_debian else ("Name", "")
+    colgroup = ("<colgroup>" + "".join(f'<col class="{c}">' for c, _ in _DEBIAN_COLS) + "</colgroup>") if is_debian else ""
     rows = []
 
     for _key, repo_data in sorted(repos.items(), key=lambda x: x[1].get("label", "")):
@@ -354,10 +365,11 @@ def os_repo_listing(os_type: str, request: Request):
                 "<tr><td colspan='2'>Bitte zuerst einen Sync starten.</td></tr>",
                 back="/files/",
                 col_headers=col_headers,
+                colgroup=colgroup,
             )
         )
     return HTMLResponse(
-        _page(f"{cfg['label']} Mirror", "", "\n".join(rows), back="/files/", col_headers=col_headers)
+        _page(f"{cfg['label']} Mirror", "", "\n".join(rows), back="/files/", col_headers=col_headers, colgroup=colgroup)
     )
 
 
