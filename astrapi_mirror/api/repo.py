@@ -33,8 +33,10 @@ _CSS = """
     col.c-size { width:8%; }
     col.c-inst { width:61%; }
     thead th { text-align:left; padding:.4rem 1rem; border-bottom:2px solid #30363d; color:#8b949e; font-size:.8rem; font-weight:600; letter-spacing:.04em; }
+    td.size { text-align:right; color:#8b949e; white-space:nowrap; }
     thead th:nth-child(2) { text-align:right; }
     thead th:nth-child(3) { text-align:right; padding-right:2.5rem; }
+    thead th:nth-child(2):last-child { text-align:right; }
     td { padding:.35rem 1rem; border-bottom:1px solid #21262d; vertical-align:middle; overflow:hidden; }
     td.num { text-align:right; color:#8b949e; white-space:nowrap; }
     td.num-gap { text-align:right; color:#8b949e; white-space:nowrap; padding-right:2.5rem; }
@@ -157,42 +159,7 @@ def _get_archlinux_store():
 
 
 def _debian_hint(repo_id: str, repo_data: dict, request: Request) -> str:
-    try:
-        from astrapi_mirror.modules.debian._sync_engine.engine import client_sources_file
-
-        base_url = str(request.base_url).rstrip("/")
-        src_full = client_sources_file(repo_data, base_url)
-        if "Signed-By:\n" in src_full:
-            idx = src_full.find("Signed-By:\n")
-            src_display = src_full[:idx] + "Signed-By: …\n"
-        else:
-            src_display = src_full
-        safe_id = f"src-{repo_id}"
-        _copy_icon = (
-            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none"'
-            ' stroke="currentColor" stroke-width="2">'
-            '<rect x="9" y="9" width="13" height="13" rx="2"/>'
-            '<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>'
-            "</svg>"
-        )
-        _check_icon = (
-            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none"'
-            ' stroke="currentColor" stroke-width="2.5">'
-            '<polyline points="20 6 9 17 4 12"/>'
-            "</svg>"
-        )
-        return (
-            f"{repo_id}.sources:"
-            f'<div class="pre-wrap">'
-            f"<pre>{_html.escape(src_display)}</pre>"
-            f'<textarea id="{safe_id}" style="display:none">{_html.escape(src_full)}</textarea>'
-            f'<button class="copy-btn" title="Kopieren" onclick="copySnippet(\'{safe_id}\', this)">'
-            f'<span class="ci">{_copy_icon}</span>'
-            f'<span class="ck" style="display:none">{_check_icon}</span>'
-            f"</button></div>"
-        )
-    except Exception:
-        return ""
+    return ""
 
 
 def _archlinux_hint(repo_id: str, repo_data: dict, request: Request) -> str:
