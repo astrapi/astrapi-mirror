@@ -41,8 +41,8 @@ _CSS = """
     a:hover { text-decoration:underline; }
     .copy-btn { background:none; border:none; cursor:pointer; padding:4px 6px; border-radius:4px; opacity:.55; color:#8b949e; transition:opacity .15s; flex-shrink:0; }
     .copy-btn:hover { opacity:1; color:#c9d1d9; }
-    .cmd { display:flex; align-items:center; gap:.4rem; min-width:0; }
-    .cmd code { color:#8b949e; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; flex:1; }
+    .cmd { display:inline-flex; align-items:center; gap:.4rem; }
+    .cmd code { color:#8b949e; white-space:nowrap; }
 """
 
 
