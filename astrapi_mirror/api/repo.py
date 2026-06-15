@@ -28,10 +28,10 @@ _CSS = """
     p.hint { color:#8b949e; font-size:.85rem; margin-bottom:1.5rem; }
     p.back { margin-bottom:1rem; font-size:.85rem; }
     table { border-collapse:collapse; width:100%; table-layout:fixed; }
-    col.c-name { width:15%; }
-    col.c-date { width:14%; }
+    col.c-name { width:14%; }
+    col.c-date { width:17%; }
     col.c-size { width:8%; }
-    col.c-inst { width:63%; }
+    col.c-inst { width:61%; }
     thead th { text-align:left; padding:.4rem 1rem; border-bottom:2px solid #30363d; color:#8b949e; font-size:.8rem; font-weight:600; letter-spacing:.04em; }
     td { padding:.35rem 1rem; border-bottom:1px solid #21262d; vertical-align:middle; overflow:hidden; }
     td.num { text-align:right; color:#8b949e; white-space:nowrap; }
@@ -41,8 +41,8 @@ _CSS = """
     a:hover { text-decoration:underline; }
     .copy-btn { background:none; border:none; cursor:pointer; padding:4px 6px; border-radius:4px; opacity:.55; color:#8b949e; transition:opacity .15s; flex-shrink:0; }
     .copy-btn:hover { opacity:1; color:#c9d1d9; }
-    .cmd { display:inline-flex; align-items:center; gap:.4rem; }
-    .cmd code { color:#8b949e; white-space:nowrap; }
+    .cmd { display:flex; align-items:center; gap:.5rem; overflow:hidden; }
+    .cmd code { color:#8b949e; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1; min-width:0; }
 """
 
 
@@ -345,13 +345,14 @@ def os_repo_listing(os_type: str, request: Request):
             action_cell = (
                 f'<td><div class="cmd">'
                 f'<textarea id="{uid}" style="display:none">{_html.escape(cmd)}</textarea>'
-                f'<code>{_html.escape(cmd)}</code>'
                 f'<button class="copy-btn" onclick="copySnippet(\'{uid}\',this)" title="Kopieren">'
                 f'<span class="ci"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">'
                 f'<path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11'
                 f'c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg></span>'
                 f'<span class="ck" style="display:none;color:#3fb950">✓</span>'
-                f'</button></div></td>'
+                f'</button>'
+                f'<code>{_html.escape(cmd)}</code>'
+                f'</div></td>'
             )
             rows.append(f"<tr>{name_cell}{meta_cells}{action_cell}</tr>")
         else:
