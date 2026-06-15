@@ -122,7 +122,7 @@ def _get_archlinux_store():
 
 def _debian_hint(repo_id: str, repo_data: dict, request: Request) -> str:
     try:
-        from astrapi_mirror.modules.debian.engine import client_sources_file
+        from astrapi_mirror.modules.debian._sync_engine.engine import client_sources_file
 
         base_url = str(request.base_url).rstrip("/")
         src_full = client_sources_file(repo_data, base_url)
@@ -169,7 +169,7 @@ def _debian_virtual_file(repo_id: str, path: str, request: Request):
     if path == f"{repo_id}.sources":
         try:
             from astrapi_mirror.modules.debian import store
-            from astrapi_mirror.modules.debian.engine import client_sources_file
+            from astrapi_mirror.modules.debian._sync_engine.engine import client_sources_file
 
             data = store.get(repo_id) or {}
             base_url = str(request.base_url).rstrip("/")
