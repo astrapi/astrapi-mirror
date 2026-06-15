@@ -25,7 +25,7 @@ def mirror_path() -> Path:
     """Wurzelverzeichnis des Debian-Spiegels."""
     disk = _extra_disk()
     if disk:
-        return Path(disk).resolve() / "mirror"
+        return Path(disk).resolve() / "debian"
     return work_dir().resolve() / "mirror"
 
 
