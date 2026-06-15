@@ -86,8 +86,9 @@ def run_single(repo_id: str, repo: dict | None = None) -> None:
         from astrapi_mirror._paths import archlinux_mirror_path
         from astrapi_mirror._repo_info import repo_info
 
+        slug = repo.get("slug", repo_id)
         info = repo_info(
-            archlinux_mirror_path() / repo_id,
+            archlinux_mirror_path() / slug,
             pkg_suffixes=(".zst", ".xz"),
         )
         store.upsert(repo_id, {
