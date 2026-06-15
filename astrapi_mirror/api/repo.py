@@ -35,6 +35,7 @@ _CSS = """
     thead th { text-align:left; padding:.4rem 1rem; border-bottom:2px solid #30363d; color:#8b949e; font-size:.8rem; font-weight:600; letter-spacing:.04em; }
     td { padding:.35rem 1rem; border-bottom:1px solid #21262d; vertical-align:middle; overflow:hidden; }
     td.num { text-align:right; color:#8b949e; white-space:nowrap; }
+    td.num-gap { text-align:right; color:#8b949e; white-space:nowrap; padding-right:2.5rem; }
     div.hint { color:#8b949e; font-size:.85rem; margin-bottom:1.5rem; }
     div.hint pre { background:#161b22; border:1px solid #30363d; border-radius:6px; padding:.75rem 2.5rem .75rem 1rem; margin:.5rem 0 0; font-size:.82rem; white-space:pre; overflow-x:auto; color:#c9d1d9; }
     a { text-decoration:none; color:#58a6ff; }
@@ -337,7 +338,7 @@ def os_repo_listing(os_type: str, request: Request):
             size = info.get("current_size_fmt") or "—"
             meta_cells = (
                 f'<td class="num">{_html.escape(last_run)}</td>'
-                f'<td class="num">{_html.escape(size)}</td>'
+                f'<td class="num-gap">{_html.escape(size)}</td>'
             )
             sources_url = f"{base_url}/files/{os_type}/{repo_id}/{repo_id}.sources"
             cmd = f"sudo curl -fsSL {sources_url} -o /etc/apt/sources.list.d/{repo_id}.sources"
