@@ -32,11 +32,13 @@ _CSS = """
     col.c-date { width:17%; }
     col.c-size { width:8%; }
     col.c-inst { width:61%; }
+    col.c-size2 { width:12%; }
     thead th { text-align:left; padding:.4rem 1rem; border-bottom:2px solid #30363d; color:#8b949e; font-size:.8rem; font-weight:600; letter-spacing:.04em; }
     td.size { text-align:right; color:#8b949e; white-space:nowrap; }
     thead th:nth-child(2) { text-align:right; }
     thead th:nth-child(3) { text-align:right; padding-right:2.5rem; }
     thead th:nth-child(2):last-child { text-align:right; }
+    thead th:nth-child(3):last-child { text-align:right; }
     td { padding:.35rem 1rem; border-bottom:1px solid #21262d; vertical-align:middle; overflow:hidden; }
     td.num { text-align:right; color:#8b949e; white-space:nowrap; }
     td.num-gap { text-align:right; color:#8b949e; white-space:nowrap; padding-right:2.5rem; }
@@ -73,6 +75,9 @@ def _fmt_size(n: int) -> str:
 _DEBIAN_COLS = (
     ("c-name", "Name"), ("c-date", "Letzter Sync"),
     ("c-size", "Größe"), ("c-inst", "Installation"),
+)
+_ARCH_COLS = (
+    ("c-name", "Name"), ("c-date", "Letzter Sync"), ("c-size2", "Größe"),
 )
 
 
@@ -289,9 +294,18 @@ def os_repo_listing(os_type: str, request: Request):
         repos = {}
 
     is_debian = os_type == "debian"
+    is_arch = os_type == "archlinux"
     base_url = str(request.base_url).rstrip("/")
-    col_headers = tuple(h for _, h in _DEBIAN_COLS) if is_debian else ("Name", "")
-    colgroup = ("<colgroup>" + "".join(f'<col class="{c}">' for c, _ in _DEBIAN_COLS) + "</colgroup>") if is_debian else ""
+
+    if is_debian:
+        _cols = _DEBIAN_COLS
+    elif is_arch:
+        _cols = _ARCH_COLS
+    else:
+        _cols = None
+
+    col_headers = tuple(h for _, h in _cols) if _cols else ("Name", "")
+    colgroup = ("<colgroup>" + "".join(f'<col class="{c}">' for c, _ in _cols) + "</colgroup>") if _cols else ""
     rows = []
 
     for _key, repo_data in sorted(repos.items(), key=lambda x: x[1].get("label", "")):
@@ -301,30 +315,34 @@ def os_repo_listing(os_type: str, request: Request):
         label = repo_data.get("label") or repo_id
         name_cell = f'<td><a href="/files/{os_type}/{repo_id}/">{_html.escape(label)}</a></td>'
 
-        if is_debian:
+        if is_debian or is_arch:
             info = repo_data.get("last_info") or {}
             last_run = _fmt_date(repo_data.get("last_run") or "")
             size = info.get("current_size_fmt") or "—"
+            size_class = "num-gap" if is_debian else "num"
             meta_cells = (
                 f'<td class="num">{_html.escape(last_run)}</td>'
-                f'<td class="num-gap">{_html.escape(size)}</td>'
+                f'<td class="{size_class}">{_html.escape(size)}</td>'
             )
-            sources_url = f"{base_url}/files/{os_type}/{repo_id}/{repo_id}.sources"
-            cmd = f"sudo curl -fsSL {sources_url} -o /etc/apt/sources.list.d/{repo_id}.sources"
-            uid = f"curl-{repo_id}"
-            action_cell = (
-                f'<td><div class="cmd">'
-                f'<textarea id="{uid}" style="display:none">{_html.escape(cmd)}</textarea>'
-                f'<button class="copy-btn" onclick="copySnippet(\'{uid}\',this)" title="Kopieren">'
-                f'<span class="ci"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">'
-                f'<path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11'
-                f'c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg></span>'
-                f'<span class="ck" style="display:none;color:#3fb950">✓</span>'
-                f'</button>'
-                f'<code>{_html.escape(cmd)}</code>'
-                f'</div></td>'
-            )
-            rows.append(f"<tr>{name_cell}{meta_cells}{action_cell}</tr>")
+            if is_debian:
+                sources_url = f"{base_url}/files/{os_type}/{repo_id}/{repo_id}.sources"
+                cmd = f"sudo curl -fsSL {sources_url} -o /etc/apt/sources.list.d/{repo_id}.sources"
+                uid = f"curl-{repo_id}"
+                action_cell = (
+                    f'<td><div class="cmd">'
+                    f'<textarea id="{uid}" style="display:none">{_html.escape(cmd)}</textarea>'
+                    f'<button class="copy-btn" onclick="copySnippet(\'{uid}\',this)" title="Kopieren">'
+                    f'<span class="ci"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">'
+                    f'<path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11'
+                    f'c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg></span>'
+                    f'<span class="ck" style="display:none;color:#3fb950">✓</span>'
+                    f'</button>'
+                    f'<code>{_html.escape(cmd)}</code>'
+                    f'</div></td>'
+                )
+                rows.append(f"<tr>{name_cell}{meta_cells}{action_cell}</tr>")
+            else:
+                rows.append(f"<tr>{name_cell}{meta_cells}</tr>")
         else:
             rows.append(f'<tr>{name_cell}<td class="size">—</td></tr>')
 
