@@ -269,11 +269,10 @@ def files_redirect():
 @router.get("/files/", response_class=HTMLResponse, include_in_schema=False)
 def files_index():
     rows = "\n".join(
-        f'<tr><td><a href="/files/{os}/">{_html.escape(cfg["label"])}/</a></td>'
-        f'<td class="size">—</td></tr>'
+        f'<tr><td><a href="/files/{os}/">{_html.escape(cfg["label"])}/</a></td></tr>'
         for os, cfg in _OS_REGISTRY.items()
     )
-    return HTMLResponse(_page("Mirror", "Verfügbare Distributionen", rows))
+    return HTMLResponse(_page("Mirror", "Verfügbare Distributionen", rows, col_headers=("Name",)))
 
 
 @router.get("/files/{os_type}", include_in_schema=False)
