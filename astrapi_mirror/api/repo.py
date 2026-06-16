@@ -228,7 +228,7 @@ def _debian_virtual_entries(repo_id: str, os_type: str) -> list[str]:
 
 _OS_REGISTRY: dict[str, dict] = {
     "debian": {
-        "label": "Debian",
+        "label": "debian",
         "mirror_root_fn": _debian_mirror_root,
         "store_fn": _get_debian_store,
         "hint_fn": _debian_hint,
@@ -236,10 +236,10 @@ _OS_REGISTRY: dict[str, dict] = {
         "virtual_entries_fn": _debian_virtual_entries,
     },
     "archlinux": {
-        "label": "Arch Linux",
+        "label": "archlinux",
         "mirror_root_fn": _archlinux_mirror_root,
         "store_fn": _get_archlinux_store,
-        "hint_fn": _archlinux_hint,
+        "hint_fn": None,
         "virtual_file_fn": None,
         "virtual_entries_fn": None,
     },
