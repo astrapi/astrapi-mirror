@@ -8,14 +8,23 @@ fields:
     row:         1
     colspan:     2
 
-  - name:        mirror_urls
-    label:       Quellmirrors (eine URL pro Eintrag)
-    type:        list
-    placeholder: "http://deb.debian.org/debian"
+  - name:        url
+    label:       Primäre URL
+    type:        text
+    placeholder: "https://deb.debian.org/debian"
+    max:         500
     column:      1
     row:         2
     colspan:     2
-    description: "Erste URL = primärer Mirror; weitere = Fallbacks."
+
+  - name:        mirror_urls
+    label:       Fallback-Mirrors (eine URL pro Eintrag)
+    type:        list
+    placeholder: "http://deb.debian.org/debian"
+    column:      1
+    row:         3
+    colspan:     2
+    description: "Optionale Fallbacks bei Netzwerkfehler."
 
   - name:        suites
     label:       Suites / Distributionen
@@ -23,7 +32,7 @@ fields:
     placeholder: "bookworm, bookworm-updates, bookworm-backports …"
     max:         500
     column:      1
-    row:         3
+    row:         4
 
   - name:        components
     label:       Komponenten
@@ -31,7 +40,7 @@ fields:
     placeholder: "main, contrib, non-free, non-free-firmware …"
     max:         500
     column:      2
-    row:         3
+    row:         4
 
   - name:        architectures
     label:       Architekturen
@@ -39,14 +48,14 @@ fields:
     placeholder: "amd64, arm64, all …"
     max:         200
     column:      1
-    row:         4
+    row:         5
 
   - name:        repo_type
     label:       Typ
     type:        select
     default:     deb
     column:      2
-    row:         4
+    row:         5
     options:
       - value: deb
         label: "deb (Binär)"
@@ -59,5 +68,5 @@ fields:
     placeholder: "https://example.com/linux/debian/gpg"
     max:         500
     column:      1
-    row:         5
+    row:         6
     colspan:     2

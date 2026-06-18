@@ -50,6 +50,12 @@ _CSS = """
     .copy-btn:hover { opacity:1; color:#c9d1d9; }
     .cmd { display:flex; align-items:center; gap:.5rem; overflow:hidden; }
     .cmd code { color:#8b949e; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1; min-width:0; }
+    .setup { background:#161b22; border:1px solid #30363d; border-radius:6px; padding:1rem 1.25rem; margin-bottom:1.5rem; color:#c9d1d9; }
+    .setup h2 { color:#58a6ff; font-size:.95rem; margin:0 0 .75rem; }
+    .step { color:#8b949e; font-size:.8rem; margin:.85rem 0 .3rem; }
+    .pre-wrap { position:relative; }
+    .pre-wrap .copy-btn { position:absolute; top:4px; right:4px; }
+    .setup pre { background:#0d1117; border:1px solid #21262d; border-radius:4px; padding:.6rem 1rem; margin:.25rem 0 0; font-size:.82rem; overflow-x:auto; line-height:1.5; white-space:pre; }
 """
 
 
@@ -63,6 +69,23 @@ def _fmt_date(raw: str) -> str:
         if len(dp) == 3 and len(dp[0]) == 4:
             return f"{dp[2]}.{dp[1]}.{dp[0]} {parts[1]}"
     return raw
+
+
+_COPY_SVG = (
+    '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">'
+    '<path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11'
+    'c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>'
+)
+
+
+def _copy_btn(uid: str, text: str) -> str:
+    return (
+        f'<textarea id="{uid}" style="display:none">{_html.escape(text)}</textarea>'
+        f'<button class="copy-btn" onclick="copySnippet(\'{uid}\',this)" title="Kopieren">'
+        f'<span class="ci">{_COPY_SVG}</span>'
+        f'<span class="ck" style="display:none;color:#3fb950">✓</span>'
+        f'</button>'
+    )
 
 
 def _fmt_size(n: int) -> str:
@@ -164,7 +187,29 @@ def _get_archlinux_store():
 
 
 def _debian_hint(repo_id: str, repo_data: dict, request: Request) -> str:
-    return ""
+    base_url = str(request.base_url).rstrip("/")
+
+    keyring_deb = None
+    try:
+        repo_dir = _debian_mirror_root() / repo_id / "current"
+        if repo_dir.exists():
+            candidates = sorted(repo_dir.glob("*keyring*.deb"), key=lambda f: f.name, reverse=True)
+            if candidates:
+                keyring_deb = candidates[0].name
+    except Exception:
+        pass
+
+    keyring_status = "✓ verfügbar" if keyring_deb else "⚠ noch nicht synchronisiert"
+    dl_url = f"{base_url}/files/debian/{repo_id}/{keyring_deb or repo_id + '-keyring_1.0.0_all.deb'}"
+    keyring_cmd = f"curl -k {dl_url} -o /tmp/{repo_id}-keyring.deb\nsudo dpkg -i /tmp/{repo_id}-keyring.deb"
+
+    return (
+        f'<div class="setup"><h2>Einrichtung</h2>'
+        f'<p class="step">1 · Keyring installieren ({keyring_status})</p>'
+        f'<div class="pre-wrap">{_copy_btn(f"kb-{repo_id}-key", keyring_cmd)}'
+        f'<pre>{_html.escape(keyring_cmd)}</pre></div>'
+        f'</div>'
+    )
 
 
 def _archlinux_hint(repo_id: str, repo_data: dict, request: Request) -> str:
@@ -227,14 +272,6 @@ def _debian_virtual_entries(repo_id: str, os_type: str) -> list[str]:
 
 
 _OS_REGISTRY: dict[str, dict] = {
-    "debian": {
-        "label": "debian",
-        "mirror_root_fn": _debian_mirror_root,
-        "store_fn": _get_debian_store,
-        "hint_fn": _debian_hint,
-        "virtual_file_fn": _debian_virtual_file,
-        "virtual_entries_fn": _debian_virtual_entries,
-    },
     "archlinux": {
         "label": "archlinux",
         "mirror_root_fn": _archlinux_mirror_root,
@@ -242,6 +279,14 @@ _OS_REGISTRY: dict[str, dict] = {
         "hint_fn": None,
         "virtual_file_fn": None,
         "virtual_entries_fn": None,
+    },
+    "debian": {
+        "label": "debian",
+        "mirror_root_fn": _debian_mirror_root,
+        "store_fn": _get_debian_store,
+        "hint_fn": _debian_hint,
+        "virtual_file_fn": _debian_virtual_file,
+        "virtual_entries_fn": _debian_virtual_entries,
     },
 }
 
@@ -379,12 +424,23 @@ def generic_serve(os_type: str, repo_id: str, path: str, request: Request):
         if resp is not None:
             return resp
 
+    # Hint für das Repo-Root vorab berechnen (wird auch bei "nicht synchronisiert" angezeigt)
+    root_hint = ""
+    if not path.strip("/"):
+        hint_fn = cfg.get("hint_fn")
+        if hint_fn:
+            try:
+                repo_data = cfg["store_fn"]().get(repo_id) or {}
+                root_hint = hint_fn(repo_id, repo_data, request)
+            except Exception:
+                pass
+
     real_root = _resolve_repo_path(os_type, repo_id)
     if real_root is None:
         return HTMLResponse(
             _page(
                 f"{os_type}/{repo_id}",
-                "Noch nicht synchronisiert – bitte zuerst einen Sync starten.",
+                root_hint or "Noch nicht synchronisiert – bitte zuerst einen Sync starten.",
                 "",
                 back=f"/files/{os_type}/",
             )
@@ -406,16 +462,6 @@ def generic_serve(os_type: str, repo_id: str, path: str, request: Request):
             back = f"/files/{os_type}/"
 
         title = f"{os_type}/{repo_id}" + (f"/{path_clean}" if path_clean else "")
-
-        hint = ""
-        if not path_clean:
-            hint_fn = cfg.get("hint_fn")
-            if hint_fn:
-                try:
-                    repo_data = cfg["store_fn"]().get(repo_id) or {}
-                    hint = hint_fn(repo_id, repo_data, request)
-                except Exception:
-                    pass
 
         try:
             fs_entries = sorted(target.iterdir(), key=lambda p: (p.is_file(), p.name))
@@ -444,7 +490,7 @@ def generic_serve(os_type: str, repo_id: str, path: str, request: Request):
         return HTMLResponse(
             _page(
                 title,
-                hint,
+                root_hint,
                 "\n".join(rows) or "<tr><td colspan='2'>Leer.</td></tr>",
                 back=back,
             )
