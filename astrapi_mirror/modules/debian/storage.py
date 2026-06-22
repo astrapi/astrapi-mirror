@@ -73,7 +73,7 @@ def _db():
 class DebianRepoStore:
     """SQLite-backed Store mit eigener Tabelle `debian_repos`.
 
-    Interface kompatibel mit YamlStorage/SqliteStorage für crud_blueprint.
+    Interface kompatibel mit SqliteStorage für crud_blueprint.
     Primärschlüssel ist INTEGER AUTOINCREMENT; slug wird einmalig aus label
     abgeleitet und danach nicht mehr geändert.
     """
