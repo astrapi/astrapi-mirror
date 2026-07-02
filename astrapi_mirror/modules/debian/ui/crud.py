@@ -70,7 +70,7 @@ def ui_sync_repo(repo_id: str, request: Request):
 
     return render(
         request,
-        "partials/row_single.html",
+        "partials/lists/row_single.html",
         {
             "item_name": repo_id,
             "item_data": _wrapped_store.get_enriched(repo_id),
