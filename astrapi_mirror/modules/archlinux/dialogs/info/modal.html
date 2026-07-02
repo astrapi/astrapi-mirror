@@ -1,6 +1,11 @@
+{% extends "dialog_info.html" %}
 {% import 'partials/components/ui_macros.html' as ui %}
-{% call ui.modal_wrapper("archlinux-info-modal", max_width="560px", padding="24px 28px") %}
-  {{ ui.modal_title(title=label, icon="info") }}
+
+{% block dialog_id %}archlinux-info-modal{% endblock %}
+{% block dialog_width %}560{% endblock %}
+{% block dialog_title %}{{ label }}{% endblock %}
+
+{% block dialog_body %}
   <div style="margin-top:16px;">
 
     <div class="meta-grid">
@@ -53,5 +58,4 @@
     </div>
 
   </div>
-  {{ ui.modal_footer_simple() }}
-{% endcall %}
+{% endblock %}

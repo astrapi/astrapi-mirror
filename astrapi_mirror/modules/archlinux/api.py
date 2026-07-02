@@ -62,7 +62,7 @@ def api_logs(repo_id: str, request: Request):
     dates = [{"id": str(r["id"]), "label": r.get("started_at") or str(r["id"])} for r in runs]
     return render(
         request,
-        "partials/log_modal.html",
+        "dialog_log.html",
         {
             "module": KEY,
             "item_id": repo_id,

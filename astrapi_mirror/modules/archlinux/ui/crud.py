@@ -51,7 +51,7 @@ router = make_crud_router(
     label="Arch Linux Repository",
     description_field="label",
     has_run_buttons=True,
-    has_toggle=True,
+    has_toggle=False,
     has_status=True,
 )
 
