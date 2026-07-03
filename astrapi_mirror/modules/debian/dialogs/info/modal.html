@@ -2,60 +2,111 @@
 {% import 'partials/components/ui_macros.html' as ui %}
 
 {% block dialog_id %}debian-info-modal{% endblock %}
-{% block dialog_width %}560{% endblock %}
+{% block dialog_width %}640{% endblock %}
 {% block dialog_title %}{{ label }}{% endblock %}
 
 {% block dialog_body %}
-  <div style="margin-top:16px;">
 
-    <div class="meta-grid">
-      <span class="meta-label">Status</span>
-      <span class="meta-value">{{ ui.status_inline(last_status) }}</span>
-      <span class="meta-label">Letzter Sync</span>
-      <span class="meta-value" style="font-family:var(--mono);font-size:.9em;">{{ last_run }}</span>
+  {# ── Status ──────────────────────────────────────────────────────── #}
+  <div style="font-size:11px; font-weight:600; text-transform:uppercase;
+              letter-spacing:.06em; color:var(--text-3); margin-bottom:8px; margin-top:16px;">
+    Status
+  </div>
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:22px;">
+
+    <div style="background:var(--card-hi); border:1px solid var(--border-i); border-radius:8px; padding:14px 16px;">
+      <div style="font-size:11px; color:var(--text-3); margin-bottom:6px;">Zustand</div>
+      <div>{{ ui.status_inline(last_status) }}</div>
     </div>
 
-    {% if issues %}
-    <div style="margin-top:14px;">
-      <p style="font-weight:600;margin-bottom:8px;color:var(--color-error);font-size:.85em;">
-        Letzte Fehler ({{ issues | length }})
-      </p>
-      <div style="background:var(--color-surface-2);border-radius:6px;padding:10px 14px;max-height:160px;overflow-y:auto;">
-        {% for issue in issues %}
-        <div style="font-size:.8em;font-family:var(--mono);padding:3px 0;border-bottom:1px solid var(--color-border);">{{ issue }}</div>
-        {% endfor %}
-      </div>
-    </div>
-    {% endif %}
-
-    <div style="margin-top:16px;border-top:1px solid var(--color-border);padding-top:14px;">
-      <p style="font-size:.75em;font-weight:600;text-transform:uppercase;color:var(--color-text-muted);letter-spacing:.05em;margin-bottom:10px;">Speicher &amp; Pakete</p>
-      <div class="meta-grid">
-        {% if info.published %}
-        <span class="meta-label">Aktuelle Version</span>
-        <span class="meta-value" style="font-family:var(--mono);font-size:.9em;">{{ info.current_version or '—' }}</span>
-        <span class="meta-label">Speicher (aktuell)</span>
-        <span class="meta-value">{{ info.current_size_fmt }}</span>
-        <span class="meta-label">Pakete</span>
-        <span class="meta-value">{{ info.pkg_count }}</span>
-        {% else %}
-        <span class="meta-label">Status</span>
-        <span class="meta-value" style="color:var(--color-text-muted);">Noch nicht synchronisiert</span>
-        {% endif %}
-        {% if info.version_count %}
-        <span class="meta-label">Gehaltene Versionen</span>
-        <span class="meta-value" style="font-family:var(--mono);font-size:.9em;">
-          {{ info.versions | join(', ') }}{% if info.staging_exists %}, staging{% endif %}
-        </span>
-        <span class="meta-label">Speicher (tatsächlich)</span>
-        <span class="meta-value">{{ info.total_size_fmt }}</span>
-        {% endif %}
-        {% if info.staging_exists and not info.version_count %}
-        <span class="meta-label">Staging</span>
-        <span class="meta-value" style="color:var(--color-text-muted);">vorhanden (Sync läuft oder unterbrochen)</span>
-        {% endif %}
+    <div style="background:var(--card-hi); border:1px solid var(--border-i); border-radius:8px; padding:14px 16px;">
+      <div style="font-size:11px; color:var(--text-3); margin-bottom:6px;">Letzter Sync</div>
+      <div style="font-size:13px; font-weight:600; color:var(--text-1); font-family:var(--mono);">
+        {{ last_run or '—' }}
       </div>
     </div>
 
   </div>
+
+  {# ── Repository ───────────────────────────────────────────────────── #}
+  {% if info.published %}
+  <div style="font-size:11px; font-weight:600; text-transform:uppercase;
+              letter-spacing:.06em; color:var(--text-3); margin-bottom:8px;">
+    Repository
+  </div>
+  <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:22px;">
+
+    <div style="background:var(--card-hi); border:1px solid var(--border-i); border-radius:8px; padding:14px 16px;">
+      <div style="font-size:11px; color:var(--text-3); margin-bottom:5px;">Pakete</div>
+      <div style="font-size:26px; font-weight:700; color:var(--text-1); line-height:1;">
+        {{ info.pkg_count }}
+      </div>
+    </div>
+
+    <div style="background:var(--card-hi); border:1px solid var(--border-i); border-radius:8px; padding:14px 16px;">
+      <div style="font-size:11px; color:var(--text-3); margin-bottom:5px;">Speicher (aktuell)</div>
+      <div style="font-size:20px; font-weight:700; color:var(--text-1); font-family:var(--mono); line-height:1;">
+        {{ info.current_size_fmt }}
+      </div>
+      <div style="font-size:11px; color:var(--text-3); margin-top:4px;">Version {{ info.current_version or '—' }}</div>
+    </div>
+
+    {% if info.version_count %}
+    <div style="background:var(--accent-bg,rgba(99,102,241,.08));
+                border:1px solid var(--accent-dim,rgba(99,102,241,.3));
+                border-radius:8px; padding:14px 16px;">
+      <div style="font-size:11px; color:var(--accent,#6366f1); margin-bottom:5px;">Speicher (tatsächlich)</div>
+      <div style="font-size:20px; font-weight:700; color:var(--accent,#6366f1); font-family:var(--mono); line-height:1;">
+        {{ info.total_size_fmt }}
+      </div>
+      <div style="font-size:11px; color:var(--text-3); margin-top:4px;">
+        inkl. {{ info.version_count }} Version{{ 'en' if info.version_count != 1 else '' }}{% if info.staging_exists %} + staging{% endif %}
+      </div>
+    </div>
+    {% else %}
+    <div style="background:var(--card-hi); border:1px solid var(--border-i); border-radius:8px; padding:14px 16px;">
+      <div style="font-size:11px; color:var(--text-3); margin-bottom:5px;">Staging</div>
+      <div style="font-size:13px; font-weight:600; color:var(--text-1);">
+        {% if info.staging_exists %}vorhanden{% else %}—{% endif %}
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+
+  {% if info.version_count %}
+  <table style="width:100%; border-collapse:collapse; font-size:13px; margin-bottom:22px;">
+    <tbody>
+      <tr>
+        <td style="padding:8px 0; color:var(--text-2); width:42%;">Gehaltene Versionen</td>
+        <td style="padding:8px 0; font-family:var(--mono); font-size:12px; color:var(--text-1);">
+          {{ info.versions | join(', ') }}{% if info.staging_exists %}, staging{% endif %}
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  {% endif %}
+
+  {% else %}
+  <div style="text-align:center; padding:24px 0; color:var(--text-3); font-size:13px;">
+    Noch nicht synchronisiert.
+  </div>
+  {% endif %}
+
+  {# ── Fehler ───────────────────────────────────────────────────────── #}
+  {% if issues %}
+  <div style="font-size:11px; font-weight:600; text-transform:uppercase;
+              letter-spacing:.06em; color:var(--danger,#e74c3c); margin-bottom:8px;">
+    Letzte Fehler ({{ issues | length }})
+  </div>
+  <div style="background:rgba(231,76,60,.06); border:1px solid rgba(231,76,60,.2);
+              border-radius:8px; padding:10px 14px; max-height:140px; overflow-y:auto;">
+    {% for issue in issues %}
+    <div style="font-size:11px; font-family:var(--mono); padding:3px 0;
+                {% if not loop.last %}border-bottom:1px solid rgba(231,76,60,.12);{% endif %}
+                color:var(--text-2);">{{ issue }}</div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
 {% endblock %}
