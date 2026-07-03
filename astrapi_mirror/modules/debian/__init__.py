@@ -27,7 +27,7 @@ class RepoIn(BaseModel):
 # ── Router laden ───────────────────────────────────────────────────────────────
 
 # ── Modul registrieren ─────────────────────────────────────────────────────────
-from astrapi_core.ui.controls import Col, ContentTable  # noqa: E402
+from astrapi_core.ui.controls import Col, ContentTable, Header  # noqa: E402
 
 from .api import router  # noqa: E402
 from .ui import router as ui_router  # noqa: E402
@@ -37,6 +37,9 @@ module = load_modul(
     _KEY,
     router,
     ui_router,
+    ui_header=Header([
+        Header.action_button("Neu", hx_get=f"/ui/{_KEY}/create", hx_target="body"),
+    ]),
     ui_content=ContentTable(
         columns=[
             Col.text("mirror_count", "Mirrors", sortable=False),
