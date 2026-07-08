@@ -2,6 +2,7 @@
 
 import asyncio
 import logging
+import time
 from collections import defaultdict
 from pathlib import Path
 from typing import Callable
@@ -10,6 +11,27 @@ from urllib.request import Request, urlopen
 log = logging.getLogger(__name__)
 
 _CHUNK_SIZE = 65536  # 64 KB
+
+
+def _parse_limit_rate(raw: str) -> int | None:
+    """Parst wget-Style Bandbreitenlimit: '200m' → 209715200 Bytes/s.
+
+    Unterstützt k (KiB), m (MiB), g (GiB) als Suffix.
+    """
+    if not raw:
+        return None
+    raw = raw.strip().lower()
+    for suffix, mult in (("g", 1 << 30), ("m", 1 << 20), ("k", 1 << 10)):
+        if raw.endswith(suffix):
+            try:
+                return max(1, int(float(raw[:-1]) * mult))
+            except ValueError:
+                return None
+    try:
+        v = int(raw)
+        return v if v > 0 else None
+    except ValueError:
+        return None
 
 # Bekannte Arch-Linux-Architekturen zur Erkennung in URLs
 _KNOWN_ARCHS = ("x86_64", "aarch64", "armv7h", "armv6h", "i686", "pentium4", "any")
@@ -33,12 +55,14 @@ class ArchDownloader:
         timeout: int = 3600,
         on_line: Callable[[str], None] | None = None,
         max_concurrent: int = 4,
+        limit_rate: int | None = None,
     ):
         self.staging_path = staging_path
         self.partial_root = partial_root
         self.timeout = timeout
         self.on_line = on_line or (lambda x: None)
         self.max_concurrent = max_concurrent
+        self.limit_rate = limit_rate
         self.stats = {
             "downloaded": 0,
             "skipped": 0,
@@ -287,6 +311,10 @@ class ArchDownloader:
             req = Request(url, headers=headers)
             response = urlopen(req, timeout=self.timeout)
 
+            limit_rate = self.limit_rate
+            t_throttle = time.monotonic()
+            bytes_throttle = 0
+
             mode = "ab" if headers.get("Range") else "wb"
             with open(partial_path, mode) as f:
                 while True:
@@ -294,6 +322,12 @@ class ArchDownloader:
                     if not chunk:
                         break
                     f.write(chunk)
+                    if limit_rate:
+                        bytes_throttle += len(chunk)
+                        expected = bytes_throttle / limit_rate
+                        elapsed = time.monotonic() - t_throttle
+                        if expected > elapsed:
+                            time.sleep(expected - elapsed)
 
             target_path.parent.mkdir(parents=True, exist_ok=True)
             partial_path.rename(target_path)

@@ -103,6 +103,27 @@ def _as_bool(value: object, default: bool = False) -> bool:
     return str(value).strip().lower() in {"1", "true", "yes", "on"}
 
 
+def _parse_limit_rate(raw: str) -> int | None:
+    """Parst wget-Style Bandbreitenlimit: '200m' → 209715200 Bytes/s.
+
+    Unterstützt k (KiB), m (MiB), g (GiB) als Suffix.
+    """
+    if not raw:
+        return None
+    raw = raw.strip().lower()
+    for suffix, mult in (("g", 1 << 30), ("m", 1 << 20), ("k", 1 << 10)):
+        if raw.endswith(suffix):
+            try:
+                return max(1, int(float(raw[:-1]) * mult))
+            except ValueError:
+                return None
+    try:
+        v = int(raw)
+        return v if v > 0 else None
+    except ValueError:
+        return None
+
+
 def _configured_languages() -> set[str] | None:
     from astrapi_core.ui.settings_registry import get_module
 
@@ -171,6 +192,7 @@ class FileDownloader:
         timeout: int = 12 * 3600,
         on_line: Callable[[str], None] | None = None,
         max_concurrent: int = 4,
+        limit_rate: int | None = None,
     ):
         """
         Args:
@@ -179,12 +201,14 @@ class FileDownloader:
             timeout: Globales Timeout in Sekunden
             on_line: Callback pro Zeile Output
             max_concurrent: Max. parallele Downloads
+            limit_rate: Bandbreitenlimit in Bytes/s pro Download-Task (None = kein Limit)
         """
         self.staging_path = staging_path
         self.partial_root = partial_root
         self.timeout = timeout
         self.on_line = on_line
         self.max_concurrent = max_concurrent
+        self.limit_rate = limit_rate
         self.deadline = time.time() + timeout
         self.stats = {"downloaded": 0, "skipped": 0, "failed": 0, "bytes": 0, "failed_files": []}
 
@@ -653,7 +677,7 @@ class FileDownloader:
 
             # Download in Thread-Pool (blockiert nicht die Event-Loop)
             rc, bytes_written, error_msg = await asyncio.to_thread(
-                self._blocking_download_to_partial, url, start_size, partial_path, self.deadline
+                self._blocking_download_to_partial, url, start_size, partial_path, self.deadline, self.limit_rate
             )
             self.stats["bytes"] += bytes_written
 
@@ -668,7 +692,7 @@ class FileDownloader:
                         self._log(f"  ⚠️ {target_path.name}: Netzwerkfehler, versuche {fallback}...")
                         partial_path.unlink(missing_ok=True)
                         rc2, bw2, err2 = await asyncio.to_thread(
-                            self._blocking_download_to_partial, fallback_url, 0, partial_path, self.deadline
+                            self._blocking_download_to_partial, fallback_url, 0, partial_path, self.deadline, self.limit_rate
                         )
                         self.stats["bytes"] += bw2
                         if rc2 == 0:
@@ -745,6 +769,7 @@ class FileDownloader:
         start_size: int,
         partial_path: Path,
         deadline: float,
+        limit_rate: int | None = None,
     ) -> tuple[int, int, str]:
         """Blockierender HTTP-Download in Partial-Datei (läuft via asyncio.to_thread).
 
@@ -760,6 +785,8 @@ class FileDownloader:
             with urlopen(req, timeout=300) as resp:
                 partial_path.parent.mkdir(parents=True, exist_ok=True)
                 mode = "ab" if start_size > 0 else "wb"
+                t_throttle = time.monotonic()
+                bytes_throttle = 0
                 with open(partial_path, mode) as f:
                     while True:
                         if time.time() > deadline:
@@ -769,6 +796,12 @@ class FileDownloader:
                             break
                         f.write(chunk)
                         bytes_written += len(chunk)
+                        if limit_rate:
+                            bytes_throttle += len(chunk)
+                            expected = bytes_throttle / limit_rate
+                            elapsed = time.monotonic() - t_throttle
+                            if expected > elapsed:
+                                time.sleep(expected - elapsed)
             return 0, bytes_written, ""
         except Exception as e:
             return 1, bytes_written, str(e)

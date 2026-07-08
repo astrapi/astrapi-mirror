@@ -12,6 +12,13 @@ fields:
     default:     "4"
     description: "Anzahl gleichzeitig laufender Download-Tasks (asyncio Semaphore)"
 
+  - key:         limit_rate
+    label:       Bandbreitenlimit (pro Download-Task)
+    type:        text
+    placeholder: "200m"
+    default:     ""
+    description: "z.B. 200m = 200 MB/s, 500k = 500 KB/s (wget-Syntax: k/m/g). Leer = kein Limit."
+
   - type:  section
     label: Optionen
     cols:  1

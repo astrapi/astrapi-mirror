@@ -112,11 +112,18 @@ class SyncEngine:
 
             # Phase 2: Downloaden
             _log("\n[2/4] Dateien herunterladen...")
+            try:
+                from astrapi_core.ui.settings_registry import get_module as _gm
+                from .downloader import _parse_limit_rate as _plr
+                _limit_rate = _plr(_gm("archlinux", "limit_rate", default="") or "")
+            except Exception:
+                _limit_rate = None
             downloader = ArchDownloader(
                 staging_path=staging_path,
                 partial_root=self.partial_root,
                 timeout=_TIMEOUT,
                 on_line=_log,
+                limit_rate=_limit_rate,
             )
             rc = await downloader.download_repo(repo)
             if rc != 0:
