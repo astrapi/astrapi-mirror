@@ -210,11 +210,7 @@ def sync_all() -> None:
     if not repos:
         return
 
-    try:
-        run_all("debian", repos, run_single, desc_fn=lambda iid, e: e.get("label", iid))
-    except RuntimeError:
-        pass  # Fehlgeschlagene Repos werden durch _retry_failed behandelt
-
+    run_all("debian", repos, run_single, desc_fn=lambda iid, e: e.get("label", iid))
     _retry_failed(repos)
 
 
