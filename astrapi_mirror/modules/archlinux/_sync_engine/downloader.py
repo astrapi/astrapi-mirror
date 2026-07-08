@@ -67,6 +67,7 @@ class ArchDownloader:
             "downloaded": 0,
             "skipped": 0,
             "failed": 0,
+            "pruned": 0,
             "bytes": 0,
             "failed_files": [],
         }
@@ -192,6 +193,14 @@ class ArchDownloader:
         )
         if failed > 0:
             return 1
+
+        # Veraltete Dateien entfernen: lokal vorhanden, nicht mehr im Upstream
+        file_set = set(file_list)
+        for stale in sorted(arch_path.iterdir()):
+            if stale.is_file() and stale.name not in file_set:
+                stale.unlink(missing_ok=True)
+                self.stats["pruned"] += 1
+                self._log(f"  🗑️ Veraltet: {stale.name}")
 
         # Vollständigkeitscheck: alle erwarteten Dateien vorhanden?
         missing = self._check_completeness(file_list, arch_path)
