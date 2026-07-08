@@ -1,5 +1,6 @@
 """astrapi_mirror.modules.debian._sync_engine.engine – Hauptlogik der Sync-Engine."""
 
+import asyncio
 import logging
 import shutil
 import time
@@ -169,7 +170,7 @@ class SyncEngine:
             docker_status = "ok"
             try:
                 _log("\n[4/5] Docker apt-Test...")
-                docker_ok, docker_msg = test_apt_update(repo_id, staging_path)
+                docker_ok, docker_msg = await asyncio.to_thread(test_apt_update, repo_id, staging_path)
                 if docker_ok:
                     _log("✅ Docker apt-Test erfolgreich")
                 else:

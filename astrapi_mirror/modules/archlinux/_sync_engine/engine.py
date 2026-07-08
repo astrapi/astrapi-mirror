@@ -1,5 +1,6 @@
 """astrapi_mirror.modules.archlinux._sync_engine.engine – Sync-Engine für Arch Linux."""
 
+import asyncio
 import logging
 import shutil
 import time
@@ -142,7 +143,7 @@ class SyncEngine:
 
             # 3b: Docker-Test (nur wenn Docker installiert)
             if shutil.which("docker"):
-                docker_ok, docker_msg = test_pacman_sync(repo_id, staging_path)
+                docker_ok, docker_msg = await asyncio.to_thread(test_pacman_sync, repo_id, staging_path)
                 if docker_ok:
                     _log("✅ Pacman -Sy Test erfolgreich")
                 else:
