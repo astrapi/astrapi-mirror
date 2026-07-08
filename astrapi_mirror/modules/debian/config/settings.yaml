@@ -6,18 +6,18 @@ fields:
     cols:  2
 
   - key:         threads
-    label:       Download-Threads
+    label:       Parallele Downloads
     type:        text
     placeholder: "4"
     default:     "4"
-    description: "Anzahl paralleler wget-Prozesse"
+    description: "Anzahl gleichzeitiger Downloads pro Repo"
 
   - key:         limit_rate
-    label:       Bandbreitenlimit (pro Thread)
+    label:       Bandbreitenlimit
     type:        text
     placeholder: "200m"
-    default:     "200m"
-    description: "z.B. 200m = 200 MB/s pro Thread (wget-Syntax)"
+    default:     ""
+    description: "z.B. 200m, 500k, 1g — Leer = kein Limit"
 
   - type:  section
     label: Optionen

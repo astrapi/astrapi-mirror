@@ -3,21 +3,21 @@ modal_width: 500
 fields:
   - type:  section
     label: Download
-    cols:  1
+    cols:  2
 
   - key:         max_parallel_downloads
-    label:       Parallele Downloads (pro Repo)
+    label:       Parallele Downloads
     type:        text
     placeholder: "4"
     default:     "4"
-    description: "Anzahl gleichzeitig laufender Download-Tasks (asyncio Semaphore)"
+    description: "Anzahl gleichzeitiger Downloads pro Repo"
 
   - key:         limit_rate
-    label:       Bandbreitenlimit (pro Download-Task)
+    label:       Bandbreitenlimit
     type:        text
     placeholder: "200m"
     default:     ""
-    description: "z.B. 200m = 200 MB/s, 500k = 500 KB/s (wget-Syntax: k/m/g). Leer = kein Limit."
+    description: "z.B. 200m, 500k, 1g — Leer = kein Limit"
 
   - type:  section
     label: Optionen
