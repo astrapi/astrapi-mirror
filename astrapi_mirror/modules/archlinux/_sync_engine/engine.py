@@ -184,7 +184,8 @@ class SyncEngine:
 
         except Exception as e:
             log.exception("sync_repo: unerwarteter Fehler")
-            return 1, f"Unerwarteter Fehler: {e}"
+            _log(f"\n❌ Exception: {e}")
+            return 1, "".join(output_lines)
 
 
 def client_pacman_snippet(repo: dict, base_url: str) -> str:
