@@ -118,22 +118,31 @@ def run_single(repo_id: str, repo: dict | None = None) -> None:
             return
 
         gpg_url = (repo.get("gpg_key_url") or "").strip()
+        gpg_issues: list[str] = []
         if gpg_url:
             key = _fetch_gpg_key(slug, gpg_url)
             if key:
                 store.upsert(repo_id, {"gpg_key": key})
+            elif repo.get("gpg_key"):
+                msg = "GPG-Key-Aktualisierung fehlgeschlagen — alter Key könnte veraltet sein"
+                log("WARNING", msg)
+                gpg_issues = [msg]
 
         from astrapi_mirror._paths import mirror_path
         from astrapi_mirror._repo_info import repo_info
 
         info = repo_info(mirror_path() / slug, pkg_suffixes=(".deb",))
+        status = "warning" if gpg_issues else "ok"
         store.upsert(repo_id, {
-            "last_status": "ok",
+            "last_status": status,
             "last_run": _now(),
-            "last_sync_issues": [],
+            "last_sync_issues": gpg_issues,
             "last_info": info,
         })
-        log("INFO", f"=== Debian Repo '{slug}' erfolgreich synchronisiert ===")
+        if gpg_issues:
+            log("WARNING", f"=== Debian Repo '{slug}' synchronisiert (GPG-Warnung) ===")
+        else:
+            log("INFO", f"=== Debian Repo '{slug}' erfolgreich synchronisiert ===")
 
 
 # ---------------------------------------------------------------------------
