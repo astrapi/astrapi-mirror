@@ -150,15 +150,13 @@ def _retry_failed(repos: dict) -> None:
             + ", ".join(repos[rid].get("label", rid) for rid in failed_ids),
         )
 
-        for repo_id in failed_ids:
-            repo = store.get(repo_id) or {}
-            label = f"{repo.get('label', repo_id)} (Retry {attempt}/{_MAX_RETRIES})"
-            run_logged(
-                "debian",
-                repo_id,
-                label,
-                lambda rid=repo_id, r=repo: run_single(rid, r),
-            )
+        failed_repos = {repo_id: store.get(repo_id) or {} for repo_id in failed_ids}
+        run_all(
+            "debian",
+            failed_repos,
+            run_single,
+            desc_fn=lambda iid, e, a=attempt: f"{e.get('label', iid)} (Retry {a}/{_MAX_RETRIES})",
+        )
 
     still_failed = [
         repo_id for repo_id in repos
