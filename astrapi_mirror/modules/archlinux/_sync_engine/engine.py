@@ -117,14 +117,18 @@ class SyncEngine:
                 from astrapi_core.ui.settings_registry import get_module as _gm
                 from .downloader import _parse_limit_rate as _plr
                 _limit_rate = _plr(_gm("archlinux", "limit_rate", default="") or "")
+                _ft_raw = (_gm("archlinux", "file_timeout", default="300") or "300").strip()
+                _file_timeout = int(_ft_raw) if _ft_raw.isdigit() and int(_ft_raw) > 0 else None
             except Exception:
                 _limit_rate = None
+                _file_timeout = 300
             downloader = ArchDownloader(
                 staging_path=staging_path,
                 partial_root=self.partial_root,
                 timeout=_TIMEOUT,
                 on_line=_log,
                 limit_rate=_limit_rate,
+                file_timeout=_file_timeout,
             )
             rc = await downloader.download_repo(repo)
             if rc != 0:

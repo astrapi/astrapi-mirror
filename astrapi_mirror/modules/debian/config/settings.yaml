@@ -19,6 +19,13 @@ fields:
     default:     ""
     description: "z.B. 200m, 500k, 1g — Leer = kein Limit"
 
+  - key:         file_timeout
+    label:       Timeout pro Datei (s)
+    type:        text
+    placeholder: "300"
+    default:     "300"
+    description: "Sekunden bis ein einzelner Download abbricht — 0 = kein Limit"
+
   - type:  section
     label: Optionen
     cols:  2

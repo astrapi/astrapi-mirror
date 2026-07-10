@@ -56,6 +56,7 @@ class ArchDownloader:
         on_line: Callable[[str], None] | None = None,
         max_concurrent: int = 4,
         limit_rate: int | None = None,
+        file_timeout: int | None = 300,
     ):
         self.staging_path = staging_path
         self.partial_root = partial_root
@@ -63,6 +64,7 @@ class ArchDownloader:
         self.on_line = on_line or (lambda x: None)
         self.max_concurrent = max_concurrent
         self.limit_rate = limit_rate
+        self.file_timeout = file_timeout
         self.stats = {
             "downloaded": 0,
             "skipped": 0,
@@ -224,12 +226,24 @@ class ArchDownloader:
 
             remote_url = f"{base_url}{filename}"
             try:
-                await loop.run_in_executor(
-                    None,
-                    lambda u=remote_url: self._sync_download(u, partial_path, local_path),
+                await asyncio.wait_for(
+                    loop.run_in_executor(
+                        None,
+                        lambda u=remote_url: self._sync_download(u, partial_path, local_path),
+                    ),
+                    timeout=self.file_timeout,
                 )
                 self.stats["downloaded"] += 1
                 return 0
+            except asyncio.TimeoutError:
+                partial_path.unlink(missing_ok=True)
+                msg = f"Datei-Timeout ({self.file_timeout}s)"
+                if i < len(mirror_urls) - 1:
+                    self._log(f"  ⏱️ {filename}: {msg}, versuche nächsten Mirror...")
+                else:
+                    self._log(f"  ❌ {filename}: {msg}")
+                    self.stats["failed"] += 1
+                    self.stats["failed_files"].append((remote_url, msg))
             except Exception as e:
                 if i < len(mirror_urls) - 1:
                     self._log(

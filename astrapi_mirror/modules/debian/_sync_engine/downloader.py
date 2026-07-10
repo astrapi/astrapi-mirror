@@ -193,6 +193,7 @@ class FileDownloader:
         on_line: Callable[[str], None] | None = None,
         max_concurrent: int = 4,
         limit_rate: int | None = None,
+        file_timeout: int | None = 300,
     ):
         """
         Args:
@@ -202,6 +203,7 @@ class FileDownloader:
             on_line: Callback pro Zeile Output
             max_concurrent: Max. parallele Downloads
             limit_rate: Bandbreitenlimit in Bytes/s pro Download-Task (None = kein Limit)
+            file_timeout: Timeout pro Einzeldatei in Sekunden (None = kein Limit)
         """
         self.staging_path = staging_path
         self.partial_root = partial_root
@@ -209,6 +211,7 @@ class FileDownloader:
         self.on_line = on_line
         self.max_concurrent = max_concurrent
         self.limit_rate = limit_rate
+        self.file_timeout = file_timeout
         self.deadline = time.time() + timeout
         self.stats = {"downloaded": 0, "skipped": 0, "failed": 0, "bytes": 0, "failed_files": []}
 
@@ -676,8 +679,11 @@ class FileDownloader:
             start_size = partial_path.stat().st_size if partial_path.exists() else 0
 
             # Download in Thread-Pool (blockiert nicht die Event-Loop)
-            rc, bytes_written, error_msg = await asyncio.to_thread(
-                self._blocking_download_to_partial, url, start_size, partial_path, self.deadline, self.limit_rate
+            rc, bytes_written, error_msg = await asyncio.wait_for(
+                asyncio.to_thread(
+                    self._blocking_download_to_partial, url, start_size, partial_path, self.deadline, self.limit_rate
+                ),
+                timeout=self.file_timeout,
             )
             self.stats["bytes"] += bytes_written
 
@@ -691,8 +697,11 @@ class FileDownloader:
                         fallback_url = f"{fallback}/{rel}"
                         self._log(f"  ⚠️ {target_path.name}: Netzwerkfehler, versuche {fallback}...")
                         partial_path.unlink(missing_ok=True)
-                        rc2, bw2, err2 = await asyncio.to_thread(
-                            self._blocking_download_to_partial, fallback_url, 0, partial_path, self.deadline, self.limit_rate
+                        rc2, bw2, err2 = await asyncio.wait_for(
+                            asyncio.to_thread(
+                                self._blocking_download_to_partial, fallback_url, 0, partial_path, self.deadline, self.limit_rate
+                            ),
+                            timeout=self.file_timeout,
                         )
                         self.stats["bytes"] += bw2
                         if rc2 == 0:
@@ -730,6 +739,13 @@ class FileDownloader:
             self.stats["downloaded"] += 1
             return 0, "OK"
 
+        except asyncio.TimeoutError:
+            msg = f"Datei-Timeout ({self.file_timeout}s)"
+            self._log(f"⏱️ {target_path.name}: {msg}")
+            if not soft:
+                self.stats["failed"] += 1
+                self.stats["failed_files"].append((url, msg))
+            return 1, msg
         except Exception as e:
             if soft:
                 self._log(f"⚠️ {target_path.name}: {e} (nicht kritisch)")
