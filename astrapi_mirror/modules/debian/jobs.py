@@ -18,26 +18,8 @@ _MAX_RETRIES = 5
 def _armor_binary_key(raw: bytes) -> str:
     import base64
 
-    def _crc24(data: bytes) -> int:
-        crc = 0xB704CE
-        for byte in data:
-            crc ^= byte << 16
-            for _ in range(8):
-                crc <<= 1
-                if crc & 0x1000000:
-                    crc ^= 0x1864CFB
-        return crc & 0xFFFFFF
-
     b64 = base64.encodebytes(raw).decode("ascii")
-    crc = base64.b64encode(_crc24(raw).to_bytes(3, "big")).decode("ascii")
-    return (
-        "-----BEGIN PGP PUBLIC KEY BLOCK-----\n\n"
-        + b64
-        + "="
-        + crc
-        + "\n"
-        + "-----END PGP PUBLIC KEY BLOCK-----\n"
-    )
+    return "-----BEGIN PGP PUBLIC KEY BLOCK-----\n\n" + b64 + "-----END PGP PUBLIC KEY BLOCK-----\n"
 
 
 def _fetch_gpg_key(repo_id: str, url: str) -> str | None:
