@@ -31,9 +31,7 @@ _COLS = (
     "id",
     "slug",
     "label",
-    "url",
     "mirror_urls",
-    "architectures",
     "enabled",
     "last_status",
     "last_run",
@@ -180,7 +178,6 @@ class ArchlinuxRepoStore:
             row = self._to_db(data)
             row["slug"] = slug
             row.setdefault("last_status", "neu")
-            row.setdefault("architectures", "x86_64")
             cols = list(row.keys())
             db = _db()
             cur = db.execute(

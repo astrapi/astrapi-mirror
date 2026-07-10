@@ -74,14 +74,8 @@ class ArchDownloader:
 
     @staticmethod
     def _get_mirror_list(repo: dict) -> list[str]:
-        """Gibt die geordnete Liste aller Mirror-URLs zurück.
-
-        Neue Repos nutzen `mirror_urls` (Liste vollständiger URLs).
-        Alte Repos (url + architectures) werden automatisch konvertiert.
-        """
+        """Gibt die geordnete Liste aller Mirror-URLs zurück."""
         urls: list[str] = []
-
-        # Neue Form: mirror_urls als Liste
         mirror_urls = repo.get("mirror_urls") or []
         if isinstance(mirror_urls, str):
             mirror_urls = [line.strip() for line in mirror_urls.splitlines() if line.strip()]
@@ -89,19 +83,6 @@ class ArchDownloader:
             u = u.rstrip("/")
             if u and u not in urls:
                 urls.append(u)
-
-        # Backward-compat: alte url + architectures → vollständige URLs konstruieren
-        if not urls:
-            base = (repo.get("url") or "").rstrip("/")
-            if base:
-                archs = repo.get("architectures") or ["x86_64"]
-                if isinstance(archs, str):
-                    archs = [a.strip() for a in archs.split(",") if a.strip()]
-                for arch in archs:
-                    full = f"{base}/os/{arch}"
-                    if full not in urls:
-                        urls.append(full)
-
         return urls
 
     async def download_repo(self, repo: dict) -> int:
