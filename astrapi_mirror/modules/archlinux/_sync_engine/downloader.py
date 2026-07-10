@@ -217,7 +217,7 @@ class ArchDownloader:
             local_path.unlink()
 
         partial_path = self.partial_root / filename
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
 
         for i, base_url in enumerate(mirror_urls):
             # Beim Fallback-Mirror Partial verwerfen (sauberer Neustart)
@@ -269,7 +269,7 @@ class ArchDownloader:
         import re
         from urllib.parse import unquote
 
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
 
         def _fetch_listing():
             resp = urlopen(arch_url, timeout=30)
@@ -313,25 +313,24 @@ class ArchDownloader:
                 headers["Range"] = f"bytes={partial_path.stat().st_size}-"
 
             req = Request(url, headers=headers)
-            response = urlopen(req, timeout=self.timeout)
+            with urlopen(req, timeout=self.timeout) as response:
+                limit_rate = self.limit_rate
+                t_throttle = time.monotonic()
+                bytes_throttle = 0
 
-            limit_rate = self.limit_rate
-            t_throttle = time.monotonic()
-            bytes_throttle = 0
-
-            mode = "ab" if headers.get("Range") else "wb"
-            with open(partial_path, mode) as f:
-                while True:
-                    chunk = response.read(_CHUNK_SIZE)
-                    if not chunk:
-                        break
-                    f.write(chunk)
-                    if limit_rate:
-                        bytes_throttle += len(chunk)
-                        expected = bytes_throttle / limit_rate
-                        elapsed = time.monotonic() - t_throttle
-                        if expected > elapsed:
-                            time.sleep(expected - elapsed)
+                mode = "ab" if headers.get("Range") else "wb"
+                with open(partial_path, mode) as f:
+                    while True:
+                        chunk = response.read(_CHUNK_SIZE)
+                        if not chunk:
+                            break
+                        f.write(chunk)
+                        if limit_rate:
+                            bytes_throttle += len(chunk)
+                            expected = bytes_throttle / limit_rate
+                            elapsed = time.monotonic() - t_throttle
+                            if expected > elapsed:
+                                time.sleep(expected - elapsed)
 
             target_path.parent.mkdir(parents=True, exist_ok=True)
             partial_path.rename(target_path)
