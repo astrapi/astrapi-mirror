@@ -209,7 +209,12 @@ class SyncEngine:
 
             duration = int(time.time() - t0)
             _log(f"\n{'=' * 60}")
-            _log(f"✅ Sync erfolgreich abgeschlossen in {duration}s")
+            if docker_status == "warning":
+                # Repo ist validiert und geswappt, nur der apt-Test schlug fehl –
+                # kein Fehler-Returncode, aber im Log sichtbar machen.
+                _log(f"⚠️ Sync abgeschlossen in {duration}s – mit Warnungen (Docker apt-Test)")
+            else:
+                _log(f"✅ Sync erfolgreich abgeschlossen in {duration}s")
             _log(f"{'=' * 60}")
 
             return 0, "".join(output_lines)

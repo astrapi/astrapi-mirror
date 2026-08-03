@@ -1,7 +1,6 @@
 """astrapi_mirror.modules.archlinux – Arch Linux Repository Manager."""
 
 from pathlib import Path
-from typing import Optional
 
 from astrapi_core.ui.module_loader import load_modul
 from pydantic import BaseModel
