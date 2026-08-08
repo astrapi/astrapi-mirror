@@ -194,7 +194,20 @@ class ArchDownloader:
         return 0
 
     # Metadaten-Dateien werden immer neu geladen (nie übersprungen)
-    _META_EXTS = (".db", ".db.tar.gz", ".db.tar.zst", ".files", ".files.tar.gz", ".files.tar.zst")
+    _META_EXTS = (
+        ".db",
+        ".db.tar.gz",
+        ".db.tar.zst",
+        ".db.sig",
+        ".db.tar.gz.sig",
+        ".db.tar.zst.sig",
+        ".files",
+        ".files.tar.gz",
+        ".files.tar.zst",
+        ".files.sig",
+        ".files.tar.gz.sig",
+        ".files.tar.zst.sig",
+    )
 
     def _is_metadata(self, filename: str) -> bool:
         return any(filename.endswith(ext) for ext in self._META_EXTS)
@@ -286,9 +299,15 @@ class ArchDownloader:
             ".db",
             ".db.tar.gz",
             ".db.tar.zst",
+            ".db.sig",
+            ".db.tar.gz.sig",
+            ".db.tar.zst.sig",
             ".files",
             ".files.tar.gz",
             ".files.tar.zst",
+            ".files.sig",
+            ".files.tar.gz.sig",
+            ".files.tar.zst.sig",
         )
 
         pattern = re.compile(r'href="([^"#][^"]*)"', re.IGNORECASE)
