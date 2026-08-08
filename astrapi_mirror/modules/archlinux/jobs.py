@@ -51,7 +51,7 @@ def run_single(repo_id: str, repo: dict | None = None) -> None:
 
     with log_context("archlinux", repo_id):
         log("INFO", f"=== Arch Linux Repo '{label}' synchronisieren ===")
-        store.upsert(repo_id, {"last_status": "syncing"})
+        store.upsert(repo_id, {"last_status": "running"})
 
         def _on_line(line: str) -> None:
             if _important(line):

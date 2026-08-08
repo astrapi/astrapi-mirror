@@ -65,7 +65,7 @@ router = make_crud_router(
 def ui_sync_repo(repo_id: str, request: Request):
     from ..jobs import sync_repo_async
 
-    store.upsert(repo_id, {"last_status": "syncing"})
+    store.upsert(repo_id, {"last_status": "running"})
     sync_repo_async(repo_id)
 
     return render(

@@ -70,7 +70,7 @@ def api_logs(repo_id: str, request: Request):
             "dates": dates,
             "selected": str(act_log_id) if act_log_id else None,
             "lines": lines,
-            "live": False,
+            "live": data.get("last_status") == "running",
         },
     )
 
