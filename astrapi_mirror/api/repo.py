@@ -213,8 +213,27 @@ def _debian_hint(repo_id: str, repo_data: dict, request: Request) -> str:
 
 
 def _archlinux_hint(repo_id: str, repo_data: dict, request: Request) -> str:
-    archs = ", ".join(repo_data.get("architectures") or ["x86_64"])
-    return f"Repository: {_html.escape(repo_data.get('label', repo_id))} · Architekturen: {archs}"
+    base_url = str(request.base_url).rstrip("/")
+
+    try:
+        from astrapi_mirror.modules.archlinux._sync_engine.downloader import ArchDownloader, _detect_arch
+
+        urls = ArchDownloader._get_mirror_list(repo_data)
+        detected_archs = sorted({_detect_arch(u) for u in urls})
+    except Exception:
+        detected_archs = []
+    archs = ", ".join(detected_archs or ["x86_64"])
+
+    server_url = f"{base_url}/files/archlinux/{repo_id}/os/$arch"
+    conf_snippet = f"[{repo_id}]\nServer = {server_url}"
+
+    return (
+        f'<div class="setup"><h2>Einrichtung</h2>'
+        f'<p class="step">1 · In /etc/pacman.conf eintragen (Architekturen: {_html.escape(archs)})</p>'
+        f'<div class="pre-wrap">{_copy_btn(f"pc-{repo_id}", conf_snippet)}'
+        f'<pre>{_html.escape(conf_snippet)}</pre></div>'
+        f'</div>'
+    )
 
 
 def _debian_virtual_file(repo_id: str, path: str, request: Request):
@@ -276,7 +295,7 @@ _OS_REGISTRY: dict[str, dict] = {
         "label": "archlinux",
         "mirror_root_fn": _archlinux_mirror_root,
         "store_fn": _get_archlinux_store,
-        "hint_fn": None,
+        "hint_fn": _archlinux_hint,
         "virtual_file_fn": None,
         "virtual_entries_fn": None,
     },
