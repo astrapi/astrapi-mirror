@@ -174,7 +174,13 @@ def sync_all() -> None:
     if not repos:
         return
 
-    run_all("archlinux", repos, run_single, desc_fn=lambda iid, e: e.get("label", iid))
+    run_all(
+        "archlinux",
+        repos,
+        run_single,
+        desc_fn=lambda iid, e: e.get("label", iid),
+        mark_pending_fn=lambda iid, e: store.upsert(iid, {"last_status": "pending"}),
+    )
     _retry_failed(repos)
 
 
