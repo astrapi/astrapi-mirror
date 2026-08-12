@@ -1,5 +1,6 @@
 """astrapi_mirror.modules.archlinux.ui – UI-Router für das Archlinux-Modul."""
 
+import json
 from pathlib import Path
 
 from astrapi_core.ui.crud_blueprint import make_crud_router
@@ -57,6 +58,41 @@ router = make_crud_router(
 
 
 # ---------------------------------------------------------------------------
+# Laufende Repos – Grundlage für das Zeilen-Polling (status_oob.html)
+# ---------------------------------------------------------------------------
+# run_single()/run_all() (jobs.py) schreiben "running"/"pending" bereits
+# zuverlaessig in den Store - kein eigenes In-Memory-Tracking noetig, anders
+# als bei astrapi-backup/astrapi-packages (dort gibt es keinen Zwischenstand
+# in der DB, waehrend der Job laeuft).
+
+
+def _running_fn() -> dict:
+    return {
+        f"{KEY}:{repo_id}": item.get("last_status")
+        for repo_id, item in store.list().items()
+        if item.get("last_status") in ("running", "pending")
+    }
+
+
+# ---------------------------------------------------------------------------
+# Status-Endpunkt für das Zeilen-Polling (T-159-MIRROR)
+# ---------------------------------------------------------------------------
+
+
+@router.get(f"/ui/{KEY}/status", response_class=HTMLResponse)
+def ui_status(request: Request):
+    return render(
+        request,
+        "partials/oob/status_oob.html",
+        {
+            "cfg": _wrapped_store.list(),
+            "module": KEY,
+            "running": _running_fn(),
+        },
+    )
+
+
+# ---------------------------------------------------------------------------
 # Sync-Action
 # ---------------------------------------------------------------------------
 
@@ -68,7 +104,7 @@ def ui_sync_repo(repo_id: str, request: Request):
     store.upsert(repo_id, {"last_status": "running"})
     sync_repo_async(repo_id)
 
-    return render(
+    row_html = render(
         request,
         "partials/lists/row_single.html",
         {
@@ -77,9 +113,15 @@ def ui_sync_repo(repo_id: str, request: Request):
             "module": KEY,
             "container_id": f"mod-{KEY}",
             "loading_id": f"{KEY}-loading",
-            "running": {f"{KEY}:{repo_id}": True},
+            "running": _running_fn(),
         },
-    )
+    ).body.decode()
+
+    # Antwort ist eine <tr> - kein <div> anhaengbar, das Polling wird deshalb
+    # per Event angestossen (index.html aktiviert den im DOM vorhandenen
+    # Poll-Div), status_oob.html schaltet ihn nach Sync-Ende wieder ab.
+    trigger = json.dumps({"jobStarted": {"module": KEY}})
+    return HTMLResponse(row_html, headers={"HX-Trigger": trigger})
 
 
 # ---------------------------------------------------------------------------
@@ -92,7 +134,7 @@ def ui_sync_all(request: Request):
     from ..jobs import sync_all_async
 
     sync_all_async()
-    return render(
+    html = render(
         request,
         "content.html",
         {
@@ -100,8 +142,12 @@ def ui_sync_all(request: Request):
             "module": KEY,
             "container_id": f"mod-{KEY}",
             "loading_id": f"{KEY}-loading",
+            "running": _running_fn(),
         },
-    )
+    ).body.decode()
+
+    trigger = json.dumps({"jobStarted": {"module": KEY}})
+    return HTMLResponse(html, headers={"HX-Trigger": trigger})
 
 
 # ---------------------------------------------------------------------------
