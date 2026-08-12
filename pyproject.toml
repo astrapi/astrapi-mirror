@@ -14,7 +14,7 @@ dependencies = [
     "requests==2.34.2",
     "urllib3==2.7.0",
     "psutil==7.2.2",
-    "astrapi-core>=26.8.12",
+    "astrapi-core>=26.8.13",
 ]
 
 [project.scripts]
