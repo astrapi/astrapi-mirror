@@ -9,7 +9,7 @@ fields:
     colspan:     2
 
   - name:        mirror_urls
-    label:       Quellmirrors (eine vollständige URL pro Eintrag)
+    label:       Quellen (eine vollständige URL pro Eintrag)
     type:        list
     placeholder: "https://mirror.archlinux.org/archlinux/extra/os/x86_64"
     column:      1

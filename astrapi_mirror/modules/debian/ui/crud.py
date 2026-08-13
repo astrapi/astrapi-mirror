@@ -24,12 +24,12 @@ class _LabelDescStore:
 
     @staticmethod
     def _enrich(key: str, v: dict) -> dict:
-        count = len(v.get("mirror_urls") or [])
+        count = (1 if v.get("url") else 0) + len(v.get("mirror_urls") or [])
         info = v.get("last_info") or {}
         return {
             **v,
             "description": v.get("label", key),
-            "mirror_count": f"{count} Mirror" if count == 1 else f"{count} Mirrors",
+            "mirror_count": f"{count} Quelle" if count == 1 else f"{count} Quellen",
             "info_pkg_count": str(info["pkg_count"]) if info.get("pkg_count") else "—",
             "info_size": info.get("total_size_fmt") or "—",
         }

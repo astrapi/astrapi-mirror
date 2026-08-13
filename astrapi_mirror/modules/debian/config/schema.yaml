@@ -18,7 +18,7 @@ fields:
     colspan:     2
 
   - name:        mirror_urls
-    label:       Fallback-Mirrors (eine URL pro Eintrag)
+    label:       Weitere Quellen / Fallback (eine URL pro Eintrag)
     type:        list
     placeholder: "http://deb.debian.org/debian"
     column:      1

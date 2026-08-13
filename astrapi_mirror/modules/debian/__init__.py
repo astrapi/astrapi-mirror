@@ -41,7 +41,7 @@ module = load_modul(
     ]),
     ui_content=ContentTable(
         columns=[
-            Col.text("mirror_count", "Mirrors", sortable=False),
+            Col.text("mirror_count", "Quellen", sortable=False),
             Col.text("info_pkg_count", "Pakete", sortable=False),
             Col.text("info_size", "Speicher", sortable=False),
         ],
