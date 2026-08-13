@@ -3,7 +3,7 @@ modal_width: 500
 fields:
   - type:  section
     label: Download
-    cols:  2
+    cols:  3
 
   - key:         max_parallel_downloads
     label:       Parallele Downloads

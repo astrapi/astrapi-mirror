@@ -3,7 +3,7 @@ modal_width: 560
 fields:
   - type:  section
     label: Download
-    cols:  2
+    cols:  3
 
   - key:         threads
     label:       Parallele Downloads
@@ -27,8 +27,8 @@ fields:
     description: "Sekunden bis ein einzelner Download abbricht — 0 = kein Limit"
 
   - type:  section
-    label: Optionen
-    cols:  2
+    label: Sprache
+    cols:  1
 
   - key:         language
     label:       Sprache(n) für Translation-Dateien
@@ -36,6 +36,10 @@ fields:
     placeholder: "de_DE, en"
     default:     "de_DE, en"
     description: "Kommagetrennt; steuert welche Translation-Dateien geladen werden"
+
+  - type:  section
+    label: Optionen
+    cols:  2
 
   - key:         contents
     label:       Contents-Dateien laden
