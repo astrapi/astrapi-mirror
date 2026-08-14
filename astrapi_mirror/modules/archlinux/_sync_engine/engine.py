@@ -117,11 +117,17 @@ class SyncEngine:
                 from astrapi_core.ui.settings_registry import get_module as _gm
                 from .downloader import _parse_limit_rate as _plr
                 _limit_rate = _plr(_gm("archlinux", "limit_rate", default="") or "")
-                _ft_raw = (_gm("archlinux", "file_timeout", default="300") or "300").strip()
+                _ft_raw = (_gm("archlinux", "file_timeout", default="1800") or "1800").strip()
                 _file_timeout = int(_ft_raw) if _ft_raw.isdigit() and int(_ft_raw) > 0 else None
+                _mp_raw = (_gm("archlinux", "max_parallel_downloads", default="4") or "4").strip()
+                _max_concurrent = int(_mp_raw) if _mp_raw.isdigit() and int(_mp_raw) > 0 else 4
+                _excl_raw = _gm("archlinux", "exclude_patterns", default="") or ""
+                _exclude_patterns = [line.strip() for line in _excl_raw.splitlines() if line.strip()]
             except Exception:
                 _limit_rate = None
-                _file_timeout = 300
+                _file_timeout = 1800
+                _max_concurrent = 4
+                _exclude_patterns = []
             downloader = ArchDownloader(
                 staging_path=staging_path,
                 partial_root=self.partial_root,
@@ -129,6 +135,8 @@ class SyncEngine:
                 on_line=_log,
                 limit_rate=_limit_rate,
                 file_timeout=_file_timeout,
+                max_concurrent=_max_concurrent,
+                exclude_patterns=_exclude_patterns,
             )
             rc = await downloader.download_repo(repo)
             if rc != 0:

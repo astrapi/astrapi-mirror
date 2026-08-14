@@ -22,9 +22,18 @@ fields:
   - key:         file_timeout
     label:       Timeout pro Datei (s)
     type:        text
-    placeholder: "300"
-    default:     "300"
-    description: "Sekunden bis ein einzelner Download abbricht — 0 = kein Limit"
+    placeholder: "1800"
+    default:     "1800"
+    description: "Sekunden bis ein einzelner Download-Versuch abbricht (pro Mirror, nicht gesamt) — 0 = kein Limit. Bei mehreren GB großen Paketen (cuda, rocm, dotnet-*) reichen 300s selbst bei gesunder Verbindung oft nicht."
+
+  - key:         exclude_patterns
+    label:       Ausschluss-Muster
+    type:        textarea
+    span:        3
+    rows:        3
+    placeholder: "cuda*\n*rocm*\nhipblaslt*\ncomposable-kernel*\nintel-oneapi-toolkit*\ndotnet-source-built-artifacts*"
+    default:     "cuda*\n*rocm*\nhipblaslt*\ncomposable-kernel*\nintel-oneapi-toolkit*\ndotnet-source-built-artifacts*"
+    description: "Ein Glob-Muster pro Zeile (fnmatch), Pakete mit passendem Dateinamen werden nicht heruntergeladen (bereits lokal vorhandene werden beim nächsten Sync als veraltet entfernt). Für notorisch riesige, seltene Pakete wie CUDA/ROCm/.NET-SDK-Artefakte, die auf vielen Mirrors ohnehin nicht zuverlässig verfügbar sind."
 
   - type:  section
     label: Optionen

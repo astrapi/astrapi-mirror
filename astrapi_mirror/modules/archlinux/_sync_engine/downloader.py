@@ -1,6 +1,7 @@
 """astrapi_mirror.modules.archlinux._sync_engine.downloader – Asyncio-basierter Downloader für Arch."""
 
 import asyncio
+import fnmatch
 import logging
 import time
 from collections import defaultdict
@@ -57,6 +58,7 @@ class ArchDownloader:
         max_concurrent: int = 4,
         limit_rate: int | None = None,
         file_timeout: int | None = 300,
+        exclude_patterns: list[str] | None = None,
     ):
         self.staging_path = staging_path
         self.partial_root = partial_root
@@ -65,6 +67,7 @@ class ArchDownloader:
         self.max_concurrent = max_concurrent
         self.limit_rate = limit_rate
         self.file_timeout = file_timeout
+        self.exclude_patterns = exclude_patterns or []
         self.stats = {
             "downloaded": 0,
             "skipped": 0,
@@ -155,6 +158,13 @@ class ArchDownloader:
             self._log(f"❌ Alle Mirrors für {arch} nicht erreichbar oder leer")
             return 1
 
+        if self.exclude_patterns:
+            before = len(file_list)
+            file_list = [f for f in file_list if not self._is_excluded(f)]
+            skipped = before - len(file_list)
+            if skipped:
+                self._log(f"  🚫 {skipped} Datei(en) durch Ausschluss-Muster übersprungen")
+
         # Primärer Mirror zuerst, dann Fallbacks in ursprünglicher Reihenfolge
         mirror_priority = [active_url] + [u for u in ordered_urls if u != active_url]
 
@@ -211,6 +221,9 @@ class ArchDownloader:
 
     def _is_metadata(self, filename: str) -> bool:
         return any(filename.endswith(ext) for ext in self._META_EXTS)
+
+    def _is_excluded(self, filename: str) -> bool:
+        return any(fnmatch.fnmatch(filename, pat) for pat in self.exclude_patterns)
 
     async def _download_file_with_fallback(
         self, filename: str, mirror_urls: list[str], arch_path: Path
