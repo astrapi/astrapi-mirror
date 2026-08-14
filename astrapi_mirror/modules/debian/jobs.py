@@ -14,6 +14,14 @@ def _now() -> str:
 
 _MAX_RETRIES = 5
 
+# Verhindert parallele Syncs desselben Repos: manueller Sync-Button und
+# "Alle synchronisieren"/Scheduler koennen run_single() sonst gleichzeitig
+# fuer dieselbe repo_id aufrufen - beide Laeufe teilen sich dasselbe
+# Staging-Verzeichnis und ueberschreiben unabhaengig voneinander
+# last_status, ohne dass einer vom anderen weiss.
+_running_lock = threading.Lock()
+_running_repos: set[str] = set()
+
 
 def _armor_binary_key(raw: bytes) -> str:
     import base64
@@ -58,7 +66,25 @@ def _important(line: str) -> bool:
 
 
 def run_single(repo_id: str, repo: dict | None = None) -> None:
-    """Synchronisiert ein einzelnes Debian-Repo (blockierend, für run_all/run_logged)."""
+    """Synchronisiert ein einzelnes Debian-Repo (blockierend, für run_all/run_logged).
+
+    Verwirft den Aufruf, falls fuer dieselbe repo_id bereits ein Sync laeuft
+    (siehe _running_lock oben) - sonst wuerden zwei Laeufe dasselbe Staging-
+    Verzeichnis teilen und last_status gegenseitig ueberschreiben.
+    """
+    with _running_lock:
+        if repo_id in _running_repos:
+            log("WARNING", f"Sync für Debian Repo '{repo_id}' läuft bereits, übersprungen")
+            return
+        _running_repos.add(repo_id)
+    try:
+        _run_single(repo_id, repo)
+    finally:
+        with _running_lock:
+            _running_repos.discard(repo_id)
+
+
+def _run_single(repo_id: str, repo: dict | None) -> None:
     from . import store
     from ._sync_engine import SyncEngine
     from ._sync_engine.validator import validate_repo
