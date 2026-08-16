@@ -37,7 +37,7 @@ module = load_modul(
     router,
     ui_router,
     ui_header=Header([
-        Header.action_button("Neu", hx_get=f"/ui/{_KEY}/create", hx_target="body"),
+        Header.action_button("Neu", hx_get=f"/ui/{_KEY}/create", hx_target="body", style="primary", icon="plus"),
     ]),
     ui_content=ContentTable(
         columns=[
