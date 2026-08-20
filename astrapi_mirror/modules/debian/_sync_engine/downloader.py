@@ -213,7 +213,14 @@ class FileDownloader:
         self.limit_rate = limit_rate
         self.file_timeout = file_timeout
         self.deadline = time.time() + timeout
-        self.stats = {"downloaded": 0, "skipped": 0, "failed": 0, "bytes": 0, "failed_files": []}
+        self.stats = {
+            "downloaded": 0,
+            "skipped": 0,
+            "failed": 0,
+            "pruned": 0,
+            "bytes": 0,
+            "failed_files": [],
+        }
 
     def _log(self, msg: str) -> None:
         if self.on_line:
@@ -358,10 +365,15 @@ class FileDownloader:
             ]
             await asyncio.gather(*tasks, return_exceptions=True)
 
+        if self.stats["failed"] == 0:
+            referenced = {pt for _pu, pt, _pcs in unique_pool}
+            self._prune_stale_pool_files(self.staging_path / "pool", referenced)
+
         self._log(
             f"\n📊 Download-Statistik: {self.stats['downloaded']} heruntergeladen, "
             f"{self.stats['skipped']} übersprungen, "
             f"{self.stats['failed']} Fehler, "
+            f"{self.stats['pruned']} veraltet entfernt, "
             f"{self._fmt_size(self.stats['bytes'])} gesamt"
         )
         if self.stats["failed_files"]:
@@ -504,10 +516,15 @@ class FileDownloader:
             ]
             await asyncio.gather(*tasks, return_exceptions=True)
 
+        if self.stats["failed"] == 0:
+            referenced = {pt for _pu, pt, _pcs in unique_pool}
+            self._prune_stale_pool_files(self.staging_path, referenced)
+
         self._log(
             f"\n📊 Download-Statistik: {self.stats['downloaded']} heruntergeladen, "
             f"{self.stats['skipped']} übersprungen, "
             f"{self.stats['failed']} Fehler, "
+            f"{self.stats['pruned']} veraltet entfernt, "
             f"{self._fmt_size(self.stats['bytes'])} gesamt"
         )
         if self.stats["failed_files"]:
@@ -528,6 +545,29 @@ class FileDownloader:
         """Download mit Semaphore-Begrenzung."""
         async with sem:
             await self._download_file(url, path, checksum=checksum, force=force, soft=soft)
+
+    _POOL_EXTS = (".deb", ".udeb")
+
+    def _prune_stale_pool_files(self, scan_root: Path, referenced: set[Path]) -> None:
+        """Entfernt .deb/.udeb-Dateien, die kein aktueller Packages-Index mehr referenziert.
+
+        Analog zum Stale-Pruning im Archlinux-Modul (downloader.py::_download_arch_group):
+        anders als dort gibt es hier keine Downloader-native Verzeichnisliste vom Server,
+        daher der Umweg über die aus den Packages-Dateien extrahierten Pool-Pfade als
+        Referenz. Nur .deb/.udeb betroffen -- Index-Dateien (InRelease, Packages,
+        Contents, ...) werden ohnehin bei jedem Sync unbedingt neu geladen/überschrieben
+        und sind hier nicht das Problem.
+        """
+        if not scan_root.is_dir():
+            return
+        for path in scan_root.rglob("*"):
+            if path.is_file() and path.suffix in self._POOL_EXTS and path not in referenced:
+                try:
+                    path.unlink()
+                    self.stats["pruned"] += 1
+                    self._log(f"  🗑️ Veraltet: {path.relative_to(self.staging_path)}")
+                except OSError:
+                    pass
 
     @staticmethod
     def _parse_inrelease(content: str) -> list[dict]:
