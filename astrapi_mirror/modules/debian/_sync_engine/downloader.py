@@ -509,7 +509,12 @@ class FileDownloader:
 
         if self.stats["failed"] == 0:
             referenced = {pt for _pu, pt, _pcs in unique_pool}
-            self._prune_stale_pool_files(self.staging_path / "pool", referenced)
+            # Nicht auf staging_path/"pool" beschraenken: das Filename:-Feld im
+            # Packages-Index bestimmt den tatsaechlichen Pfad und ist nicht
+            # zwingend "pool/..." (z.B. repos.influxdata.com nutzt "packages/...").
+            # scan_root=staging_path (wie im Flat-Repo-Pfad) deckt beide Faelle ab,
+            # _prune_stale_pool_files() filtert ohnehin nur .deb/.udeb (T-184-MIRROR).
+            self._prune_stale_pool_files(self.staging_path, referenced)
 
         self._log(
             f"\n📊 Download-Statistik: {self.stats['downloaded']} heruntergeladen, "
