@@ -182,6 +182,121 @@ def _should_skip_file(
     return False
 
 
+def _char_order(c: str) -> int:
+    """dpkg-Zeichenordnung: ~ sortiert vor allem (auch vor Stringende),
+    Stringende vor Buchstaben, Buchstaben vor allem anderen."""
+    if c == "~":
+        return -1
+    if not c:
+        return 0
+    if c.isalpha():
+        return ord(c)
+    return ord(c) + 256
+
+
+def _compare_non_digit(a: str, b: str) -> int:
+    i = j = 0
+    while i < len(a) or j < len(b):
+        oa = _char_order(a[i] if i < len(a) else "")
+        ob = _char_order(b[j] if j < len(b) else "")
+        if oa != ob:
+            return -1 if oa < ob else 1
+        i += 1
+        j += 1
+    return 0
+
+
+def _verrevcmp(a: str, b: str) -> int:
+    """Vergleicht zwei Versions-Teilstrings (upstream oder Debian-Revision)
+    per abwechselnden Nicht-Ziffern-/Ziffern-Laeufen, wie dpkg es tut."""
+    i = j = 0
+    while i < len(a) or j < len(b):
+        si, sj = i, j
+        while i < len(a) and not a[i].isdigit():
+            i += 1
+        while j < len(b) and not b[j].isdigit():
+            j += 1
+        c = _compare_non_digit(a[si:i], b[sj:j])
+        if c != 0:
+            return c
+        si, sj = i, j
+        while i < len(a) and a[i].isdigit():
+            i += 1
+        while j < len(b) and b[j].isdigit():
+            j += 1
+        na = int(a[si:i]) if i > si else 0
+        nb = int(b[sj:j]) if j > sj else 0
+        if na != nb:
+            return -1 if na < nb else 1
+    return 0
+
+
+def compare_debian_versions(v1: str, v2: str) -> int:
+    """Vergleicht zwei Debian-Versionsstrings nach Debian Policy 5.6.12
+    ([epoch:]upstream_version[-debian_revision]). Gibt -1/0/1 zurueck.
+
+    Naive String-Sortierung waere hier falsch (z.B. "2.0" > "10.0" als Text,
+    aber "10.0" ist die neuere Version) -- deshalb eigene Implementierung
+    statt eines externen Pakets (T-183-MIRROR).
+    """
+
+    def split_epoch(v: str) -> tuple[int, str]:
+        if ":" in v:
+            e, rest = v.split(":", 1)
+            try:
+                return int(e), rest
+            except ValueError:
+                return 0, v
+        return 0, v
+
+    def split_revision(v: str) -> tuple[str, str]:
+        if "-" in v:
+            up, rev = v.rsplit("-", 1)
+            return up, rev
+        return v, ""
+
+    e1, r1 = split_epoch(v1)
+    e2, r2 = split_epoch(v2)
+    if e1 != e2:
+        return -1 if e1 < e2 else 1
+
+    up1, rev1 = split_revision(r1)
+    up2, rev2 = split_revision(r2)
+    c = _verrevcmp(up1, up2)
+    if c != 0:
+        return c
+    return _verrevcmp(rev1, rev2)
+
+
+def _keep_latest_versions(entries: list[dict], keep: int) -> list[dict]:
+    """Behaelt pro Paketname nur die `keep` neuesten Versionen (0/leer = alle).
+
+    Gruppiert nach `Package:`-Feld (Fallback: Dateiname, falls das Feld beim
+    Parsen fehlt). Pakete ohne erkannte Version (leeres `Version:`-Feld)
+    werden nie herausgefiltert, um im Zweifel nichts zu verlieren.
+    """
+    if not keep:
+        return entries
+    from collections import defaultdict
+    from functools import cmp_to_key
+
+    groups: dict[str, list[dict]] = defaultdict(list)
+    for e in entries:
+        groups[e.get("package") or e["filename"]].append(e)
+
+    result: list[dict] = []
+    for group in groups.values():
+        with_version = [e for e in group if e.get("version")]
+        without_version = [e for e in group if not e.get("version")]
+        with_version.sort(
+            key=cmp_to_key(lambda a, b: compare_debian_versions(a["version"], b["version"])),
+            reverse=True,
+        )
+        result.extend(with_version[:keep])
+        result.extend(without_version)
+    return result
+
+
 def _matches_package_include(pool_filename: str, patterns: list[str]) -> bool:
     """Include-Filter fuer Pool-Dateien (T-182-MIRROR).
 
@@ -267,6 +382,10 @@ class FileDownloader:
         architectures = [a.strip() for a in (repo.get("architectures") or []) if a.strip()]
         components = [c.strip() for c in (repo.get("components") or []) if c.strip()]
         package_include = [p.strip() for p in (repo.get("package_include") or []) if p.strip()]
+        try:
+            keep_versions = int(repo.get("keep_versions") or 0)
+        except (TypeError, ValueError):
+            keep_versions = 0
         include_sources = repo.get("repo_type", "deb") == "deb-src"
         include_contents = _should_include_contents()
         language_set = _configured_languages()
@@ -352,7 +471,10 @@ class FileDownloader:
                 if re.search(r"/Packages(\.gz|\.xz)?$", fname):
                     pkg_path = suite_path / fname
                     try:
-                        for p in self._extract_pool_files(pkg_path):
+                        entries = _keep_latest_versions(
+                            self._extract_pool_files(pkg_path), keep_versions
+                        )
+                        for p in entries:
                             if not _matches_package_include(p["filename"], package_include):
                                 continue
                             pool_files.append(
@@ -420,6 +542,10 @@ class FileDownloader:
         architectures = [a.strip() for a in (repo.get("architectures") or []) if a.strip()]
         arch_set = set(architectures) if architectures else None
         package_include = [p.strip() for p in (repo.get("package_include") or []) if p.strip()]
+        try:
+            keep_versions = int(repo.get("keep_versions") or 0)
+        except (TypeError, ValueError):
+            keep_versions = 0
 
         self.staging_path.mkdir(parents=True, exist_ok=True)
 
@@ -505,7 +631,10 @@ class FileDownloader:
             if re.search(r"Packages(\.gz|\.xz)?$", entry["filename"]):
                 pkg_path = self.staging_path / entry["filename"]
                 try:
-                    for p in self._extract_pool_files(pkg_path):
+                    entries = _keep_latest_versions(
+                        self._extract_pool_files(pkg_path), keep_versions
+                    )
+                    for p in entries:
                         if arch_set:
                             # Filename beginnt mit arch/ (z.B. amd64/lldap.deb)
                             first = p["filename"].split("/")[0]
@@ -628,7 +757,7 @@ class FileDownloader:
         """Parst eine Packages-Datei (plain/gz/xz) und gibt Pool-Pfade zurück.
 
         Returns:
-            Liste von {filename, sha256, size} für alle Pakete
+            Liste von {filename, sha256, size, package, version} für alle Pakete
         """
         name = packages_path.name.lower()
         if name.endswith(".gz"):
@@ -646,6 +775,10 @@ class FileDownloader:
                 line = line.rstrip("\n")
                 if line.startswith("Filename:"):
                     current["filename"] = line.split(":", 1)[1].strip()
+                elif line.startswith("Package:"):
+                    current["package"] = line.split(":", 1)[1].strip()
+                elif line.startswith("Version:"):
+                    current["version"] = line.split(":", 1)[1].strip()
                 elif line.startswith("SHA256:") and " " not in line.split(":", 1)[1].strip():
                     # Einzelne SHA256-Zeile im Packages-Format (kein Block)
                     current["sha256"] = line.split(":", 1)[1].strip()

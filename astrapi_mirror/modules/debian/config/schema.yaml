@@ -74,11 +74,22 @@ fields:
       auf mindestens ein Muster passt, werden heruntergeladen (z.B. bei Repos mit
       vielen unbenötigten Zusatzpaketen)."
 
+  - name:        keep_versions
+    label:       Versionen pro Paket behalten
+    type:        number
+    default:     0
+    column:      1
+    row:         7
+    description: "0 = alle Versionen (Standard). Bei > 0 werden pro Paket nur
+      die N neuesten Versionen gespiegelt (echter Debian-Versionsvergleich,
+      nicht Text-Sortierung) -- nuetzlich bei Repos, die alte Versionen nie
+      entfernen."
+
   - name:        gpg_key_url
     label:       GPG-Schlüssel URL
     type:        text
     placeholder: "https://example.com/linux/debian/gpg"
     max:         500
     column:      1
-    row:         7
+    row:         8
     colspan:     2

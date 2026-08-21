@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS debian_repos (
     components       TEXT NOT NULL DEFAULT '',
     architectures    TEXT NOT NULL DEFAULT '',
     package_include  TEXT NOT NULL DEFAULT '',
+    keep_versions    INTEGER NOT NULL DEFAULT 0,
     gpg_key_url      TEXT NOT NULL DEFAULT '',
     gpg_key          TEXT NOT NULL DEFAULT '',
     enabled          INTEGER NOT NULL DEFAULT 1,
@@ -44,6 +45,7 @@ _COLS = (
     "components",
     "architectures",
     "package_include",
+    "keep_versions",
     "gpg_key_url",
     "gpg_key",
     "enabled",
@@ -96,10 +98,14 @@ class DebianRepoStore:
             db.execute(_DDL)
             # CREATE TABLE IF NOT EXISTS greift bei bereits existierenden
             # DBs nicht -- neue Spalten hier nachziehen.
-            try:
-                db.execute("ALTER TABLE debian_repos ADD COLUMN package_include TEXT NOT NULL DEFAULT ''")
-            except Exception:
-                pass
+            for ddl in (
+                "ALTER TABLE debian_repos ADD COLUMN package_include TEXT NOT NULL DEFAULT ''",
+                "ALTER TABLE debian_repos ADD COLUMN keep_versions INTEGER NOT NULL DEFAULT 0",
+            ):
+                try:
+                    db.execute(ddl)
+                except Exception:
+                    pass
             db.commit()
             self._table_ready = True
             return True
