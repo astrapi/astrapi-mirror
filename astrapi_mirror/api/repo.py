@@ -436,6 +436,14 @@ def generic_serve(os_type: str, repo_id: str, path: str, request: Request):
     if not cfg:
         raise HTTPException(404, f"Unbekannter OS-Typ: {os_type}")
 
+    # Existenz zuerst gegen die DB pruefen, nicht nur gegen das Dateisystem --
+    # sonst wird fuer ein gar nicht konfiguriertes Repo (z.B. Tippfehler in
+    # der URL) faelschlich der "noch nicht synchronisiert"-Einrichtungshinweis
+    # angezeigt statt eines 404.
+    repo_entry = cfg["store_fn"]().get(repo_id)
+    if repo_entry is None:
+        raise HTTPException(404, f"Repo nicht konfiguriert: {os_type}/{repo_id}")
+
     # Virtuelle Dateien (OS-spezifisch)
     virtual_fn = cfg.get("virtual_file_fn")
     if virtual_fn and path:
@@ -449,8 +457,7 @@ def generic_serve(os_type: str, repo_id: str, path: str, request: Request):
         hint_fn = cfg.get("hint_fn")
         if hint_fn:
             try:
-                repo_data = cfg["store_fn"]().get(repo_id) or {}
-                root_hint = hint_fn(repo_id, repo_data, request)
+                root_hint = hint_fn(repo_id, repo_entry, request)
             except Exception:
                 pass
 
