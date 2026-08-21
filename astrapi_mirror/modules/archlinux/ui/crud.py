@@ -31,7 +31,13 @@ class _LabelDescStore:
             "description": v.get("label", key),
             "mirror_count": f"{count} Quelle" if count == 1 else f"{count} Quellen",
             "info_pkg_count": str(info["pkg_count"]) if info.get("pkg_count") else "—",
-            "info_size": info.get("total_size_fmt") or "—",
+            # current_size_fmt statt total_size_fmt: reagiert sofort auf
+            # Pruning/Filter (T-185-MIRROR) -- total_size_fmt summiert ueber
+            # alle noch aufbewahrten Sync-Generationen (Rollback-Sicherheits-
+            # netz) und sinkt dadurch erst mit Verzoegerung von 2-3 Zyklen,
+            # was in der Liste wie ein falscher Wert wirkt. Bleibt im
+            # Detail-Dialog weiterhin sichtbar.
+            "info_size": info.get("current_size_fmt") or "—",
         }
 
     def list(self, **kwargs):
