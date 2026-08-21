@@ -182,6 +182,23 @@ def _should_skip_file(
     return False
 
 
+def _matches_package_include(pool_filename: str, patterns: list[str]) -> bool:
+    """Include-Filter fuer Pool-Dateien (T-182-MIRROR).
+
+    Leere `patterns` = alles spiegeln (Standardverhalten unveraendert).
+    Sonst muss der Dateiname (letztes Pfadsegment, z.B.
+    "grafana-enterprise_11.5.1_amd64.deb") auf mindestens ein fnmatch-Muster
+    passen -- analog zu den bestehenden exclude_patterns im archlinux-Modul,
+    nur repo-spezifisch statt modulweit und als Include statt Exclude.
+    """
+    if not patterns:
+        return True
+    import fnmatch
+
+    name = pool_filename.rsplit("/", 1)[-1]
+    return any(fnmatch.fnmatch(name, pat) for pat in patterns)
+
+
 class FileDownloader:
     """Parallel File Downloader mit Resume und Checksummen-Validierung."""
 
@@ -249,6 +266,7 @@ class FileDownloader:
         suites = [s.strip() for s in (repo.get("suites") or []) if s.strip()]
         architectures = [a.strip() for a in (repo.get("architectures") or []) if a.strip()]
         components = [c.strip() for c in (repo.get("components") or []) if c.strip()]
+        package_include = [p.strip() for p in (repo.get("package_include") or []) if p.strip()]
         include_sources = repo.get("repo_type", "deb") == "deb-src"
         include_contents = _should_include_contents()
         language_set = _configured_languages()
@@ -335,6 +353,8 @@ class FileDownloader:
                     pkg_path = suite_path / fname
                     try:
                         for p in self._extract_pool_files(pkg_path):
+                            if not _matches_package_include(p["filename"], package_include):
+                                continue
                             pool_files.append(
                                 (
                                     f"{url}/{p['filename']}",
@@ -399,6 +419,7 @@ class FileDownloader:
         self._mirrors = _build_mirror_list(url, repo.get("mirror_urls"))
         architectures = [a.strip() for a in (repo.get("architectures") or []) if a.strip()]
         arch_set = set(architectures) if architectures else None
+        package_include = [p.strip() for p in (repo.get("package_include") or []) if p.strip()]
 
         self.staging_path.mkdir(parents=True, exist_ok=True)
 
@@ -490,6 +511,8 @@ class FileDownloader:
                             first = p["filename"].split("/")[0]
                             if first in _known_arches and first not in arch_set:
                                 continue
+                        if not _matches_package_include(p["filename"], package_include):
+                            continue
                         pool_files.append(
                             (
                                 f"{url}/{p['filename']}",

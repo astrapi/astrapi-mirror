@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS debian_repos (
     suites           TEXT NOT NULL DEFAULT '',
     components       TEXT NOT NULL DEFAULT '',
     architectures    TEXT NOT NULL DEFAULT '',
+    package_include  TEXT NOT NULL DEFAULT '',
     gpg_key_url      TEXT NOT NULL DEFAULT '',
     gpg_key          TEXT NOT NULL DEFAULT '',
     enabled          INTEGER NOT NULL DEFAULT 1,
@@ -42,6 +43,7 @@ _COLS = (
     "suites",
     "components",
     "architectures",
+    "package_include",
     "gpg_key_url",
     "gpg_key",
     "enabled",
@@ -50,7 +52,9 @@ _COLS = (
     "last_sync_issues",
     "last_info",
 )
-_LIST_COLS = frozenset({"suites", "components", "architectures", "mirror_urls"})
+_LIST_COLS = frozenset(
+    {"suites", "components", "architectures", "mirror_urls", "package_include"}
+)
 _BOOL_COLS = frozenset({"enabled"})
 _JSON_COLS = frozenset({"last_sync_issues", "last_info"})
 
@@ -90,6 +94,12 @@ class DebianRepoStore:
         try:
             db = _db()
             db.execute(_DDL)
+            # CREATE TABLE IF NOT EXISTS greift bei bereits existierenden
+            # DBs nicht -- neue Spalten hier nachziehen.
+            try:
+                db.execute("ALTER TABLE debian_repos ADD COLUMN package_include TEXT NOT NULL DEFAULT ''")
+            except Exception:
+                pass
             db.commit()
             self._table_ready = True
             return True

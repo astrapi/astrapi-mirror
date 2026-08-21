@@ -62,11 +62,23 @@ fields:
       - value: deb-src
         label: "deb-src (Quellcode)"
 
+  - name:        package_include
+    label:       Paket-Filter (Include, ein fnmatch-Muster pro Zeile)
+    type:        list
+    placeholder: "grafana, grafana_*, foo-bar …"
+    max:         2000
+    column:      1
+    row:         6
+    colspan:     2
+    description: "Leer = alle Pakete spiegeln. Gesetzt = nur Pakete, deren Dateiname
+      auf mindestens ein Muster passt, werden heruntergeladen (z.B. bei Repos mit
+      vielen unbenötigten Zusatzpaketen)."
+
   - name:        gpg_key_url
     label:       GPG-Schlüssel URL
     type:        text
     placeholder: "https://example.com/linux/debian/gpg"
     max:         500
     column:      1
-    row:         6
+    row:         7
     colspan:     2
