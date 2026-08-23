@@ -22,18 +22,17 @@ _TRANSLATION_IN_PATH = re.compile(r"(?:^|/)i18n/Translation-([^./]+)")
 _OPTIONAL_INDEX_SUFFIXES = ("/Packages", "/Sources")
 
 
-def _build_mirror_list(primary_url: str, mirror_urls) -> list[str]:
-    """Baut geordnete Mirror-Liste.
+def _build_mirror_list(mirror_urls) -> list[str]:
+    """Baut geordnete Mirror-Liste aus mirror_urls (T-186-MIRROR).
 
-    Wenn mirror_urls befüllt ist, wird diese Liste direkt verwendet.
-    Andernfalls Fallback auf primary_url (Backward-Compat für alte Repos).
+    Erster Eintrag = primärer Mirror, weitere = Fallbacks. Kein separates
+    "Primäre URL"-Feld mehr -- angeglichen an archlinux, siehe
+    modules/archlinux/_sync_engine/downloader.py::_get_mirror_list().
     """
     extra = mirror_urls or []
     if isinstance(extra, str):
         extra = [e.strip() for e in extra.splitlines() if e.strip()]
-    if extra:
-        return [m.rstrip("/") for m in extra if m.strip()]
-    return [primary_url] if primary_url else []
+    return [m.rstrip("/") for m in extra if m.strip()]
 
 
 def _is_http_404(error_msg: str) -> bool:
@@ -368,13 +367,11 @@ class FileDownloader:
         4. Packages parsen → Pool-Dateipfade extrahieren
         5. Pool-Dateien (.deb) herunterladen
         """
-        url = (repo.get("url") or "").rstrip("/")
-        if not url:
+        self._mirrors = _build_mirror_list(repo.get("mirror_urls"))
+        if not self._mirrors:
             self._log("❌ Keine URL definiert")
             return 1
-
-        self._primary_url = url
-        self._mirrors = _build_mirror_list(url, repo.get("mirror_urls"))
+        url = self._primary_url = self._mirrors[0]
         if len(self._mirrors) > 1:
             self._log(f"ℹ️ {len(self._mirrors)} Mirror(s) konfiguriert")
 
@@ -541,9 +538,11 @@ class FileDownloader:
             {url}/Packages(.gz)
             {url}/{arch}/*.deb
         """
-        url = (repo.get("url") or "").rstrip("/")
-        self._primary_url = url
-        self._mirrors = _build_mirror_list(url, repo.get("mirror_urls"))
+        self._mirrors = _build_mirror_list(repo.get("mirror_urls"))
+        if not self._mirrors:
+            self._log("❌ Keine URL definiert")
+            return 1
+        url = self._primary_url = self._mirrors[0]
         architectures = [a.strip() for a in (repo.get("architectures") or []) if a.strip()]
         arch_set = set(architectures) if architectures else None
         package_include = [p.strip() for p in (repo.get("package_include") or []) if p.strip()]

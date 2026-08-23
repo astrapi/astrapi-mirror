@@ -260,7 +260,8 @@ def validate_repo(repo: dict, base_path: Path | None = None) -> dict:
     """Validiert einen Repo-Eintrag; gibt {'status', 'issues', 'checked_suites'} zurück."""
     from astrapi_mirror._paths import mirror_path
 
-    url = (repo.get("url") or "").rstrip("/")
+    mirror_urls = [m.strip() for m in (repo.get("mirror_urls") or []) if m.strip()]
+    url = mirror_urls[0].rstrip("/") if mirror_urls else ""
 
     if base_path is not None:
         mirror_base = Path(base_path)

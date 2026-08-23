@@ -98,14 +98,15 @@ class SyncEngine:
         """Synchronisiert ein einzelnes Repo.
 
         Args:
-            repo: Repo-Dict (id, url, suites, components, architectures, repo_type, etc.)
+            repo: Repo-Dict (id, mirror_urls, suites, components, architectures, repo_type, etc.)
             on_line: Optional Callback pro Zeile Output
 
         Returns:
             (returncode, output): 0 = OK, >0 = Fehler
         """
         repo_id = repo.get("slug") or str(repo.get("id", "unknown"))
-        url = (repo.get("url") or "").rstrip("/")
+        mirror_urls = [m.strip() for m in (repo.get("mirror_urls") or []) if m.strip()]
+        url = mirror_urls[0].rstrip("/") if mirror_urls else ""
 
         if not url:
             return 1, f"Repo {repo_id}: Keine URL definiert"

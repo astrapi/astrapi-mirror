@@ -38,6 +38,39 @@ def _db_check() -> tuple[bool, dict]:
         return False, {"db": False}
 
 
+def _migrate_debian_url_to_mirror_urls() -> None:
+    """Uebernimmt das alte `url`-Feld in `mirror_urls` (T-186-MIRROR).
+
+    Debian hatte bisher ein separates "Primaere URL"-Feld zusaetzlich zur
+    mirror_urls-Liste -- inkonsistent zu archlinux, das seit einem
+    Refactor im Juni nur noch die reine Liste kennt (Architektur ist Teil
+    der URL, ein Repo kann mehrere Architekturen ueber mehrere
+    Liste-Eintraege abdecken). Debian wird jetzt angeglichen: das `url`-
+    Feld wird aus dem Formular/der Sync-Logik entfernt. Damit bestehende
+    Repos (die praktisch alle nur `url` gesetzt hatten, `mirror_urls` war
+    optionaler Fallback) nicht ohne Quelle dastehen, wird `url` hier
+    einmalig als erster Eintrag in `mirror_urls` uebernommen, falls dort
+    noch nichts steht. Idempotent -- greift nur wenn mirror_urls leer und
+    url gesetzt ist.
+    """
+    from astrapi_core.system.db import _conn
+
+    con = _conn()
+    try:
+        cols = [r[1] for r in con.execute("PRAGMA table_info(debian_repos)")]
+        if "url" not in cols:
+            return
+        rows = con.execute(
+            "SELECT id, url, mirror_urls FROM debian_repos WHERE url != '' AND mirror_urls = ''"
+        ).fetchall()
+        for repo_id, url, _mirror_urls in rows:
+            con.execute("UPDATE debian_repos SET mirror_urls = ? WHERE id = ?", (url, repo_id))
+        if rows:
+            con.commit()
+    except Exception:
+        pass
+
+
 def create_app() -> FastAPI:
     _pkg = package_dir()
     configure_settings(health_fn=_db_check, app_name=get_display_name(_pkg))
@@ -52,6 +85,7 @@ def create_app() -> FastAPI:
     settings_init(work_dir())
 
     modules, _ = load_modules(_pkg)
+    _migrate_debian_url_to_mirror_urls()
     api = create_api(modules=modules)
 
     from pathlib import Path

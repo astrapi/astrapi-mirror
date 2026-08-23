@@ -38,7 +38,10 @@ _COLS = (
     "id",
     "slug",
     "label",
-    "url",
+    # "url" bewusst nicht mehr im Interface (T-186-MIRROR, analog archlinux/
+    # storage.py): abgeloest durch mirror_urls als einzige Quellen-Liste.
+    # Spalte bleibt in der DDL fuer Bestands-DBs, wird aber nicht mehr
+    # gelesen/geschrieben -- Migration nach mirror_urls in _app.py.
     "mirror_urls",
     "repo_type",
     "suites",

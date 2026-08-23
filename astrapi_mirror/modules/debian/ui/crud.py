@@ -24,7 +24,7 @@ class _LabelDescStore:
 
     @staticmethod
     def _enrich(key: str, v: dict) -> dict:
-        count = (1 if v.get("url") else 0) + len(v.get("mirror_urls") or [])
+        count = len(v.get("mirror_urls") or [])
         info = v.get("last_info") or {}
         return {
             **v,
