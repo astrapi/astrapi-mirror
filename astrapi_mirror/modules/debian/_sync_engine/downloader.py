@@ -16,6 +16,12 @@ log = logging.getLogger(__name__)
 # Regex für Architektur- und Component-Filter (analog engine.py)
 _ARCH_IN_PATH = re.compile(r"(?:^|/)binary-([^/]+)/")
 _ARCH_IN_NAME = re.compile(r"(?:^|/)Contents-([a-zA-Z0-9_]+)")
+# Contents-Dateien liegen bei Ubuntu/apt-mirror-artigen Repos direkt im
+# Suite-Root ohne Component-Prefix (z.B. "Contents-amd64.gz" statt
+# "main/Contents-amd64.gz" wie bei Debian selbst) -- ein reiner
+# "/Contents-" in filename"-Substring-Check uebersieht diesen Fall, daher
+# hier dieselbe (?:^|/)-Verankerung wie bei _ARCH_IN_NAME.
+_CONTENTS_FILE = re.compile(r"(?:^|/)Contents-")
 _DEP11_ARCH = re.compile(r"/dep11/Components-([^./]+)\.")
 _COMPONENT_PREFIX = re.compile(r"^([^/]+)/")
 _TRANSLATION_IN_PATH = re.compile(r"(?:^|/)i18n/Translation-([^./]+)")
@@ -162,7 +168,7 @@ def _should_skip_file(
             return True
     if not include_sources and "/source/" in filename:
         return True
-    if not include_contents and "/Contents-" in filename:
+    if not include_contents and _CONTENTS_FILE.search(filename):
         return True
     if language_set is not None:
         m = _TRANSLATION_IN_PATH.search(filename)
@@ -545,6 +551,7 @@ class FileDownloader:
         url = self._primary_url = self._mirrors[0]
         architectures = [a.strip() for a in (repo.get("architectures") or []) if a.strip()]
         arch_set = set(architectures) if architectures else None
+        include_contents = _should_include_contents()
         package_include = [p.strip() for p in (repo.get("package_include") or []) if p.strip()]
         try:
             keep_versions = int(repo.get("keep_versions") or 0)
@@ -592,7 +599,12 @@ class FileDownloader:
                 return first not in arch_set
             return False
 
-        filtered = [e for e in entries if not _flat_skip(e["filename"])]
+        filtered = [
+            e
+            for e in entries
+            if not _flat_skip(e["filename"])
+            and (include_contents or not _CONTENTS_FILE.search(e["filename"]))
+        ]
         filtered = _select_preferred_index_entries(filtered)
 
         # Release und Release.gpg sind redundant wenn InRelease vorhanden ist.
@@ -612,7 +624,7 @@ class FileDownloader:
                     f"{url}/{e['filename']}",
                     self.staging_path / e["filename"],
                     e.get("sha256"),
-                    soft="/Contents-" in e["filename"],
+                    soft=bool(_CONTENTS_FILE.search(e["filename"])),
                 )
             )
             for e in filtered

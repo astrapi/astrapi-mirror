@@ -70,6 +70,10 @@ def _host_path_from_url(url: str) -> str:
 
 _ARCH_IN_PATH = re.compile(r"(?:^|/)binary-([^/]+)/")
 _ARCH_IN_NAME = re.compile(r"(?:^|/)Contents-([a-zA-Z0-9_]+)")
+# Siehe downloader.py::_CONTENTS_FILE -- Ubuntu/apt-mirror-artige Repos legen
+# Contents-Dateien ohne Component-Prefix in den Suite-Root, ein reiner
+# "/Contents-" in filename"-Substring-Check uebersieht diesen Fall.
+_CONTENTS_FILE = re.compile(r"(?:^|/)Contents-")
 _DEP11_ARCH = re.compile(r"/dep11/Components-([^./]+)\.")
 _COMPONENT_PREFIX = re.compile(r"^([^/]+)/")
 _TRANSLATION_IN_PATH = re.compile(r"(?:^|/)i18n/Translation-([^./]+)")
@@ -164,7 +168,7 @@ def _should_skip(
             return True
     if not include_sources and "/source/" in filename:
         return True
-    if not include_contents and "/Contents-" in filename:
+    if not include_contents and _CONTENTS_FILE.search(filename):
         return True
     if language_set is not None:
         m = _TRANSLATION_IN_PATH.search(filename)
