@@ -9,29 +9,18 @@ def package_dir() -> Path:
     return Path(__file__).resolve().parent
 
 
-def _extra_disk() -> str:
-    """Gibt den ersten konfigurierten Zusatzspeicher zurück, oder ''."""
-    from astrapi_core.ui.settings_registry import get_module
-
-    raw = get_module("system", "extra_disks", default="") or ""
-    for part in raw.split(","):
-        path = part.strip()
-        if path:
-            return path
-    return ""
-
-
 def mirror_path() -> Path:
-    """Wurzelverzeichnis des Debian-Spiegels."""
-    disk = _extra_disk()
-    if disk:
-        return Path(disk).resolve() / "debian"
-    return work_dir().resolve() / "mirror"
+    """Wurzelverzeichnis des Debian-Spiegels. Zusatzspeicher ist Pflicht
+    (kein stiller Rückfall aufs Arbeitsverzeichnis) -- ein Debian-Spiegel
+    ist um Größenordnungen zu groß für die Root-Partition."""
+    from astrapi_core.system.paths import require_extra_disk
+
+    return Path(require_extra_disk()).resolve() / "debian"
 
 
 def archlinux_mirror_path() -> Path:
-    """Wurzelverzeichnis des Arch Linux Spiegels."""
-    disk = _extra_disk()
-    if disk:
-        return Path(disk).resolve() / "archlinux"
-    return work_dir().resolve() / "mirror_arch"
+    """Wurzelverzeichnis des Arch Linux Spiegels. Zusatzspeicher ist
+    Pflicht, siehe mirror_path()."""
+    from astrapi_core.system.paths import require_extra_disk
+
+    return Path(require_extra_disk()).resolve() / "archlinux"
