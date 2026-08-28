@@ -23,3 +23,11 @@ fields:
     default:     true
     column:      1
     row:         3
+
+  - name:        verify_existing
+    label:       Existierende Dateien auf Größenänderung prüfen
+    type:        boolean
+    default:     false
+    column:      1
+    row:         4
+    description: "Nur für selbst gebaute Repos relevant (z.B. astrapi-packages-Ausgabe): ein Neubau kann denselben Dateinamen mit anderem Inhalt erzeugen. Ein normaler Upstream-Mirror ändert das nie -- dort kostet die Prüfung nur unnötig Zeit, deshalb Standard aus."

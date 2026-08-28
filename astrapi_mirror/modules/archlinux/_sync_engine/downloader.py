@@ -59,6 +59,7 @@ class ArchDownloader:
         limit_rate: int | None = None,
         file_timeout: int | None = 300,
         exclude_patterns: list[str] | None = None,
+        verify_existing: bool = False,
     ):
         self.staging_path = staging_path
         self.partial_root = partial_root
@@ -68,6 +69,12 @@ class ArchDownloader:
         self.limit_rate = limit_rate
         self.file_timeout = file_timeout
         self.exclude_patterns = exclude_patterns or []
+        # Nur für selbst gebaute Repos relevant (z.B. astrapi-packages-
+        # Ausgabe): dort kann ein Neubau denselben Dateinamen
+        # (pkgver-pkgrel unverändert) mit anderem Inhalt erzeugen -- ein
+        # normaler Upstream-Mirror tut das nie, deshalb bewusst kein
+        # globales Verhalten (siehe _download_file_with_fallback).
+        self.verify_existing = verify_existing
         self.stats = {
             "downloaded": 0,
             "skipped": 0,
@@ -225,18 +232,46 @@ class ArchDownloader:
     def _is_excluded(self, filename: str) -> bool:
         return any(fnmatch.fnmatch(filename, pat) for pat in self.exclude_patterns)
 
+    def _remote_size_matches(self, filename: str, mirror_urls: list[str], local_path: Path) -> bool:
+        """Vergleicht die lokale Dateigröße per HEAD-Request mit der Quelle.
+
+        Inkonklusiv (kein Mirror antwortet/liefert eine Größe) zählt
+        bewusst als "passt" -- ein Netzwerkproblem beim Prüfen soll nicht
+        jede sonst unveränderte Datei zum Neudownload zwingen.
+        """
+        local_size = local_path.stat().st_size
+        for base_url in mirror_urls:
+            try:
+                req = Request(f"{base_url}{filename}", method="HEAD")
+                with urlopen(req, timeout=10) as resp:
+                    remote_size = resp.headers.get("Content-Length")
+                if remote_size is not None:
+                    return int(remote_size) == local_size
+            except Exception:
+                continue
+        return True
+
     async def _download_file_with_fallback(
         self, filename: str, mirror_urls: list[str], arch_path: Path
     ) -> int:
         """Lädt eine Datei herunter und wechselt bei Fehler auf den nächsten Mirror.
 
         Metadaten-Dateien (DB, Files-Index) werden immer neu heruntergeladen,
-        da sie sich bei jedem Mirror-Update ändern können.
+        da sie sich bei jedem Mirror-Update ändern können. Paketdateien
+        werden übersprungen, wenn sie lokal schon existieren -- ein
+        normaler Upstream-Mirror ändert den Inhalt einer Datei nie, ohne
+        auch ihren Namen (pkgver-pkgrel) zu ändern. Bei verify_existing=True
+        wird das per HEAD-Request zusätzlich geprüft, statt blind zu
+        vertrauen (siehe __init__-Kommentar) -- weicht die Größe ab, wird
+        die lokale Datei verworfen und neu geladen.
         """
         local_path = arch_path / filename
         if local_path.exists() and not self._is_metadata(filename):
-            self.stats["skipped"] += 1
-            return 0
+            if not self.verify_existing or self._remote_size_matches(filename, mirror_urls, local_path):
+                self.stats["skipped"] += 1
+                return 0
+            local_path.unlink()
+            self._log(f"  🔄 {filename}: Größe weicht von der Quelle ab, lade neu")
 
         # Vorhandene Metadaten-Datei vor Neudownload entfernen
         if local_path.exists():

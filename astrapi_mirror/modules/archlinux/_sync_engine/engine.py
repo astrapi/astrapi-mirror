@@ -137,6 +137,7 @@ class SyncEngine:
                 file_timeout=_file_timeout,
                 max_concurrent=_max_concurrent,
                 exclude_patterns=_exclude_patterns,
+                verify_existing=bool(repo.get("verify_existing")),
             )
             rc = await downloader.download_repo(repo)
             if rc != 0:

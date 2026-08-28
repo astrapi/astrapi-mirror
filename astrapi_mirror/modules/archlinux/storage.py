@@ -24,7 +24,8 @@ CREATE TABLE IF NOT EXISTS arch_repos (
     last_status      TEXT NOT NULL DEFAULT 'neu',
     last_run         TEXT NOT NULL DEFAULT '',
     last_sync_issues TEXT NOT NULL DEFAULT '[]',
-    last_info        TEXT NOT NULL DEFAULT '{}'
+    last_info        TEXT NOT NULL DEFAULT '{}',
+    verify_existing  INTEGER NOT NULL DEFAULT 0
 )"""
 
 _COLS = (
@@ -37,10 +38,11 @@ _COLS = (
     "last_run",
     "last_sync_issues",
     "last_info",
+    "verify_existing",
 )
 _JSON_COLS = frozenset({"last_sync_issues", "last_info"})
 _LIST_COLS = frozenset({"mirror_urls"})
-_BOOL_COLS = frozenset({"enabled"})
+_BOOL_COLS = frozenset({"enabled", "verify_existing"})
 
 _log = __import__("logging").getLogger(__name__)
 
@@ -78,6 +80,16 @@ class ArchlinuxRepoStore:
         try:
             db = _db()
             db.execute(_DDL)
+            # CREATE TABLE IF NOT EXISTS legt auf einer bereits bestehenden
+            # Tabelle (Alt-Installationen) keine neuen Spalten nach --
+            # additive Migration per ALTER TABLE, "duplicate column"
+            # (schon migriert) wird bewusst verschluckt.
+            try:
+                db.execute(
+                    f"ALTER TABLE {_TABLE} ADD COLUMN verify_existing INTEGER NOT NULL DEFAULT 0"
+                )
+            except Exception:
+                pass
             db.commit()
             self._table_ready = True
             return True
