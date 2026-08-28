@@ -16,47 +16,15 @@ from fastapi.responses import (
     Response,
 )
 
+from astrapi_core.ui.file_listing import (
+    copy_button as _copy_btn,
+    list_dir_entries,
+    render_page as _page,
+    render_row,
+    safe_child as _safe_child,
+)
+
 router = APIRouter()
-
-_UNITS = [("GiB", 1 << 30), ("MiB", 1 << 20), ("KiB", 1 << 10)]
-
-_CSS = """
-    @font-face { font-family:'JetBrains Mono'; src:url('/static/fonts/mono.woff2') format('woff2'); }
-    :root { --mono:'JetBrains Mono',ui-monospace,monospace; }
-    body { font-family:var(--mono); font-size:.85rem; padding:2rem; background:#0d1117; color:#c9d1d9; }
-    h1 { color:#58a6ff; margin-bottom:.25rem; }
-    p.hint { color:#8b949e; font-size:.85rem; margin-bottom:1.5rem; }
-    p.back { margin-bottom:1rem; font-size:.85rem; }
-    table { border-collapse:collapse; width:100%; table-layout:fixed; }
-    col.c-name { width:14%; }
-    col.c-date { width:17%; }
-    col.c-size { width:8%; }
-    col.c-inst { width:61%; }
-    col.c-size2 { width:12%; }
-    thead th { text-align:left; padding:.4rem 1rem; border-bottom:2px solid #30363d; color:#8b949e; font-size:.8rem; font-weight:600; letter-spacing:.04em; }
-    td.size { text-align:right; color:#8b949e; white-space:nowrap; }
-    thead th:nth-child(2) { text-align:right; }
-    thead th:nth-child(3) { text-align:right; padding-right:2.5rem; }
-    thead th:nth-child(2):last-child { text-align:right; }
-    thead th:nth-child(3):last-child { text-align:right; }
-    td { padding:.35rem 1rem; border-bottom:1px solid #21262d; vertical-align:middle; overflow:hidden; }
-    td.num { text-align:right; color:#8b949e; white-space:nowrap; }
-    td.num-gap { text-align:right; color:#8b949e; white-space:nowrap; padding-right:2.5rem; }
-    div.hint { color:#8b949e; font-size:.85rem; margin-bottom:1.5rem; }
-    div.hint pre { background:#161b22; border:1px solid #30363d; border-radius:6px; padding:.75rem 2.5rem .75rem 1rem; margin:.5rem 0 0; font-size:.82rem; white-space:pre; overflow-x:auto; color:#c9d1d9; }
-    a { text-decoration:none; color:#58a6ff; }
-    a:hover { text-decoration:underline; }
-    .copy-btn { background:none; border:none; cursor:pointer; padding:4px 6px; border-radius:4px; opacity:.55; color:#8b949e; transition:opacity .15s; flex-shrink:0; }
-    .copy-btn:hover { opacity:1; color:#c9d1d9; }
-    .cmd { display:flex; align-items:center; gap:.5rem; overflow:hidden; }
-    .cmd code { color:#8b949e; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1; min-width:0; }
-    .setup { background:#161b22; border:1px solid #30363d; border-radius:6px; padding:1rem 1.25rem; margin-bottom:1.5rem; color:#c9d1d9; }
-    .setup h2 { color:#58a6ff; font-size:.95rem; margin:0 0 .75rem; }
-    .step { color:#8b949e; font-size:.8rem; margin:.85rem 0 .3rem; }
-    .pre-wrap { position:relative; }
-    .pre-wrap .copy-btn { position:absolute; top:4px; right:4px; }
-    .setup pre { background:#0d1117; border:1px solid #21262d; border-radius:4px; padding:.6rem 1rem; margin:.25rem 0 0; font-size:.82rem; overflow-x:auto; line-height:1.5; white-space:pre; }
-"""
 
 
 def _fmt_date(raw: str) -> str:
@@ -71,37 +39,6 @@ def _fmt_date(raw: str) -> str:
     return raw
 
 
-_COPY_SVG = (
-    '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">'
-    '<path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11'
-    'c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>'
-)
-
-
-def _copy_btn(uid: str, text: str) -> str:
-    return (
-        f'<textarea id="{uid}" style="display:none">{_html.escape(text)}</textarea>'
-        f'<button class="copy-btn" onclick="copySnippet(\'{uid}\',this)" title="Kopieren">'
-        f'<span class="ci">{_COPY_SVG}</span>'
-        f'<span class="ck" style="display:none;color:#3fb950">✓</span>'
-        f'</button>'
-    )
-
-
-def _fmt_size(n: int) -> str:
-    for unit, div in _UNITS:
-        if n >= div:
-            return f"{n / div:.1f} {unit}"
-    return f"{n} B"
-
-
-def _fmt_mtime(ts: float) -> str:
-    """Datei-Änderungszeitpunkt im selben Format wie _fmt_date()."""
-    from datetime import datetime
-
-    return datetime.fromtimestamp(ts).strftime("%d.%m.%Y %H:%M")
-
-
 _DEBIAN_COLS = (
     ("c-name", "Name"), ("c-date", "Letzter Sync"),
     ("c-size", "Größe"), ("c-inst", "Installation"),
@@ -109,59 +46,6 @@ _DEBIAN_COLS = (
 _ARCH_COLS = (
     ("c-name", "Name"), ("c-date", "Letzter Sync"), ("c-size2", "Größe"),
 )
-
-
-def _page(
-    title: str,
-    hint: str,
-    rows_html: str,
-    back: str | None = None,
-    col_headers: tuple[str, ...] = ("Name", "Größe"),
-    colgroup: str = "",
-) -> str:
-    back_html = f'<p class="back"><a href="{back}">← Zurück</a></p>' if back else ""
-    headers_html = "".join(f"<th>{h}</th>" for h in col_headers)
-    return f"""<!DOCTYPE html>
-<html lang="de">
-<head><meta charset="utf-8"><title>{title}</title><style>{_CSS}</style></head>
-<body>
-  {back_html}
-  <h1>{title}</h1>
-  <div class="hint">{hint}</div>
-  <table>
-    {colgroup}
-    <thead><tr>{headers_html}</tr></thead>
-    <tbody>{rows_html}</tbody>
-  </table>
-<script>
-function copySnippet(id, btn) {{
-  var txt = document.getElementById(id).value;
-  var done = function() {{
-    var i = btn.querySelector('.ci'), c = btn.querySelector('.ck');
-    i.style.display='none'; c.style.display='';
-    setTimeout(function(){{i.style.display='';c.style.display='none';}},1500);
-  }};
-  if (navigator.clipboard) {{
-    navigator.clipboard.writeText(txt).then(done).catch(done);
-  }} else {{
-    var ta = document.createElement('textarea');
-    ta.value = txt; ta.style.position='fixed'; ta.style.opacity='0';
-    document.body.appendChild(ta); ta.focus(); ta.select();
-    try {{ document.execCommand('copy'); }} catch(e) {{}}
-    document.body.removeChild(ta); done();
-  }}
-}}
-</script>
-</body>
-</html>"""
-
-
-def _safe_child(base: Path, *parts: str) -> Path:
-    """Gibt aufgelösten Pfad zurück; wirft 400 bei Path-Traversal."""
-    resolved = (base / Path(*parts)).resolve()
-    if not str(resolved).startswith(str(base.resolve())):
-        raise HTTPException(400, "Ungültiger Pfad")
-    return resolved
 
 
 # ---------------------------------------------------------------------------
@@ -496,32 +380,27 @@ def generic_serve(os_type: str, repo_id: str, path: str, request: Request):
 
         title = f"{os_type}/{repo_id}" + (f"/{path_clean}" if path_clean else "")
 
+        repo_prefix = f"/files/{os_type}/{repo_id}"
+
+        def _href(name: str, is_dir: bool) -> str:
+            suffix = "/" if is_dir else ""
+            return (
+                f"{repo_prefix}/{path_clean}/{name}{suffix}"
+                if path_clean
+                else f"{repo_prefix}/{name}{suffix}"
+            )
+
         try:
-            fs_entries = sorted(target.iterdir(), key=lambda p: (p.is_file(), p.name))
+            entries = list_dir_entries(target, _href)
         except PermissionError:
             raise HTTPException(403, "Zugriff verweigert")
 
-        repo_prefix = f"/files/{os_type}/{repo_id}"
         rows = []
         if not path_clean:
             ve_fn = cfg.get("virtual_entries_fn")
             if ve_fn:
                 rows.extend(ve_fn(repo_id, os_type))
-        for e in fs_entries:
-            display = e.name + ("/" if e.is_dir() else "")
-            suffix = "/" if e.is_dir() else ""
-            href = (
-                f"{repo_prefix}/{path_clean}/{e.name}{suffix}"
-                if path_clean
-                else f"{repo_prefix}/{e.name}{suffix}"
-            )
-            stat = e.stat()
-            size = "—" if e.is_dir() else _fmt_size(stat.st_size)
-            mtime = _fmt_mtime(stat.st_mtime)
-            rows.append(
-                f'<tr><td><a href="{href}">{_html.escape(display)}</a></td>'
-                f'<td>{mtime}</td><td class="size">{size}</td></tr>'
-            )
+        rows.extend(render_row(e) for e in entries)
         return HTMLResponse(
             _page(
                 title,
