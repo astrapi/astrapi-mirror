@@ -95,6 +95,13 @@ def _fmt_size(n: int) -> str:
     return f"{n} B"
 
 
+def _fmt_mtime(ts: float) -> str:
+    """Datei-Änderungszeitpunkt im selben Format wie _fmt_date()."""
+    from datetime import datetime
+
+    return datetime.fromtimestamp(ts).strftime("%d.%m.%Y %H:%M")
+
+
 _DEBIAN_COLS = (
     ("c-name", "Name"), ("c-date", "Letzter Sync"),
     ("c-size", "Größe"), ("c-inst", "Installation"),
@@ -273,7 +280,7 @@ def _debian_virtual_entries(repo_id: str, os_type: str) -> list[str]:
     """Gibt zusätzliche Tabellenzeilen für virtuelle Dateien im Repo-Root."""
     rows = [
         f'<tr><td><a href="/files/{os_type}/{repo_id}/{repo_id}.sources">{repo_id}.sources</a></td>'
-        f'<td class="size">—</td></tr>'
+        f'<td>—</td><td class="size">—</td></tr>'
     ]
     try:
         from astrapi_mirror.modules.debian import store
@@ -283,7 +290,7 @@ def _debian_virtual_entries(repo_id: str, os_type: str) -> list[str]:
         if gpg and not gpg.startswith("-----BEGIN PGP PUBLIC KEY BLOCK-----"):
             rows.append(
                 f'<tr><td><a href="/files/{os_type}/{repo_id}/{repo_id}.gpg">{repo_id}.gpg</a></td>'
-                f'<td class="size">—</td></tr>'
+                f'<td>—</td><td class="size">—</td></tr>'
             )
     except Exception:
         pass
@@ -508,17 +515,20 @@ def generic_serve(os_type: str, repo_id: str, path: str, request: Request):
                 if path_clean
                 else f"{repo_prefix}/{e.name}{suffix}"
             )
-            size = "—" if e.is_dir() else _fmt_size(e.stat().st_size)
+            stat = e.stat()
+            size = "—" if e.is_dir() else _fmt_size(stat.st_size)
+            mtime = _fmt_mtime(stat.st_mtime)
             rows.append(
                 f'<tr><td><a href="{href}">{_html.escape(display)}</a></td>'
-                f'<td class="size">{size}</td></tr>'
+                f'<td>{mtime}</td><td class="size">{size}</td></tr>'
             )
         return HTMLResponse(
             _page(
                 title,
                 root_hint,
-                "\n".join(rows) or "<tr><td colspan='2'>Leer.</td></tr>",
+                "\n".join(rows) or "<tr><td colspan='3'>Leer.</td></tr>",
                 back=back,
+                col_headers=("Name", "Geändert", "Größe"),
             )
         )
 
