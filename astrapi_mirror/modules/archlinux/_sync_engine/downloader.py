@@ -233,20 +233,28 @@ class ArchDownloader:
         return any(fnmatch.fnmatch(filename, pat) for pat in self.exclude_patterns)
 
     def _remote_size_matches(self, filename: str, mirror_urls: list[str], local_path: Path) -> bool:
-        """Vergleicht die lokale Dateigröße per HEAD-Request mit der Quelle.
+        """Vergleicht die lokale Dateigröße mit der Quelle.
 
-        Inkonklusiv (kein Mirror antwortet/liefert eine Größe) zählt
-        bewusst als "passt" -- ein Netzwerkproblem beim Prüfen soll nicht
-        jede sonst unveränderte Datei zum Neudownload zwingen.
+        Bewusst kein HEAD-Request -- FastAPI/Starlette-basierte
+        Dateiserver (u.a. astrapi-packages' eigene /files/-Route) lehnen
+        HEAD auf einer nur mit @router.get(...) registrierten Route mit
+        405 ab. Stattdessen ein GET mit "Range: bytes=0-0": liefert bei
+        Range-Unterstützung (Starlette FileResponse hat das eingebaut)
+        206 + "Content-Range: bytes 0-0/<gesamtgröße>", überträgt dabei
+        nur 1 Byte. Inkonklusiv (kein Mirror antwortet/liefert eine
+        Größe) zählt bewusst als "passt" -- ein Netzwerkproblem beim
+        Prüfen soll nicht jede sonst unveränderte Datei zum Neudownload
+        zwingen.
         """
         local_size = local_path.stat().st_size
         for base_url in mirror_urls:
             try:
-                req = Request(f"{base_url}{filename}", method="HEAD")
+                req = Request(f"{base_url}{filename}", headers={"Range": "bytes=0-0"})
                 with urlopen(req, timeout=10) as resp:
-                    remote_size = resp.headers.get("Content-Length")
-                if remote_size is not None:
-                    return int(remote_size) == local_size
+                    content_range = resp.headers.get("Content-Range", "")
+                total = content_range.rsplit("/", 1)[-1] if "/" in content_range else None
+                if total is not None and total.isdigit():
+                    return int(total) == local_size
             except Exception:
                 continue
         return True
