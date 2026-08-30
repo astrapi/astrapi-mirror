@@ -16,7 +16,7 @@ dependencies = [
     "psutil==7.2.2",
     "apispec==6.10.0",
     "packaging==26.3",
-    "astrapi-core>=26.8.36",
+    "astrapi-core>=26.8.37",
 ]
 
 [project.scripts]
