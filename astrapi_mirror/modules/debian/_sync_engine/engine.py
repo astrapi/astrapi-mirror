@@ -253,7 +253,7 @@ def client_sources_file(repo: dict, base_url: str) -> str:
     """Erzeugt den Inhalt einer DEB822 .sources-Datei für apt."""
     base_url = base_url.rstrip("/")
     repo_id = repo.get("slug") or str(repo.get("id", ""))
-    mirror_url = f"{base_url}/files/debian/{repo_id}"
+    mirror_url = f"{base_url}/debian/{repo_id}"
 
     lines: list[str] = [f"Types: {repo.get('repo_type', 'deb')}"]
 
