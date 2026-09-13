@@ -24,3 +24,8 @@ auth:
   exempt_prefixes:
     - /archlinux
     - /debian
+
+# Geteilte Daten (s.o.) -- eine gemeinsame Kategorienliste statt einer
+# privaten pro Nutzer, siehe astrapi_core/system/categories_scope.py.
+categories:
+  scope: shared
