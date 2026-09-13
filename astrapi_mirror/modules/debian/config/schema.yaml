@@ -84,3 +84,11 @@ fields:
     column:      1
     row:         7
     colspan:     2
+
+  - name:        category_id
+    label:       Kategorie
+    type:        select
+    options_endpoint: /api/categories/for-select
+    column:      1
+    row:         8
+    colspan:     2

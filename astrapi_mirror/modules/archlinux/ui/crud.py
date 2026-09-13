@@ -26,6 +26,9 @@ class _LabelDescStore:
     def _enrich(key: str, v: dict) -> dict:
         count = len(v.get("mirror_urls") or [])
         info = v.get("last_info") or {}
+        from astrapi_core.modules.categories.ui.crud import store as categories_store
+
+        category = categories_store.get(str(v.get("category_id") or "")) or {}
         return {
             **v,
             "description": v.get("label", key),
@@ -38,6 +41,8 @@ class _LabelDescStore:
             # was in der Liste wie ein falscher Wert wirkt. Bleibt im
             # Detail-Dialog weiterhin sichtbar.
             "info_size": info.get("current_size_fmt") or "—",
+            "category_name": category.get("name") or "",
+            "category_color": category.get("color") or "",
         }
 
     def list(self, **kwargs):
@@ -51,6 +56,15 @@ class _LabelDescStore:
 
 _wrapped_store = _LabelDescStore(store)
 
+
+def category_options() -> list[dict]:
+    """Fuer Header.filter_select() (Dropdown-Anzeige) UND filters= (die
+    eigentliche Filterlogik in resolve_filters_for_request())."""
+    from astrapi_core.modules.categories.ui.crud import categories_for_select
+
+    return categories_for_select()
+
+
 router = make_crud_router(
     _wrapped_store,
     KEY,
@@ -60,6 +74,14 @@ router = make_crud_router(
     has_run_buttons=True,
     has_toggle=False,
     has_status=True,
+    filters=[
+        {
+            "param": "category_id",
+            "label": "Kategorie",
+            "all_label": "Alle Kategorien",
+            "options_fn": category_options,
+        },
+    ],
 )
 
 

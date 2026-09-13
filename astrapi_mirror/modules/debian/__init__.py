@@ -30,6 +30,7 @@ from astrapi_core.ui.controls import Col, ContentTable, Header  # noqa: E402
 
 from .api import router  # noqa: E402
 from .ui import router as ui_router  # noqa: E402
+from .ui.crud import category_options  # noqa: E402
 
 module = load_modul(
     Path(__file__).parent,
@@ -37,10 +38,14 @@ module = load_modul(
     router,
     ui_router,
     ui_header=Header([
+        Header.filter_select(
+            "category_id", options_fn=category_options, all_label="Alle Kategorien"
+        ),
         Header.action_button("Neu", hx_get=f"/ui/{_KEY}/create", hx_target="body", style="primary", icon="plus"),
     ]),
     ui_content=ContentTable(
         columns=[
+            Col.category("category_name", "Kategorie", color_key="category_color", sortable=True),
             Col.text("mirror_count", "Quellen", sortable=False),
             Col.text("info_pkg_count", "Pakete", sortable=False),
             Col.text("info_size", "Speicher", sortable=False),

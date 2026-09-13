@@ -25,7 +25,8 @@ CREATE TABLE IF NOT EXISTS arch_repos (
     last_run         TEXT NOT NULL DEFAULT '',
     last_sync_issues TEXT NOT NULL DEFAULT '[]',
     last_info        TEXT NOT NULL DEFAULT '{}',
-    verify_existing  INTEGER NOT NULL DEFAULT 0
+    verify_existing  INTEGER NOT NULL DEFAULT 0,
+    category_id      INTEGER NOT NULL DEFAULT 0
 )"""
 
 _COLS = (
@@ -39,6 +40,7 @@ _COLS = (
     "last_sync_issues",
     "last_info",
     "verify_existing",
+    "category_id",
 )
 _JSON_COLS = frozenset({"last_sync_issues", "last_info"})
 _LIST_COLS = frozenset({"mirror_urls"})
@@ -87,6 +89,12 @@ class ArchlinuxRepoStore:
             try:
                 db.execute(
                     f"ALTER TABLE {_TABLE} ADD COLUMN verify_existing INTEGER NOT NULL DEFAULT 0"
+                )
+            except Exception:
+                pass
+            try:
+                db.execute(
+                    f"ALTER TABLE {_TABLE} ADD COLUMN category_id INTEGER NOT NULL DEFAULT 0"
                 )
             except Exception:
                 pass

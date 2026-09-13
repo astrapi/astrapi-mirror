@@ -17,17 +17,24 @@ fields:
     colspan:     2
     description: "Erste URL = primärer Mirror; weitere = Fallbacks. Arch direkt in der URL angeben."
 
+  - name:        category_id
+    label:       Kategorie
+    type:        select
+    options_endpoint: /api/categories/for-select
+    column:      1
+    row:         3
+
   - name:        enabled
     label:       Aktiviert
     type:        boolean
     default:     true
     column:      1
-    row:         3
+    row:         4
 
   - name:        verify_existing
     label:       Existierende Dateien auf Größenänderung prüfen
     type:        boolean
     default:     false
     column:      1
-    row:         4
+    row:         5
     description: "Nur für selbst gebaute Repos relevant (z.B. astrapi-packages-Ausgabe): ein Neubau kann denselben Dateinamen mit anderem Inhalt erzeugen. Ein normaler Upstream-Mirror ändert das nie -- dort kostet die Prüfung nur unnötig Zeit, deshalb Standard aus."

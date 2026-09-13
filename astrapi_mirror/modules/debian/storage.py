@@ -31,7 +31,8 @@ CREATE TABLE IF NOT EXISTS debian_repos (
     last_status      TEXT NOT NULL DEFAULT 'neu',
     last_run         TEXT NOT NULL DEFAULT '',
     last_sync_issues TEXT NOT NULL DEFAULT '[]',
-    last_info        TEXT NOT NULL DEFAULT '{}'
+    last_info        TEXT NOT NULL DEFAULT '{}',
+    category_id      INTEGER NOT NULL DEFAULT 0
 )"""
 
 _COLS = (
@@ -56,6 +57,7 @@ _COLS = (
     "last_run",
     "last_sync_issues",
     "last_info",
+    "category_id",
 )
 _LIST_COLS = frozenset(
     {"suites", "components", "architectures", "mirror_urls", "package_include"}
@@ -104,6 +106,7 @@ class DebianRepoStore:
             for ddl in (
                 "ALTER TABLE debian_repos ADD COLUMN package_include TEXT NOT NULL DEFAULT ''",
                 "ALTER TABLE debian_repos ADD COLUMN keep_versions INTEGER NOT NULL DEFAULT 0",
+                "ALTER TABLE debian_repos ADD COLUMN category_id INTEGER NOT NULL DEFAULT 0",
             ):
                 try:
                     db.execute(ddl)
