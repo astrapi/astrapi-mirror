@@ -227,7 +227,7 @@ def files_index():
         f'<tr><td>{_dir_link(cfg["label"] + "/", f"/{os}/")}</td></tr>'
         for os, cfg in _OS_REGISTRY.items()
     )
-    return HTMLResponse(_page("Mirror", "Verfügbare Distributionen", rows, col_headers=("Name",)))
+    return HTMLResponse(_page("Mirror", '<a href="/admin">Zum Dashboard →</a>', rows, col_headers=("Name",)))
 
 
 @router.get("/{os_type}", include_in_schema=False)
