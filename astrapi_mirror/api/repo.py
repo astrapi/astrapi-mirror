@@ -17,12 +17,15 @@ from fastapi.responses import (
 )
 
 from astrapi_core.ui.file_listing import (
+    Cell,
     copy_button as _copy_btn,
     dir_link as _dir_link,
     file_link as _file_link,
     list_dir_entries,
+    render_link_row,
     render_page as _page,
     render_row,
+    render_row_pair,
     safe_child as _safe_child,
 )
 
@@ -165,11 +168,17 @@ def _debian_virtual_file(repo_id: str, path: str, request: Request):
     return None
 
 
-def _debian_virtual_entries(repo_id: str, os_type: str) -> list[str]:
-    """Gibt zusätzliche Tabellenzeilen für virtuelle Dateien im Repo-Root."""
+def _debian_virtual_entries(repo_id: str, os_type: str) -> list[tuple[str, str]]:
+    """Gibt zusätzliche (Desktop-<tr>, Mobile-.m-card)-Paare für virtuelle
+    Dateien im Repo-Root zurück."""
     rows = [
-        f'<tr><td>{_file_link(f"{repo_id}.sources", f"/{os_type}/{repo_id}/{repo_id}.sources")}</td>'
-        f'<td>—</td><td class="size">—</td></tr>'
+        render_row_pair(
+            [
+                Cell(_file_link(f"{repo_id}.sources", f"/{os_type}/{repo_id}/{repo_id}.sources")),
+                Cell("—", label="Geändert"),
+                Cell("—", label="Größe", css="size"),
+            ]
+        )
     ]
     try:
         from astrapi_mirror.modules.debian import store
@@ -178,8 +187,13 @@ def _debian_virtual_entries(repo_id: str, os_type: str) -> list[str]:
         gpg = (d.get("gpg_key") or "").strip()
         if gpg and not gpg.startswith("-----BEGIN PGP PUBLIC KEY BLOCK-----"):
             rows.append(
-                f'<tr><td>{_file_link(f"{repo_id}.gpg", f"/{os_type}/{repo_id}/{repo_id}.gpg")}</td>'
-                f'<td>—</td><td class="size">—</td></tr>'
+                render_row_pair(
+                    [
+                        Cell(_file_link(f"{repo_id}.gpg", f"/{os_type}/{repo_id}/{repo_id}.gpg")),
+                        Cell("—", label="Geändert"),
+                        Cell("—", label="Größe", css="size"),
+                    ]
+                )
             )
     except Exception:
         pass
@@ -223,10 +237,7 @@ def _resolve_repo_path(os_type: str, repo_id: str) -> Path | None:
 
 @router.get("/", response_class=HTMLResponse, include_in_schema=False)
 def files_index():
-    rows = "\n".join(
-        f'<tr><td>{_dir_link(cfg["label"] + "/", f"/{os}/")}</td></tr>'
-        for os, cfg in _OS_REGISTRY.items()
-    )
+    rows = [render_link_row(cfg["label"] + "/", f"/{os}/") for os, cfg in _OS_REGISTRY.items()]
     return HTMLResponse(_page("Mirror", '<a href="/admin">Zum Dashboard →</a>', rows, col_headers=("Name",)))
 
 
@@ -267,46 +278,40 @@ def os_repo_listing(os_type: str, request: Request):
         if _resolve_repo_path(os_type, repo_id) is None:
             continue
         label = repo_data.get("label") or repo_id
-        name_cell = f'<td>{_dir_link(label, f"/{os_type}/{repo_id}/")}</td>'
+        name_cell = Cell(_dir_link(label, f"/{os_type}/{repo_id}/"))
 
         if is_debian or is_arch:
             info = repo_data.get("last_info") or {}
             last_run = _fmt_date(repo_data.get("last_run") or "")
             size = info.get("current_size_fmt") or "—"
             size_class = "num-gap" if is_debian else "num"
-            meta_cells = (
-                f'<td class="num">{_html.escape(last_run)}</td>'
-                f'<td class="{size_class}">{_html.escape(size)}</td>'
-            )
+            cells = [
+                name_cell,
+                Cell(_html.escape(last_run), label="Letzter Sync", css="num"),
+                Cell(_html.escape(size), label="Größe", css=size_class),
+            ]
             if is_debian:
                 sources_url = f"{base_url}/{os_type}/{repo_id}/{repo_id}.sources"
                 cmd = f"sudo curl -fsSL {sources_url} -o /etc/apt/sources.list.d/{repo_id}.sources"
                 uid = f"curl-{repo_id}"
-                action_cell = (
-                    f'<td><div class="cmd">'
-                    f'{_copy_btn(uid, cmd)}'
-                    f'<code>{_html.escape(cmd)}</code>'
-                    f'</div></td>'
+                cmd_html = (
+                    f'<div class="cmd">{_copy_btn(uid, cmd)}<code>{_html.escape(cmd)}</code></div>'
                 )
-                rows.append(f"<tr>{name_cell}{meta_cells}{action_cell}</tr>")
-            else:
-                rows.append(f"<tr>{name_cell}{meta_cells}</tr>")
+                cells.append(Cell(cmd_html, label="Installation"))
+            rows.append(render_row_pair(cells))
         else:
-            rows.append(f'<tr>{name_cell}<td class="size">—</td></tr>')
+            rows.append(render_row_pair([name_cell, Cell("—", label="Größe", css="size")]))
 
-    if not rows:
-        return HTMLResponse(
-            _page(
-                f"{cfg['label']} Mirror",
-                "Noch keine synchronisierten Repositories vorhanden.",
-                "<tr><td colspan='2'>Bitte zuerst einen Sync starten.</td></tr>",
-                back="/",
-                col_headers=col_headers,
-                colgroup=colgroup,
-            )
-        )
     return HTMLResponse(
-        _page(f"{cfg['label']} Mirror", "", "\n".join(rows), back="/", col_headers=col_headers, colgroup=colgroup)
+        _page(
+            f"{cfg['label']} Mirror",
+            "" if rows else "Noch keine synchronisierten Repositories vorhanden.",
+            rows,
+            back="/",
+            col_headers=col_headers,
+            colgroup=colgroup,
+            empty_message="Bitte zuerst einen Sync starten.",
+        )
     )
 
 
@@ -352,7 +357,7 @@ def generic_serve(os_type: str, repo_id: str, path: str, request: Request):
             _page(
                 f"{os_type}/{repo_id}",
                 root_hint or "Noch nicht synchronisiert – bitte zuerst einen Sync starten.",
-                "",
+                [],
                 back=f"/{os_type}/",
             )
         )
@@ -399,9 +404,10 @@ def generic_serve(os_type: str, repo_id: str, path: str, request: Request):
             _page(
                 title,
                 root_hint,
-                "\n".join(rows) or "<tr><td colspan='3'>Leer.</td></tr>",
+                rows,
                 back=back,
                 col_headers=("Name", "Geändert", "Größe"),
+                empty_message="Leer.",
             )
         )
 
