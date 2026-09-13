@@ -22,7 +22,12 @@ def create(modules: list | None = None) -> FastAPI:
         modules, _ = load_modules(APP_ROOT)
     register_fastapi_modules(app, modules)
 
-    from astrapi_mirror.api.repo import router as repo_router
-    app.include_router(repo_router)
-
+    # repo_router (Datei-Ausgabe auf der Wurzel, /{os_type}/...) wird
+    # bewusst NICHT hier eingehaengt, sondern erst ganz am Ende von
+    # _app.py::create_app() -- Starlette matcht Routen in
+    # Registrierungsreihenfolge, nicht nach Spezifitaet. repo_router
+    # registriert u.a. den generischen Catch-all "/{os_type}/{repo_id}/
+    # {path:path}", der sonst noch vor spezifischeren Routen wie /health
+    # oder den Dashboard-Seiten (/archlinux, /debian, ...) gewinnen und
+    # sie unerreichbar machen wuerde.
     return app

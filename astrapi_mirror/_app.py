@@ -73,6 +73,17 @@ def _migrate_debian_url_to_mirror_urls() -> None:
 
 def create_app() -> FastAPI:
     _pkg = package_dir()
+
+    # Echte Repo-Dateien liegen auf der Wurzel ("/"), das Dashboard wird
+    # per Caddy unter /admin reverse-proxied (Praefix dort abgeschnitten --
+    # die Routen hier bleiben unveraendert unpraefixiert). Nur fuer
+    # sichtbare Browser-URLs relevant (Nav-Links), siehe
+    # astrapi_core.system.paths.set_admin_prefix()-Docstring. Muss vor
+    # load_modules() gesetzt sein.
+    from astrapi_core.system.paths import set_admin_prefix
+
+    set_admin_prefix("/admin")
+
     configure_settings(health_fn=_db_check, app_name=get_display_name(_pkg))
     configure_updater(_pkg)
 
@@ -98,6 +109,15 @@ def create_app() -> FastAPI:
     create_ui(api, app_root=_pkg, modules=modules)
 
     register_health(api, check_fn=_db_check, start_time=_START_TIME)
+
+    # repo_router bewusst ganz zuletzt eingehaengt (siehe Kommentar in
+    # api/fastapi_app.py::create()) -- registriert u.a. den Catch-all
+    # "/{os_type}/{repo_id}/{path:path}", der sonst vor spezifischeren
+    # Routen (/health, /admin/..., /static/...) gewinnen wuerde.
+    from astrapi_mirror.api.repo import router as repo_router
+
+    api.include_router(repo_router)
+
     start_watchdog(check_fn=lambda: _db_check()[0])
     sd_notify("READY=1")
     return api

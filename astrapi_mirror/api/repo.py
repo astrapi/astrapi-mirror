@@ -1,4 +1,4 @@
-"""astrapi_mirror.api.repo – Generischer Mirror-File-Server unter /files/.
+"""astrapi_mirror.api.repo – Generischer Mirror-File-Server unter /.
 
 Unterstützte OS-Typen werden in ``_OS_REGISTRY`` registriert.
 Neue Distributionen können durch einen weiteren Eintrag eingebunden werden.
@@ -18,6 +18,8 @@ from fastapi.responses import (
 
 from astrapi_core.ui.file_listing import (
     copy_button as _copy_btn,
+    dir_link as _dir_link,
+    file_link as _file_link,
     list_dir_entries,
     render_page as _page,
     render_row,
@@ -91,7 +93,7 @@ def _debian_hint(repo_id: str, repo_data: dict, request: Request) -> str:
         pass
 
     keyring_status = "✓ verfügbar" if keyring_deb else "⚠ noch nicht synchronisiert"
-    dl_url = f"{base_url}/files/debian/{repo_id}/{keyring_deb or repo_id + '-keyring_1.0.0_all.deb'}"
+    dl_url = f"{base_url}/debian/{repo_id}/{keyring_deb or repo_id + '-keyring_1.0.0_all.deb'}"
     keyring_cmd = f"curl -k {dl_url} -o /tmp/{repo_id}-keyring.deb\nsudo dpkg -i /tmp/{repo_id}-keyring.deb"
 
     return (
@@ -107,7 +109,10 @@ def _archlinux_hint(repo_id: str, repo_data: dict, request: Request) -> str:
     base_url = str(request.base_url).rstrip("/")
 
     try:
-        from astrapi_mirror.modules.archlinux._sync_engine.downloader import ArchDownloader, _detect_arch
+        from astrapi_mirror.modules.archlinux._sync_engine.downloader import (
+            ArchDownloader,
+            _detect_arch,
+        )
 
         urls = ArchDownloader._get_mirror_list(repo_data)
         detected_archs = sorted({_detect_arch(u) for u in urls})
@@ -115,7 +120,7 @@ def _archlinux_hint(repo_id: str, repo_data: dict, request: Request) -> str:
         detected_archs = []
     archs = ", ".join(detected_archs or ["x86_64"])
 
-    server_url = f"{base_url}/files/archlinux/{repo_id}/os/$arch"
+    server_url = f"{base_url}/archlinux/{repo_id}/os/$arch"
     conf_snippet = f"[{repo_id}]\nServer = {server_url}"
 
     return (
@@ -163,7 +168,7 @@ def _debian_virtual_file(repo_id: str, path: str, request: Request):
 def _debian_virtual_entries(repo_id: str, os_type: str) -> list[str]:
     """Gibt zusätzliche Tabellenzeilen für virtuelle Dateien im Repo-Root."""
     rows = [
-        f'<tr><td><a href="/files/{os_type}/{repo_id}/{repo_id}.sources">{repo_id}.sources</a></td>'
+        f'<tr><td>{_file_link(f"{repo_id}.sources", f"/{os_type}/{repo_id}/{repo_id}.sources")}</td>'
         f'<td>—</td><td class="size">—</td></tr>'
     ]
     try:
@@ -173,7 +178,7 @@ def _debian_virtual_entries(repo_id: str, os_type: str) -> list[str]:
         gpg = (d.get("gpg_key") or "").strip()
         if gpg and not gpg.startswith("-----BEGIN PGP PUBLIC KEY BLOCK-----"):
             rows.append(
-                f'<tr><td><a href="/files/{os_type}/{repo_id}/{repo_id}.gpg">{repo_id}.gpg</a></td>'
+                f'<tr><td>{_file_link(f"{repo_id}.gpg", f"/{os_type}/{repo_id}/{repo_id}.gpg")}</td>'
                 f'<td>—</td><td class="size">—</td></tr>'
             )
     except Exception:
@@ -216,28 +221,23 @@ def _resolve_repo_path(os_type: str, repo_id: str) -> Path | None:
 # ---------------------------------------------------------------------------
 
 
-@router.get("/files", include_in_schema=False)
-def files_redirect():
-    return RedirectResponse("/files/", status_code=301)
-
-
-@router.get("/files/", response_class=HTMLResponse, include_in_schema=False)
+@router.get("/", response_class=HTMLResponse, include_in_schema=False)
 def files_index():
     rows = "\n".join(
-        f'<tr><td><a href="/files/{os}/">{_html.escape(cfg["label"])}/</a></td></tr>'
+        f'<tr><td>{_dir_link(cfg["label"] + "/", f"/{os}/")}</td></tr>'
         for os, cfg in _OS_REGISTRY.items()
     )
     return HTMLResponse(_page("Mirror", "Verfügbare Distributionen", rows, col_headers=("Name",)))
 
 
-@router.get("/files/{os_type}", include_in_schema=False)
+@router.get("/{os_type}", include_in_schema=False)
 def os_type_redirect(os_type: str):
     if os_type not in _OS_REGISTRY:
         raise HTTPException(404, f"Unbekannter OS-Typ: {os_type}")
-    return RedirectResponse(f"/files/{os_type}/", status_code=301)
+    return RedirectResponse(f"/{os_type}/", status_code=301)
 
 
-@router.get("/files/{os_type}/", response_class=HTMLResponse, include_in_schema=False)
+@router.get("/{os_type}/", response_class=HTMLResponse, include_in_schema=False)
 def os_repo_listing(os_type: str, request: Request):
     cfg = _OS_REGISTRY.get(os_type)
     if not cfg:
@@ -267,7 +267,7 @@ def os_repo_listing(os_type: str, request: Request):
         if _resolve_repo_path(os_type, repo_id) is None:
             continue
         label = repo_data.get("label") or repo_id
-        name_cell = f'<td><a href="/files/{os_type}/{repo_id}/">{_html.escape(label)}</a></td>'
+        name_cell = f'<td>{_dir_link(label, f"/{os_type}/{repo_id}/")}</td>'
 
         if is_debian or is_arch:
             info = repo_data.get("last_info") or {}
@@ -279,18 +279,12 @@ def os_repo_listing(os_type: str, request: Request):
                 f'<td class="{size_class}">{_html.escape(size)}</td>'
             )
             if is_debian:
-                sources_url = f"{base_url}/files/{os_type}/{repo_id}/{repo_id}.sources"
+                sources_url = f"{base_url}/{os_type}/{repo_id}/{repo_id}.sources"
                 cmd = f"sudo curl -fsSL {sources_url} -o /etc/apt/sources.list.d/{repo_id}.sources"
                 uid = f"curl-{repo_id}"
                 action_cell = (
                     f'<td><div class="cmd">'
-                    f'<textarea id="{uid}" style="display:none">{_html.escape(cmd)}</textarea>'
-                    f'<button class="copy-btn" onclick="copySnippet(\'{uid}\',this)" title="Kopieren">'
-                    f'<span class="ci"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">'
-                    f'<path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11'
-                    f'c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg></span>'
-                    f'<span class="ck" style="display:none;color:#3fb950">✓</span>'
-                    f'</button>'
+                    f'{_copy_btn(uid, cmd)}'
                     f'<code>{_html.escape(cmd)}</code>'
                     f'</div></td>'
                 )
@@ -306,22 +300,22 @@ def os_repo_listing(os_type: str, request: Request):
                 f"{cfg['label']} Mirror",
                 "Noch keine synchronisierten Repositories vorhanden.",
                 "<tr><td colspan='2'>Bitte zuerst einen Sync starten.</td></tr>",
-                back="/files/",
+                back="/",
                 col_headers=col_headers,
                 colgroup=colgroup,
             )
         )
     return HTMLResponse(
-        _page(f"{cfg['label']} Mirror", "", "\n".join(rows), back="/files/", col_headers=col_headers, colgroup=colgroup)
+        _page(f"{cfg['label']} Mirror", "", "\n".join(rows), back="/", col_headers=col_headers, colgroup=colgroup)
     )
 
 
-@router.get("/files/{os_type}/{repo_id}", include_in_schema=False)
+@router.get("/{os_type}/{repo_id}", include_in_schema=False)
 def repo_redirect(os_type: str, repo_id: str):
-    return RedirectResponse(f"/files/{os_type}/{repo_id}/", status_code=301)
+    return RedirectResponse(f"/{os_type}/{repo_id}/", status_code=301)
 
 
-@router.get("/files/{os_type}/{repo_id}/{path:path}", include_in_schema=False)
+@router.get("/{os_type}/{repo_id}/{path:path}", include_in_schema=False)
 def generic_serve(os_type: str, repo_id: str, path: str, request: Request):
     cfg = _OS_REGISTRY.get(os_type)
     if not cfg:
@@ -359,7 +353,7 @@ def generic_serve(os_type: str, repo_id: str, path: str, request: Request):
                 f"{os_type}/{repo_id}",
                 root_hint or "Noch nicht synchronisiert – bitte zuerst einen Sync starten.",
                 "",
-                back=f"/files/{os_type}/",
+                back=f"/{os_type}/",
             )
         )
 
@@ -372,15 +366,15 @@ def generic_serve(os_type: str, repo_id: str, path: str, request: Request):
         path_clean = path.rstrip("/")
         path_parts = path_clean.split("/") if path_clean else []
         if len(path_parts) > 1:
-            back = f"/files/{os_type}/{repo_id}/" + "/".join(path_parts[:-1]) + "/"
+            back = f"/{os_type}/{repo_id}/" + "/".join(path_parts[:-1]) + "/"
         elif path_parts:
-            back = f"/files/{os_type}/{repo_id}/"
+            back = f"/{os_type}/{repo_id}/"
         else:
-            back = f"/files/{os_type}/"
+            back = f"/{os_type}/"
 
         title = f"{os_type}/{repo_id}" + (f"/{path_clean}" if path_clean else "")
 
-        repo_prefix = f"/files/{os_type}/{repo_id}"
+        repo_prefix = f"/{os_type}/{repo_id}"
 
         def _href(name: str, is_dir: bool) -> str:
             suffix = "/" if is_dir else ""
