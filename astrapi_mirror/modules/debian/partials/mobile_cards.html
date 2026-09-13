@@ -4,15 +4,16 @@
   (modul.yaml), _card_actions ist bereits im generischen Fallback vorgesehen.
 #}
 {% import 'partials/components/mobile_card_macros.html' as mc %}
+{% import 'partials/components/ui_macros.html' as ui %}
 
 {% if cfg %}
   {% for item_id, item in cfg.items() %}
     {% set _footer %}{{ mc.m_card_actions_default(module, item_id, item, container_id, loading_id, card_actions=_card_actions, page=_page) }}{% endset %}
-    {% call mc.m_card(item.get('label') or item_id, status=item.get('last_status'), enabled=item.get('enabled', True), footer=_footer) %}
+    {% call mc.m_card(item.get('label') or item_id, status=item.get('last_status'), enabled=item.get('enabled', True), footer=_footer, accent=item.get('category_color')) %}
       {{ mc.m_card_row('Quellen', item.get('mirror_count')) }}
       {{ mc.m_card_row('Pakete', item.get('info_pkg_count')) }}
       {{ mc.m_card_row('Speicher', item.get('info_size')) }}
-      {{ mc.m_card_row('Letzter Sync', item.get('last_run')) }}
+      {{ mc.m_card_row('Letzter Sync', ui.last_run_cell(item.get('last_run'))) }}
     {% endcall %}
   {% endfor %}
 {% else %}
