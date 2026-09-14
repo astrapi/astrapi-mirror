@@ -24,6 +24,15 @@ auth:
   exempt_prefixes:
     - /archlinux
     - /debian
+  # GET-only, exakter Pfad (nicht Praefix!): astrapi-admin fragt hier die
+  # Repo-Liste ab (mirror_client.py::list_debian_repos(), E-005), um sie
+  # als Mirror-Quellen-Auswahl je Host anzubieten -- ohne Login-Session,
+  # reiner Server-zu-Server-Aufruf. /api/debian traegt unter demselben
+  # Pfad auch POST (Repo anlegen) -- ein Praefix-Exempt wie oben wuerde
+  # das versehentlich mit freigeben, siehe [[T-332-MIRROR]].
+  exempt_get_paths:
+    - /api/debian
+    - /api/archlinux
 
 # Geteilte Daten (s.o.) -- eine gemeinsame Kategorienliste statt einer
 # privaten pro Nutzer, siehe astrapi_core/system/categories_scope.py.
