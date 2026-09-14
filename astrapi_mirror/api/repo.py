@@ -238,7 +238,7 @@ def _resolve_repo_path(os_type: str, repo_id: str) -> Path | None:
 @router.get("/", response_class=HTMLResponse, include_in_schema=False)
 def files_index():
     rows = [render_link_row(cfg["label"] + "/", f"/{os}/") for os, cfg in _OS_REGISTRY.items()]
-    return HTMLResponse(_page("Mirror", '<a href="/admin">Zum Dashboard →</a>', rows, col_headers=("Name",)))
+    return HTMLResponse(_page("Mirror", "", rows, col_headers=("Name",)))
 
 
 @router.get("/{os_type}", include_in_schema=False)
